@@ -2,12 +2,14 @@ package lars.exp
 
 import lars.exp.Formulas._
 import lars.exp.Streams._
+import lars.exp.WindowFunctions.WindowFunction
+
 
 /**
  * Created by hb on 1/2/15.
  */
 //M
-case class Structure(T: Timeline, v: Evaluation, W: Set[WindowOperator], B: Set[Atom]) {
+case class Structure(T: Timeline, v: Evaluation, B: Set[Atom]) {
   def /(stream: Stream) = StructureStream(this, stream)
 }
 
@@ -21,6 +23,7 @@ case class StructureStreamTimepoint(MS: StructureStream, t: Int) {
   def ||- (fm: Formula) : Boolean = {
 
     val M = MS.M
+    val S0 = Stream(M.T,M.v)
     val S = MS.S
     val T = S.T
     val v:Map[Int,Set[Atom]] = M.v.map
@@ -33,7 +36,12 @@ case class StructureStreamTimepoint(MS: StructureStream, t: Int) {
       case Impl(a, b) => !(this ||- a) || (this ||- b)
       case D(a)       => T.timepoints exists { u => MS/u ||- a }
       case B(a)       => T.timepoints forall { u => MS/u ||- a }
-      case At(a,u)    => (u in T) && (MS/u ||- a)
+      case At(u,a)    => (u in T) && (MS/u ||- a)
+      case Win(w,ch,x,a) => {
+        val S1 = w(ch(S0,S),t,x)
+        M/S1/t ||- a
+      }
+
     }
   }
 }
