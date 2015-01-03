@@ -22,10 +22,6 @@ object Formulas {
   def b(fm: Formula) = B(fm)
   def d(fm: Formula) = D(fm)
   def at = (t:Int) => ((fm: Formula) => At(t,fm))
-  //val w_5 = win(tau,ch2,SeqArgs(Seq(0,5,1)))
-  //case Win(w,ch,x,fm) => {
-  //val S1 = w(ch(S0,S),t,x)
-  //M/S1/t ||- a }
   def win = (w:WindowFunction, ch: Choice, x: Seq[Int]) => ((fm: Formula) => Win(w,ch,x,fm))
 
   case class Atom(s: String) extends Formula
