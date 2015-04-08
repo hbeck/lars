@@ -8,21 +8,21 @@ import lars.exp.Formulas.Atom
 
 object Streams {
 
-  case class Timepoint(timepoint: Int) {
+  case class TimePoint(timePoint: Int) {
     def in (timeline:Timeline) : Boolean = {
-      timepoint >= timeline.lower && timepoint <= timeline.upper
+      timePoint >= timeline.lower && timePoint <= timeline.upper
     }
   }
 
   case class Timeline(lower: Int, upper: Int) {
-    def timepoints = lower until (upper + 1)
+    def timePoints = lower until (upper + 1)
     override def toString = "["+lower+","+upper+"]"
   }
 
   case class Evaluation(map:Map[Int,Set[Atom]]) {
 
     //restriction
-    def | (T:Timeline) = Evaluation(map.filterKeys{ t => T.timepoints contains t })
+    def | (T:Timeline) = Evaluation(map.filterKeys{ t => T.timePoints contains t })
 
     override def toString = {
       val sb = new StringBuilder()
@@ -37,6 +37,6 @@ object Streams {
 
   case class Stream(T: Timeline, v: Evaluation)
 
-  implicit def Int2Timepoint(timepoint:Int) = Timepoint(timepoint)
+  implicit def Int2TimePoint(timePoint:Int) = TimePoint(timePoint)
 
 }

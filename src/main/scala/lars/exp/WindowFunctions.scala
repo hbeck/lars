@@ -18,12 +18,12 @@ object WindowFunctions {
       val u = x apply 1
       val d = x apply 2
 
-      val tmin = S.T.lower
-      val tmax = S.T.upper
+      val tMin = S.T.lower
+      val tMax = S.T.upper
 
       val td = (round(floor(t / d)) * d).toInt
-      val tl = max(tmin, td - l)
-      val tu = min(td + u, tmax)
+      val tl = max(tMin, td - l)
+      val tu = min(td + u, tMax)
 
       val T1 = Timeline(tl, tu)
 

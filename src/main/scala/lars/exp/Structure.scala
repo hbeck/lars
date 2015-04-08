@@ -15,11 +15,11 @@ case class Structure(T: Timeline, v: Evaluation, B: Set[Atom]) {
 
 //M,S
 case class StructureStream(M: Structure, S: Stream) {
-  def /(t: Int) = StructureStreamTimepoint(this, t)
+  def /(t: Int) = StructureStreamTimePoint(this, t)
 }
 
 //M,S,t
-case class StructureStreamTimepoint(MS: StructureStream, t: Int) {
+case class StructureStreamTimePoint(MS: StructureStream, t: Int) {
   def ||- (fm: Formula) : Boolean = {
 
     val M = MS.M
@@ -34,8 +34,8 @@ case class StructureStreamTimepoint(MS: StructureStream, t: Int) {
       case And(a, b)  => (this ||- a) && (this ||- b)
       case Or(a, b)   => (this ||- a) || (this ||- b)
       case Impl(a, b) => !(this ||- a) || (this ||- b)
-      case D(a)       => T.timepoints exists { u => MS/u ||- a }
-      case B(a)       => T.timepoints forall { u => MS/u ||- a }
+      case D(a)       => T.timePoints exists { u => MS/u ||- a }
+      case B(a)       => T.timePoints forall { u => MS/u ||- a }
       case At(u,a)    => (u in T) && (MS/u ||- a)
       case Win(w,ch,x,a) => {
         val S1 = w(ch(S0,S),t,x)
