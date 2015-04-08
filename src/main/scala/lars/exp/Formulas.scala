@@ -34,7 +34,7 @@ object Formulas {
   case class At(t: Int, fm: Formula) extends Formula
   case class Win(wfn: WindowFunction, ch: Choice, x: Seq[Int], fm: Formula) extends Formula
 
-  abstract class Choice() extends Function2[Stream,Stream,Stream]
+  abstract class Choice() extends ((Stream, Stream) => Stream)
 
   val ch1 = new Choice() {
     override def apply(s1: Stream, s2: Stream) : Stream = s1

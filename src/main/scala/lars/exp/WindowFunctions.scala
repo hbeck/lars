@@ -8,7 +8,7 @@ import scala.math.{floor,max,min,round}
  */
 object WindowFunctions {
 
-  abstract class WindowFunction() extends Function3[Stream,Int,Seq[Int],Stream]
+  abstract class WindowFunction() extends ((Stream, Int, Seq[Int]) => Stream)
 
   val TimeBasedWindow = new WindowFunction() {
 

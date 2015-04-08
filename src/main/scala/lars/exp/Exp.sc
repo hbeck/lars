@@ -37,6 +37,7 @@ M/S/42 ||- Win(tau,ch2,Seq(0,5,1),d(a43)) //true
 M/S/42 ||- w_5 (d(a43)) //true
 "M,S*,10 ||- w+5 d exp(a3,m) ?"
 M/S/10 ||- w_5 (d(a43)) //false
-"M,S*,10 ||- ... ?:"
+"M,S*,10 ||- (w+5 d exp(a3,m)) -> B(tram(a1,b)) and -(D(tram(a1,b)))?"
 M/S/10 ||- ((w_5 (d(a43))) implies (b(a36) and not(d(a36)))) //true
+M/10 |= ((w_5 (d(a43))) implies (b(a36) and not(d(a36)))) //true
 
