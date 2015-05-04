@@ -1,12 +1,12 @@
-package lars.exp
+package lars.core
 
-import lars.exp.Formulas.Atom
+import lars.core.Formulas.Atom
 
 /**
  * Created by hb on 1/2/15.
  */
 
-object Streams {
+object LStreams {
 
   case class TimePoint(timePoint: Int) {
     def in (timeline:Timeline) : Boolean = {
@@ -20,10 +20,8 @@ object Streams {
   }
 
   case class Evaluation(map:Map[Int,Set[Atom]]) {
-
     //restriction
-    def | (T:Timeline) = Evaluation(map.filterKeys{ t => T.timePoints contains t })
-
+    def | (T:Timeline) = Evaluation(map filterKeys {t => T.timePoints contains t})
     override def toString = {
       val sb = new StringBuilder()
       sb.append("{")
@@ -35,7 +33,7 @@ object Streams {
     }
   }
 
-  case class Stream(T: Timeline, v: Evaluation)
+  case class LStream(T: Timeline, v: Evaluation)
 
   implicit def Int2TimePoint(timePoint:Int) = TimePoint(timePoint)
 
