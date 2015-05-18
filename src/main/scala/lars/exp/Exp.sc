@@ -20,7 +20,7 @@ val Sw3 = TimeBasedWindow apply (D,42,4) //=> D,42,4,0,1
 val T0 = T
 val a43 = Atom("exp(a3,m)")
 val a44 = Atom("exp(a1,m)")
-val v0 = Evaluation(v.map + (43 -> Set(a43),44 -> Set(a44)))
+val v0 = Evaluation(v.mapping + (43 -> Set(a43),44 -> Set(a44)))
 //
 "S*"
 val S = LStream(T0,v0)

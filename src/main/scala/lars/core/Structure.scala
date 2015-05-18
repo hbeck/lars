@@ -35,20 +35,20 @@ case class StructureStreamTimePoint(M: Structure, S: LStream, t: Int) {
 
     val S0 = LStream(M.T,M.v)
     val T = S.T
-    val v:Map[Int,Set[Atom]] = M.v.map
+    val v:Map[Int,Set[Atom]] = M.v.mapping
 
     fm match {
-      case a: Atom    => v.getOrElse(t,Set()).contains(a) || M.B.contains(a)
-      case Not(a)     => !(this ||- a)
-      case And(a, b)  => (this ||- a) && (this ||- b)
-      case Or(a, b)   => (this ||- a) || (this ||- b)
-      case Impl(a, b) => !(this ||- a) || (this ||- b)
-      case Diamond(a) => T.timePoints exists { M/S/_ ||- a }
-      case Box(a)     => T.timePoints forall { M/S/_ ||- a }
-      case At(u,a)    => (u in T) && (M/S/u ||- a)
-      case Window(w,ch,x,a) => {
+      case a: Atom        => v.getOrElse(t,Set()).contains(a) || M.B.contains(a)
+      case Not(fm1)       => !(this ||- fm1)
+      case And(fm1, fm2)  => (this ||- fm1) && (this ||- fm2)
+      case Or(fm1, fm2)   => (this ||- fm1) || (this ||- fm2)
+      case Impl(fm1, fm2) => !(this ||- fm1) || (this ||- fm2)
+      case Diamond(fm1)   => T.timePoints exists { M/S/_ ||- fm1 }
+      case Box(fm1)       => T.timePoints forall { M/S/_ ||- fm1 }
+      case At(u,fm1)      => (u in T) && (M/S/u ||- fm1)
+      case Window(w,ch,x,fm1) => {
         val S1 = w(ch(S0,S),t,x)
-        M/S1/t ||- a
+        M/S1/t ||- fm1
       }
 
     }
