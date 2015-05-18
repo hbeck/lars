@@ -21,7 +21,8 @@ object LStreams {
 
   case class Evaluation(map:Map[Int,Set[Atom]]) {
     //restriction
-    def | (T:Timeline) = Evaluation(map filterKeys {t => T.timePoints contains t})
+    def | (T:Timeline) = Evaluation(map filterKeys { T.timePoints contains _ })
+
     override def toString = {
       val sb = new StringBuilder()
       sb.append("{")

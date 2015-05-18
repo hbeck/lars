@@ -43,8 +43,8 @@ case class StructureStreamTimePoint(M: Structure, S: LStream, t: Int) {
       case And(a, b)  => (this ||- a) && (this ||- b)
       case Or(a, b)   => (this ||- a) || (this ||- b)
       case Impl(a, b) => !(this ||- a) || (this ||- b)
-      case Diamond(a) => T.timePoints exists { u => M/S/u ||- a }
-      case Box(a)     => T.timePoints forall { u => M/S/u ||- a }
+      case Diamond(a) => T.timePoints exists { M/S/_ ||- a }
+      case Box(a)     => T.timePoints forall { M/S/_ ||- a }
       case At(u,a)    => (u in T) && (M/S/u ||- a)
       case Window(w,ch,x,a) => {
         val S1 = w(ch(S0,S),t,x)
