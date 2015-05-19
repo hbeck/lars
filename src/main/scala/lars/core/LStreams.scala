@@ -21,28 +21,51 @@ object LStreams {
     def <= (other: Timeline) = {
       this.lower >= other.lower && this.upper <= other.upper
     }
+    def == (other: Timeline) = this.lower == other.lower && this.upper == other.upper
+    override def equals(that:Any) = {
+      that match {
+        case other: Timeline => this == other
+        case _ => false
+      }
+    }
+    def != (other: Timeline) : Boolean = { !(this == other) }
+    def contains(t: Int) = lower <= t && t <= upper
     override def toString = "["+lower+","+upper+"]"
   }
 
-  //TODO function instead?
-  case class Evaluation(mapping:Map[Int,Set[Atom]]) {
-    //restriction
-    def | (T: Timeline) = Evaluation(mapping filterKeys { T.timePoints contains _ })
+  case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
 
-    def at(t:Int) = {
-      if (mapping.contains(t))
-        mapping.apply(t)
-      else
-        Set[Atom]()
-      //mapping.applyOrElse(t, Set[Atom]())
-    }
+    def apply(t:Int) = mapping.getOrElse(t,Set[Atom]())
+
+    //restriction
+    def | (T: Timeline) = Evaluation(mapping filterKeys { T contains _ })
 
     def <= (other: Evaluation) = {
       def subseteqAt(t:Int) = {
-        at(t) subsetOf (other at(t))
+        apply(t) subsetOf (other (t)) //TODO
       }
       mapping.keys.forall { subseteqAt }
     }
+
+    def == (other: Evaluation) : Boolean = {
+      if (this.mapping.size != other.mapping.size) return false
+      for (k <- mapping.keys) {
+        val m0 = this.mapping.apply(k)
+        val m1 = other.mapping.apply(k)
+        if (!m0.equals(m1)) return false
+      }
+      true
+    }
+    def != (other: Evaluation) : Boolean = { !(this == other) }
+
+    override def equals(that:Any) = {
+      that match {
+        case other: Evaluation => this == other
+        case _ => false
+      }
+    }
+
+    def size : Int = Math.max(1,mapping.values.flatten.size)
 
     override def toString = {
       val sb = new StringBuilder()
@@ -58,6 +81,18 @@ object LStreams {
   case class LStream(T: Timeline, v: Evaluation) {
     def <= (other:LStream) = {
       (this.T <= other.T) && (this.v <= other.v)
+    }
+    def size = v.size
+    def | (T1: Timeline) = LStream(T1,v|T1)
+    def == (other: LStream) : Boolean = {
+      this.T == other.T && this.v == other.v
+    }
+    def != (other: LStream) : Boolean = { !(this == other) }
+    override def equals(that:Any) : Boolean = {
+      that match {
+        case other: LStream => this == other
+        case _ => false
+      }
     }
   }
 

@@ -35,4 +35,6 @@ object TimeBasedWindow extends WindowFunction[TimeBasedWindowParameters]() {
     apply(S,t,TimeBasedWindowParameters(l,u,d))
   }
 
+  def apply(S: LStream, t: Int, x: (Int,Int,Int)) : LStream = apply(S,t,x._1,x._2,x._3)
+
 }

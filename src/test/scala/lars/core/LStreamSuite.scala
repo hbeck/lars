@@ -1,15 +1,15 @@
 package lars.core
 
 import lars.core.Formulas.Atom
-import lars.core.LStreams.{LStream, Evaluation, Timeline}
-import org.scalatest.FlatSpec
+import lars.core.LStreams.{Evaluation, LStream, Timeline}
+import org.scalatest.FunSuite
 
 /**
  * Created by hb on 5/18/15.
  */
-class LStreamSpec extends FlatSpec {
+class LStreamSuite extends FunSuite {
 
-   "a substream" should "be smaller or equal" in {
+   test("substream") {
      val m = Map(3 -> Set(Atom("a")))
      val em = Map[Int,Set[Atom]]()
      val S1 = LStream(Timeline(0, 5), Evaluation(m))

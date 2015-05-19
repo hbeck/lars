@@ -16,7 +16,13 @@ object Formulas {
     def not(): Formula = Not(this)
   }
 
-  case class Atom(s: String) extends Formula
+  case class Atom(s: String*) extends Formula {
+    override def equals(that:Any): Boolean =
+      that match {
+        case that: Atom => that.canEqual(this) && this.s.sameElements(that.asInstanceOf[Atom].s)
+        case _ => false
+      }
+  }
   case class Not(fm: Formula) extends Formula
   case class And(fm1: Formula, fm2: Formula) extends Formula
   case class Or(fm1: Formula, fm2: Formula) extends Formula
