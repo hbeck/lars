@@ -10,11 +10,10 @@ import org.scalatest.FunSuite
  */
 class ExamplesAAAI15 extends FunSuite {
 
-  val plan = Set(("l1","b","m",8),("l2","g","m",7),("l3","h","m",3))
-  val line = Set(("a1,l1"),("a2","l2"),("a3","l3"))
   val T = Timeline(0,50)
   val v = Evaluation(Map(36 -> Set(Atom("tram","a1","b")), 40 -> Set(Atom("tram","a3","h"))))
   val D = LStream(T,v)
+  val SStar = D ++ LStream(T,Evaluation(Map(43 -> Set(Atom("exp","a3","m")), 44 -> Set(Atom("exp","a1","m")))))
 
    test("ex3") {
      val S1 = TimeBasedWindow(D,42,(4,0,1))

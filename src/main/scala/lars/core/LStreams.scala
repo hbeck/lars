@@ -2,6 +2,7 @@ package lars.core
 
 import scala.language.implicitConversions
 import lars.core.Formulas.Atom
+import lars.core.Util.merge
 
 /**
  * Created by hb on 1/2/15.
@@ -29,6 +30,15 @@ object LStreams {
       }
     }
     def != (other: Timeline) : Boolean = { !(this == other) }
+    def ++ (other: Timeline) = Timeline(Math.min(lower,other.lower),Math.max(upper,other.upper))
+    def + (t: Int) : Timeline = {
+      if (this contains t)
+        this
+      else if (t < lower)
+        Timeline(t,upper)
+      else
+        Timeline(lower,t)
+    }
     def contains(t: Int) = lower <= t && t <= upper
     override def toString = "["+lower+","+upper+"]"
   }
@@ -57,6 +67,8 @@ object LStreams {
       true
     }
     def != (other: Evaluation) : Boolean = { !(this == other) }
+
+    def ++ (other:Evaluation) = Evaluation(merge(mapping,other.mapping))
 
     override def equals(that:Any) = {
       that match {
@@ -88,6 +100,7 @@ object LStreams {
       this.T == other.T && this.v == other.v
     }
     def != (other: LStream) : Boolean = { !(this == other) }
+    def ++ (other: LStream) = LStream (T ++ other.T, v ++ other.v)
     override def equals(that:Any) : Boolean = {
       that match {
         case other: LStream => this == other
