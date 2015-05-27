@@ -50,14 +50,14 @@ class ExamplesAAAI15 extends FunSuite {
     val fm2 = fm1 // TODO W(tw,ch2,(0,5,1),D(a)); TODO W2(tw,(0,5,1),D(a))
     //
     for (f <- List(fm1,fm2)) {
-      assert(m / ss / 42 ||- fm1)
+      assert(m/ss/42 ||- fm1)
       //
       val s1 = tw(ss, 42, (0, 5, 1))
       assert(s1.T == (Timeline(42, 47)))
       assert(s1.v == vInt)
-      assert(m / s1 / 43 ||- a)
+      assert(m/s1/43 ||- a)
       //
-      assert(m / ss / 43 ||- a)
+      assert(m/ss/43 ||- a)
     }
 
   }
