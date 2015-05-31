@@ -1,7 +1,7 @@
 package lars.core
 
-import lars.core.semantics.formulas.Atom
-import lars.core.semantics.streams.{S, Evaluation, Timeline}
+import lars.core.semantics.formulas.{Atom0, Atom}
+import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import org.scalatest.FunSuite
 
 /**
@@ -10,7 +10,8 @@ import org.scalatest.FunSuite
 class SSuite extends FunSuite {
 
    test("substream") {
-     val mp = Map(3 -> Set(Atom("a")))
+     val a = Atom0()
+     val mp = Map(3 -> Set[Atom](a))
      val emp = Map[Int,Set[Atom]]()
      val s1 = S(Timeline(0, 5), Evaluation(mp))
      val s2 = S(Timeline(2, 4), mp) //using implicit Evaluation

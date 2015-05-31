@@ -3,13 +3,17 @@ import FormulaFunctions._
 import WindowOperators._
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.semantics.structure.M
+import lars.core.Util.str2Term
 
 import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindow}
 import scala.collection.immutable.{HashMap, HashSet}
 //
+case class tram(vehicleId:Term, station: Term) extends Atom
+case class exp(vehicleId:Term, station: Term) extends Atom
+//
 val T = Timeline(0,50)
-val a36 = Atom("tram(a1,b)")
-val a40 = Atom("tram(a3,h)")
+val a36 = tram("a1","b")
+val a40 = tram("a3","h")
 val v = Evaluation(HashMap(36 -> Set(a36),40 -> Set(a40)))
 val D = S(T,v) //Ex 2
 //
@@ -20,9 +24,9 @@ val Sw2 = TimeBasedWindow apply (D,42,4,0,1) //alternative input
 val Sw3 = TimeBasedWindow apply (D,42,4) //=> D,42,4,0,1
 //
 val T0 = T
-val a43 = Atom("exp(a3,m)")
-val a44 = Atom("exp(a1,m)")
-val v0 = Evaluation(v.mapping + (43 -> Set(a43),44 -> Set(a44)))
+val a43 = exp("a3","m")
+val a44 = exp("a1","m")
+val v0 = Evaluation(v.mapping + (43 -> Set[Atom](a43),44 -> Set[Atom](a44)))
 //
 "S*"
 val s = S(T0,v0)

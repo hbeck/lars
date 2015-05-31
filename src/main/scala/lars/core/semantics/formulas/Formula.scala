@@ -12,13 +12,16 @@ abstract class Formula {
   def implies(fm: Formula): Formula = Implies(this, fm)
 }
 
-case class Atom(s: String*) extends Formula {
-  override def equals(that:Any): Boolean =
-    that match {
-      case that: Atom => that.canEqual(this) && this.s.sameElements(that.asInstanceOf[Atom].s)
-      case _ => false
-    }
+abstract class Atom extends Formula {
+  //TODO terms list
+  //override def equals(that:Any): Boolean =
+  //  that match {
+  //    case that: Atom => that.canEqual(this) && this.s.sameElements(that.asInstanceOf[Atom].s)
+  //    case _ => false
+  //  }
 }
+
+case class Atom0() extends Atom
 
 case class Not(fm: Formula) extends Formula
 case class And(fm1: Formula, fm2: Formula) extends Formula

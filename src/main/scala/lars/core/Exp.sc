@@ -1,16 +1,20 @@
 import lars.core.semantics.formulas.WindowOperators.ch2
-import lars.core.semantics.formulas.{Formula, W, At, Atom}
+import lars.core.semantics.formulas._
 import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindow}
-val h = Atom("gc","Id1","Id2","X") //TODO variable object?
+import lars.core.Util.str2Term
+case class gc(t1:Term, t2: Term, t3: Term) extends Atom
+case class exp(t1:Term, t2: Term) extends Atom
+case class old(t:Term) extends Atom
+val h = gc("Id1","Id2","X") //TODO variable object?
 //
 var t:Int = 0 // TODO
 val wt = TimeBasedWindow
 val prm = TimeBasedWindowParameters(0,5,1)
 //
-val b1 = At(t,Atom("exp","Id1","X"))
-val b2 = At(t,W(wt,ch2,prm,Atom("exp","Id2","X")))
+val b1 = At(t,exp("Id1","X"))
+val b2 = At(t,W(wt,ch2,prm,exp("Id2","X")))
 //val b3 = Neq("Id1","Id2")
-val b3 = Atom("old","Id2")
+val b3 = old("Id2")
 //
 case class Rule(head:Formula,posBody:Set[Formula],negBody:Set[Formula]) {
   def this(head:Formula,posBody:Set[Formula]) = this(head,posBody,Set[Formula]())
