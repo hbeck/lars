@@ -1,5 +1,8 @@
 package lars.core.semantics.streams
 
+import lars.core.semantics.formulas.Atom
+import lars.core.semantics.structure.M
+
 /**
  * Created by hb on 5/26/15.
  */
@@ -27,6 +30,9 @@ case class S(T: Timeline, v: Evaluation) {
       case _ => false
     }
   }
+
+  def toStructure() = M(T,v,Set[Atom]())
+  def toStructure(B:Set[Atom]) = M(T,v,B)
 
 }
 

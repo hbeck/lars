@@ -47,7 +47,7 @@ m/s/42 ||- At(43,a43)
 m/s/42 ||- at(43) (a43)
 val tau = TimeBasedWindow
 val params1 = TimeBasedWindowParameters(0,5,1)
-val w_5 = win(tau,ch2,params1)
+val w_5 = gwin(tau,ch2,params1)
 //
 "M,S*,42 ||- w+5 d exp(a3,m) ?"
 m/s/42 ||- W(tau,ch2,params1,diamond(a43)) //true

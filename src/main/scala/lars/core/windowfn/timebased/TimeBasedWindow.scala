@@ -1,5 +1,6 @@
 package lars.core.windowfn.timebased
 
+import lars.core.semantics.formulas.FormulaFunctions._
 import java.lang.Math._
 
 import lars.core.semantics.streams.{S, Timeline}
@@ -34,5 +35,8 @@ object TimeBasedWindow extends WindowFunction[TimeBasedWindowParameters]() {
   }
 
   def apply(S: S, t: Int, x: (Int,Int,Int)) : S = apply(S,t,x._1,x._2,x._3)
+
+  //sloppy
+  def toOp(x:Int) = win(this, TimeBasedWindowParameters(x))
 
 }
