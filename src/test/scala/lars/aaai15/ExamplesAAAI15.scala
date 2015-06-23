@@ -61,7 +61,7 @@ class ExamplesAAAI15 extends FunSuite {
     val a3 = C("a3")
     val m = C("m")
     //
-    val fm1 = W(tw,ch2,p(0,5,1),D(exp(a3,m)))
+    val fm1 = W(tw,ch2,p(0,5,1),Diam(exp(a3,m)))
     val fm2 = fm1 // TODO W(tw,ch2,(0,5,1),D(a)); TODO W2(tw,(0,5,1),D(a))
     //
     for (f <- List(fm1,fm2)) {

@@ -10,8 +10,8 @@ import lars.core.windowfn.{WindowFunction, WindowParameters}
 object FormulaFunctions {
 
   def not(fm: Formula) = Not(fm)
-  def box(fm: Formula) = B(fm)
-  def diamond(fm: Formula) = D(fm)
+  def box(fm: Formula) = Box(fm)
+  def diamond(fm: Formula) = Diam(fm)
   def at = (t:Int) => ((fm: Formula) => At(t,fm))
   //general window, with choice function as parameter
   def gwin[X <: WindowParameters] = (w:WindowFunction[X], ch: StreamChoice, x: X) => ((fm: Formula) => W(w,ch,x,fm))

@@ -27,7 +27,7 @@ case class Not(fm: Formula) extends Formula
 case class And(fm1: Formula, fm2: Formula) extends Formula
 case class Or(fm1: Formula, fm2: Formula) extends Formula
 case class Implies(fm1: Formula, fm2: Formula) extends Formula
-case class D(fm: Formula) extends Formula
-case class B(fm: Formula) extends Formula
+case class Diam(fm: Formula) extends Formula
+case class Box(fm: Formula) extends Formula
 case class At(t: Int, fm: Formula) extends Formula
 case class W[X <: WindowParameters](wfn: WindowFunction[X], ch: StreamChoice, x: X, fm: Formula) extends Formula

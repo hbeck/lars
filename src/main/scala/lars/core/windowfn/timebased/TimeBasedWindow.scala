@@ -38,5 +38,6 @@ object TimeBasedWindow extends WindowFunction[TimeBasedWindowParameters]() {
 
   //sloppy
   def toOp(x:Int) = win(this, TimeBasedWindowParameters(x))
+  def toOp(x:(Int,Int,Int)) = win(this, TimeBasedWindowParameters(x._1,x._2,x._3))
 
 }
