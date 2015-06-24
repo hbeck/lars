@@ -4,6 +4,9 @@ import lars.core.semantics.formulas.Atom
 import lars.core.semantics.programs.Program
 import lars.core.semantics.structure.M
 
+import scala.collection.mutable.HashMap
+import scala.collection.immutable.Map
+
 /**
  * Created by hb on 5/26/15.
  */
@@ -21,9 +24,33 @@ case class S(T: Timeline, v: Evaluation) {
     this.T == other.T && this.v == other.v
   }
 
-  def != (other: S) : Boolean = { !(this == other) }
+  def != (other: S) : Boolean = !(this == other)
 
   def ++ (other: S) = S(T ++ other.T, v ++ other.v)
+
+  //'setminus'
+  def -- (other: S) = {
+    //better: i) map builder ii) work directly on Evaluation object
+    var m = new HashMap[Int,Set[Atom]]()
+    for (k <- v.mapping.keys) {
+      val thisV:Set[Atom] = this.v.mapping.apply(k)
+      val otherV:Set[Atom] = other.v.mapping.getOrElse(k, Set[Atom]().empty)
+      val diffV:Set[Atom] = thisV -- otherV
+      m += k -> diffV
+    }
+    val im:Map[Int,Set[Atom]] = m.toMap //immutable
+    S(T,Evaluation(im))
+  }
+
+  def getTimestampedAtoms():Set[(Int,Atom)] = {
+    var s:Set[(Int,Atom)] = Set()
+    for (t <- v.mapping.keys) {
+      for (atom <- v.mapping.apply(t)) {
+        s += ((t,atom))
+      }
+    }
+    s.toSet
+  }
 
   override def equals(that:Any) : Boolean = {
     that match {
@@ -44,8 +71,23 @@ case class S(T: Timeline, v: Evaluation) {
     M.isMinimalModel(R,t,D)
   }
 
+}
 
-
+object S {
+  def fromTimestampedAtoms(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
+    var m: HashMap[Int,Set[Atom]] = HashMap()
+    for (tsAtom <- tsAtoms) {
+      val k = tsAtom._1
+      val atom = tsAtom._2
+      if (m contains k) {
+        val ats = (m apply k) + atom
+        m += (k -> ats)
+      } else {
+        m += k -> Set[Atom](atom)
+      }
+    }
+    S(T,Evaluation(m.toMap))
+  }
 }
 
 

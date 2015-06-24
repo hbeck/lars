@@ -21,15 +21,15 @@ case class MSt(m: M, s: S, t: Int) {
       case And(fm1, fm2)     => (this ||- fm1) && (this ||- fm2)
       case Or(fm1, fm2)      => (this ||- fm1) || (this ||- fm2)
       case Implies(fm1, fm2) => !(this ||- fm1) || (this ||- fm2)
-      case Diam(fm1)            => T.timePoints exists { m/s/_ ||- fm1 } //TODO see Timeline definition
-      case Box(fm1)            => T.timePoints forall { m/s/_ ||- fm1 }
+      case Diam(fm1)         => T.timePoints exists { m/s/_ ||- fm1 } //TODO see Timeline definition
+      case Box(fm1)          => T.timePoints forall { m/s/_ ||- fm1 }
       case At(u,fm1)         => (T contains u) && (m/s/u ||- fm1)
       case W(w,ch,x,fm1)     => {
-        val s0 = S(m.T,m.v)
-        val s1 = w(ch(s0,s),t,x)
-        m/s1/t ||- fm1
+        val s0 = S(m.T, m.v)
+        val s1 = w(ch(s0, s), t, x)
+        m / s1 / t ||- fm1
       }
-
+      //TODO more convenient W variants (sans choice)
     }
   }
 }

@@ -28,4 +28,6 @@ object Util {
     m
   }
 
+  //TODO extract all map functions with maps of type [X,Set[Y]]
+
 }

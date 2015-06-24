@@ -19,8 +19,32 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
 
   //wrt data stream D
   def isMinimalModel(P: Program, t: Int, D: S): Boolean = {
-    //TODO
-    false
+
+    //naive implementation, for the moment: try if any subset
+    //of the intentional part + D is a model
+
+    var intentionalPart = S(T,v) -- D
+
+    //from all mappings k -> {v1, ..., vn} create a set
+    //k -> v1, ..., k -> vn;
+    //create a set of all these single-atom mappings (for all keys)
+    var tsAtoms:Set[(Int,Atom)] = Set()
+    for (k <- intentionalPart.v.mapping.keys) {
+      val tsAtomsK = intentionalPart.getTimestampedAtoms()
+      tsAtoms ++= tsAtomsK
+    }
+    val timestampedAtoms = tsAtoms.toSet
+
+    //iterate over the power set, add it to D, and see if it is a model
+    //in case one is found, this is not a minimal model
+    for (subset <- timestampedAtoms.subsets()) {
+      val augD = D ++ S.fromTimestampedAtoms(T,subset)
+      val candidateM = augD.toStructure(B)
+      if (candidateM/t |= P) {
+        return false
+      }
+    }
+    true
   }
 
 }
