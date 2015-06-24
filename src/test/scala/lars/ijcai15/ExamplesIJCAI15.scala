@@ -53,23 +53,42 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   //for r1, r2, only relevant ground instances given
-  val r1g = Rule(At(m(37.2)+m(3),expBusM),w3(At(m(37.2),busG)) and on)
-  val r2g = Rule(At(m(39.1)+m(5),expTrM),w5(At(m(39.1),tramB) and on))
-  val r3 = Rule(on,w1(Diam(request)))
-  val r4 = Rule(takeBusM,wp5(Diam(expBusM)) and Not(takeTrM) and Not(w3(Diam(jam))))
-  val r5 = Rule(takeTrM,wp5(Diam(expTrM)) and Not(takeBusM))
+  val r1g = Rule(At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on)
+  val r2g = Rule(At(m(39.1)+m(5),expTrM), w5(At(m(39.1),tramB) and on))
+  val r3 = Rule(on, w1(Diam(request)))
+  val r4 = Rule(takeBusM, wp5(Diam(expBusM)) and Not(takeTrM) and Not(w3(Diam(jam))))
+  val r5 = Rule(takeTrM, wp5(Diam(expTrM)) and Not(takeBusM))
   //
   val P = Program(Set(r1g,r2g,r3,r4,r5))
 
   test("ex6") {
-    val Dp = D + (m(39.7) -> request)
     val t = m(39.7)
-    val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM))
+    val Dp = D + (t -> request)
+    val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
     val mI1 = Util.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
     val mI2 = Util.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
     //
     val I1 = Dp ++ S(T,Evaluation(mI1))
     val I2 = Dp ++ S(T,Evaluation(mI2))
+    //
+    // steps for i1
+    val m1 = I1.toStructure(Set[Atom]())
+    val mt1 = m1/t
+    assert((mt1 |= r1g.body))
+    assert((mt1 |= r2g.body))
+    assert((mt1 |= r3.body))
+    assert((mt1 |= r4.body) == false)
+    //
+    assert((m1/m(44.1) |= expTrM))
+    //TODO whole formula bottom up
+    assert((mt1 |= r5.body))
+    assert(P.rules.filter(mt1 |= _.body).sameElements(Set[Rule](r1g,r2g,r3,r5)))
+    val R1 = P.reduct(m1,t)
+    //
+    m1.isMinimalModel(R1,t,Dp)
+
+
+    //
     //
     assert(I1.isAnswerStream(P,Dp,t))
     assert(I2.isAnswerStream(P,Dp,t))

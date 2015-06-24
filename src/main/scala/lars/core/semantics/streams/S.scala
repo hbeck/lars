@@ -38,9 +38,9 @@ case class S(T: Timeline, v: Evaluation) {
       ats = Set[Atom](atom)
     }
     var m:HashMap[Int,Set[Atom]] = HashMap()
-    for (k <- v.mapping.keys) {
+    for (k <- (v.mapping.keySet + t)) {
       if (k == t) {
-        m += (t -> ats)
+        m += (k -> ats)
       } else {
         m += (k -> v.mapping.apply(k))
       }

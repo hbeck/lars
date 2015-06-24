@@ -19,6 +19,9 @@ abstract class Atom extends Formula {
   //    case that: Atom => that.canEqual(this) && this.s.sameElements(that.asInstanceOf[Atom].s)
   //    case _ => false
   //  }
+  override def toString = {
+    this.getClass.getSimpleName
+  }
 }
 
 case class Atom0() extends Atom
