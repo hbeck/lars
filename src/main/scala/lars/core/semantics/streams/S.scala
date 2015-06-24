@@ -26,6 +26,28 @@ case class S(T: Timeline, v: Evaluation) {
 
   def != (other: S) : Boolean = !(this == other)
 
+  //TODO limitation of fp approach? mutable: insert into set a single atom,
+  //vs copying (at least iterating) the whole thing
+  def + (tsAtom: (Int,Atom)) : S = {
+    val t = tsAtom._1
+    val atom = tsAtom._2
+    var ats : Set[Atom] = null
+    if (v.mapping contains t) {
+      ats = (v.mapping apply t) + atom
+    } else {
+      ats = Set[Atom](atom)
+    }
+    var m:HashMap[Int,Set[Atom]] = HashMap()
+    for (k <- v.mapping.keys) {
+      if (k == t) {
+        m += (t -> ats)
+      } else {
+        m += (k -> v.mapping.apply(k))
+      }
+    }
+    S(T,Evaluation(m.toMap))
+  }
+
   def ++ (other: S) = S(T ++ other.T, v ++ other.v)
 
   //'setminus'
@@ -62,7 +84,7 @@ case class S(T: Timeline, v: Evaluation) {
   def toStructure() = M(T,v,Set[Atom]())
   def toStructure(B:Set[Atom]) = M(T,v,B)
 
-  def isAnswerStream(P:Program,D:S,t:Int,B:Set[Atom]=Set()) : Boolean = {
+  def isAnswerStream(P:Program, D:S, t:Int, B:Set[Atom]=Set()) : Boolean = {
 
     //TODO assert this is a superstream of D with fresh atoms
     //

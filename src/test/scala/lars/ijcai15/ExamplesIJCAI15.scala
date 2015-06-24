@@ -1,5 +1,6 @@
 package lars.ijcai15
 
+import lars.core.Util
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
@@ -51,14 +52,28 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(false == (M/(m(40.2)+1) |= f))
   }
 
-  val r1_1 = Rule(At(m(37.2)+m(3),expBusM),w3(At(m(37.2),busG)) and on)
-  val r2_1 = Rule(At(m(39.1)+m(5),expTrM),w5(At(m(39.1),tramB) and on))
+  //for r1, r2, only relevant ground instances given
+  val r1g = Rule(At(m(37.2)+m(3),expBusM),w3(At(m(37.2),busG)) and on)
+  val r2g = Rule(At(m(39.1)+m(5),expTrM),w5(At(m(39.1),tramB) and on))
   val r3 = Rule(on,w1(Diam(request)))
   val r4 = Rule(takeBusM,wp5(Diam(expBusM)) and Not(takeTrM) and Not(w3(Diam(jam))))
   val r5 = Rule(takeTrM,wp5(Diam(expTrM)) and Not(takeBusM))
+  //
+  val P = Program(Set(r1g,r2g,r3,r4,r5))
 
-  test("ex5") {
-    val P = Program(Set(r1_1,r2_1,r3,r4,r5))
+  test("ex6") {
+    val Dp = D + (m(39.7) -> request)
+    val t = m(39.7)
+    val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM))
+    val mI1 = Util.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
+    val mI2 = Util.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
+    //
+    val I1 = Dp ++ S(T,Evaluation(mI1))
+    val I2 = Dp ++ S(T,Evaluation(mI2))
+    //
+    assert(I1.isAnswerStream(P,Dp,t))
+    assert(I2.isAnswerStream(P,Dp,t))
+    // TODO assert no other answer stream
   }
 
 }
