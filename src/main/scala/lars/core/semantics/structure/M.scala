@@ -17,8 +17,14 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
     this/t |= P
   }
 
+  override def toString = {
+    "<"+T+","+v+","+B+">"
+  }
+
   //wrt data stream D
   def isMinimalModel(P: Program, t: Int, D: S): Boolean = {
+
+    if (!isModel(P,t)) return false
 
     //naive implementation, for the moment: try if any subset
     //of the intentional part + D is a model
@@ -38,10 +44,13 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
     //iterate over the power set, add it to D, and see if it is a model
     //in case one is found, this is not a minimal model
     for (subset <- timestampedAtoms.subsets()) {
-      val augD = D ++ S.fromTimestampedAtoms(T,subset)
-      val candidateM = augD.toStructure(B)
-      if (candidateM/t |= P) {
-        return false
+      if (subset != timestampedAtoms) {
+        val augD = D ++ S.fromTimestampedAtoms(T, subset)
+        val candidateM = augD.toStructure(B)
+        if (candidateM / t |= P) {
+          println("smaller model: " + candidateM)
+          return false
+        }
       }
     }
     true

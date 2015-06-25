@@ -16,9 +16,7 @@ case class Mt(m: M, t: Int) {
   }
 
   def |=(r: Rule): Boolean = {
-    if (this |= r.head)
-      true
-    !(this |= r.body)
+    !(this |= r.body) || (this |= r.head)
   }
 
   def |=(p: Program): Boolean = {

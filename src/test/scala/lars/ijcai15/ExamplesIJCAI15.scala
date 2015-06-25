@@ -93,17 +93,35 @@ class ExamplesIJCAI15 extends FunSuite {
     //
     assert((m1/t |= r5.body))
     //
-    assert(P.rules.filter(m1/t |= _.body) == Set[Rule](r1g,r2g,r3,r5)) //note: .sameElements also checks order
+    val reductRules = Set[Rule](r1g,r2g,r3,r5);
+    assert(P.rules.filter(m1/t |= _.body) == reductRules) //note: .sameElements also checks order
     //
     val PR1 = P.reduct(m1,t)
+    assert(PR1.rules == reductRules)
+    //manual model check for all rules of the reduct
+    //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
+    assert(m1/t |= w3(At(m(37.2),busG)))
+    assert(m1/t |= on)
+    assert(m1/t |= At(m(37.2)+m(3),expBusM))
+    assert(m1/t |= Implies(And(w3(At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
+    //
+    assert(m1/t |= r1g)
+    assert(m1/t |= r2g)
+    assert(m1/t |= r3)
+    assert(m1/t |= r5)
+    //
     assert(m1.isMinimalModel(PR1,t,Dp))
     //
     //
     assert(I1.isAnswerStream(P,Dp,t))
     assert(I2.isAnswerStream(P,Dp,t))
     //
-    //assert(((I1 + (t -> expTrM)).isAnswerStream(P,Dp,t)) == false)
-    //assert(((I1 - (m(44.1) -> expTrM)).isAnswerStream(P,Dp,t)) == false)
+    var X = Dp ++ S(T,Evaluation(common))
+    assert(X.isAnswerStream(P,Dp,t) == false) //t -> takeTrM (or t -> takeBus) missing
+    X = I1 + (t -> expTrM)
+    assert(X.isAnswerStream(P,Dp,t) == false) //non minimal
+    X = I1 - (m(44.1) -> expTrM)
+    assert(X.isAnswerStream(P,Dp,t) == false) //m(44.1) -> expTrM missing
     //
     // TODO assert no other answer stream
   }
