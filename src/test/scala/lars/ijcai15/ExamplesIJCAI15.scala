@@ -124,6 +124,9 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(X.isAnswerStream(P,Dp,t) == false) //m(44.1) -> expTrM missing
     //
     // TODO assert no other answer stream
+    //
+    val A = (I1 ++ I2) -- Dp
+    //put that intentional part checking into util, and use in isMinimalModel
   }
 
 }

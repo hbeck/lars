@@ -3,6 +3,8 @@ package lars.core.semantics.streams
 import lars.core.Util.merge
 import lars.core.semantics.formulas.Atom
 
+import scala.collection.immutable.HashMap
+
 /**
  * Created by hb on 5/26/15.
  */
@@ -53,3 +55,19 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
   }
 }
 
+object Evaluation {
+  def fromTimestampedAtoms(tsAtoms: Set[(Int,Atom)]): Evaluation = {
+    var m: HashMap[Int,Set[Atom]] = HashMap()
+    for (tsAtom <- tsAtoms) {
+      val k = tsAtom._1
+      val atom = tsAtom._2
+      if (m contains k) {
+        val ats = (m apply k) + atom
+        m += (k -> ats)
+      } else {
+        m += k -> Set[Atom](atom)
+      }
+    }
+    Evaluation(m.toMap)
+  }
+}

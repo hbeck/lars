@@ -117,18 +117,7 @@ case class S(T: Timeline, v: Evaluation) {
 
 object S {
   def fromTimestampedAtoms(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
-    var m: HashMap[Int,Set[Atom]] = HashMap()
-    for (tsAtom <- tsAtoms) {
-      val k = tsAtom._1
-      val atom = tsAtom._2
-      if (m contains k) {
-        val ats = (m apply k) + atom
-        m += (k -> ats)
-      } else {
-        m += k -> Set[Atom](atom)
-      }
-    }
-    S(T,Evaluation(m.toMap))
+    S(T,Evaluation.fromTimestampedAtoms(tsAtoms))
   }
 }
 
