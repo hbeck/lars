@@ -31,16 +31,36 @@ case class S(T: Timeline, v: Evaluation) {
   def + (tsAtom: (Int,Atom)) : S = {
     val t = tsAtom._1
     val atom = tsAtom._2
-    var ats : Set[Atom] = null
+    var newAtoms : Set[Atom] = null
     if (v.mapping contains t) {
-      ats = (v.mapping apply t) + atom
+      newAtoms = (v.mapping apply t) + atom
     } else {
-      ats = Set[Atom](atom)
+      newAtoms = Set[Atom](atom)
     }
     var m:HashMap[Int,Set[Atom]] = HashMap()
     for (k <- (v.mapping.keySet + t)) {
       if (k == t) {
-        m += (k -> ats)
+        m += (k -> newAtoms)
+      } else {
+        m += (k -> v.mapping.apply(k))
+      }
+    }
+    S(T,Evaluation(m.toMap))
+  }
+
+  def - (tsAtom: (Int,Atom)) : S = {
+    val t = tsAtom._1
+    if (!(v.mapping contains t)) return this
+    //
+    val atom = tsAtom._2
+    val currAtoms = (v.mapping apply t)
+    if (!(currAtoms contains atom)) return this
+    //
+    val newAtoms = currAtoms - atom
+    var m:HashMap[Int,Set[Atom]] = HashMap()
+    for (k <- (v.mapping.keySet)) {
+      if (k == t) {
+        m += (k -> newAtoms)
       } else {
         m += (k -> v.mapping.apply(k))
       }

@@ -32,7 +32,7 @@ class ExamplesIJCAI15 extends FunSuite {
   val w3 = w.toOp(m(3))
   val w5 = w.toOp(m(5))
   val w1 = w.toOp(m(1))
-  val wp5 = w.toOp((m(0),m(1),1))
+  val wp5 = w.toOp((m(0),m(5),1))
   val M = D.toStructure()
 
   test("ex3") {
@@ -73,25 +73,38 @@ class ExamplesIJCAI15 extends FunSuite {
     //
     // steps for i1
     val m1 = I1.toStructure(Set[Atom]())
-    val mt1 = m1/t
-    assert((mt1 |= r1g.body))
-    assert((mt1 |= r2g.body))
-    assert((mt1 |= r3.body))
-    assert((mt1 |= r4.body) == false)
+    assert((m1/t |= r1g.body))
+    assert((m1/t |= r2g.body))
+    assert((m1/t |= r3.body))
+    assert((m1/t |= r4.body) == false)
     //
     assert((m1/m(44.1) |= expTrM))
-    //TODO whole formula bottom up
-    assert((mt1 |= r5.body))
-    assert(P.rules.filter(mt1 |= _.body).sameElements(Set[Rule](r1g,r2g,r3,r5)))
-    val R1 = P.reduct(m1,t)
+    assert((m1/m(44.1) |= Diam(expTrM)))
+    assert((m1/m(0) |= Diam(expTrM)))
+    assert((m1/m(50) |= Diam(expTrM)))
+    assert((m1/m(44.1) |= wp5(expTrM)))
+    assert((m1/m(44.1) |= wp5(Diam(expTrM))))
+    assert((m1/(m(44.1)+1) |= wp5(Diam(expTrM))) == false)
+    assert((m1/(m(44.1)-1) |= wp5(Diam(expTrM))))
+    assert((m1/(m(39.1)) |= wp5(Diam(expTrM))))
+    assert((m1/(m(39.1)-1) |= wp5(Diam(expTrM))) == false)
+    assert((m1/t |= takeBusM) == false)
+    assert((m1/t |= Not(takeBusM)))
     //
-    m1.isMinimalModel(R1,t,Dp)
-
-
+    assert((m1/t |= r5.body))
+    //
+    assert(P.rules.filter(m1/t |= _.body) == Set[Rule](r1g,r2g,r3,r5)) //note: .sameElements also checks order
+    //
+    val PR1 = P.reduct(m1,t)
+    assert(m1.isMinimalModel(PR1,t,Dp))
     //
     //
     assert(I1.isAnswerStream(P,Dp,t))
     assert(I2.isAnswerStream(P,Dp,t))
+    //
+    //assert(((I1 + (t -> expTrM)).isAnswerStream(P,Dp,t)) == false)
+    //assert(((I1 - (m(44.1) -> expTrM)).isAnswerStream(P,Dp,t)) == false)
+    //
     // TODO assert no other answer stream
   }
 
