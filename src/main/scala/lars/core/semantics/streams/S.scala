@@ -113,6 +113,27 @@ case class S(T: Timeline, v: Evaluation) {
     M.isMinimalModel(R,t,D)
   }
 
+  def properSubstreams(): Iterator[S] = {
+    //from all mappings k -> {v1, ..., vn} create a set
+    //k -> v1, ..., k -> vn;
+    //create a set of all these single-atom mappings (for all keys)
+    var tsAtoms:Set[(Int,Atom)] = Set()
+    for (k <- v.mapping.keys) {
+      tsAtoms ++= getTimestampedAtoms()
+    }
+    val timestampedAtoms = tsAtoms.toSet
+
+    //iterate over the power set, create stream
+    var properSubstreams = Set[S]()
+    for (subset <- timestampedAtoms.subsets()) {
+      if (subset != timestampedAtoms) {
+        //properSubstreams += S.fromTimestampedAtoms(s.T,subset)
+        properSubstreams += S(T, Evaluation.fromTimestampedAtoms(subset))
+      }
+    }
+    properSubstreams.iterator //TODO proper (lazy) iterator
+  }
+
 }
 
 object S {

@@ -1,7 +1,7 @@
 package lars.core
 
-import lars.core.semantics.formulas.{Atom, C, V, Term}
-import lars.core.semantics.streams.{Evaluation, S}
+import lars.core.semantics.formulas.{C, Term, V}
+
 import scala.language.implicitConversions
 
 /**
@@ -27,29 +27,6 @@ object Util {
       m = m + ((k,v))
     }
     m
-  }
-
-  def iterateProperSubstreams(s:S): Iterator[S] = {
-
-    //from all mappings k -> {v1, ..., vn} create a set
-    //k -> v1, ..., k -> vn;
-    //create a set of all these single-atom mappings (for all keys)
-    var tsAtoms:Set[(Int,Atom)] = Set()
-    for (k <- s.v.mapping.keys) {
-      val tsAtomsK = s.getTimestampedAtoms()
-      tsAtoms ++= tsAtomsK
-    }
-    val timestampedAtoms = tsAtoms.toSet
-
-    //iterate over the power set, create stream
-    var properSubstreams = Set[S]()
-    for (subset <- timestampedAtoms.subsets()) {
-      if (subset != timestampedAtoms) {
-        //properSubstreams += S.fromTimestampedAtoms(s.T,subset)
-        properSubstreams += S(s.T, Evaluation.fromTimestampedAtoms(subset))
-      }
-    }
-    properSubstreams.iterator //TODO proper (lazy) iterator
   }
 
   //TODO extract all map functions with maps of type [X,Set[Y]]

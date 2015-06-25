@@ -26,7 +26,7 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
     if (this.mapping.size != other.mapping.size) return false
     for (k <- mapping.keys) {
       val m0 = this.mapping.apply(k)
-      val m1 = other.mapping.apply(k)
+      val m1 = other.mapping.getOrElse(k,Set())
       if (!m0.equals(m1)) return false
     }
     true

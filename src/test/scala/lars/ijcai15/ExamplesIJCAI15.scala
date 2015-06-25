@@ -123,10 +123,24 @@ class ExamplesIJCAI15 extends FunSuite {
     X = I1 - (m(44.1) -> expTrM)
     assert(X.isAnswerStream(P,Dp,t) == false) //m(44.1) -> expTrM missing
     //
-    // TODO assert no other answer stream
     //
+    var cntAll=0
+    var cntModels=0
     val A = (I1 ++ I2) -- Dp
-    //put that intentional part checking into util, and use in isMinimalModel
+    for (addS <- A.properSubstreams()) {
+      cntAll += 1
+      val candidateS = Dp ++ addS
+      if (candidateS.isAnswerStream(P,Dp,t)) {
+        assert(candidateS == I1 || candidateS == I2)
+          cntModels += 1
+      } else if (candidateS.toStructure(Set()).isModel(P,t)) {
+          cntModels += 1
+      }
+    }
+    println("checked "+cntAll+" interpretations")
+    println(""+cntModels+" models")
+    //using all atoms yields a model
+    assert((Dp++A).toStructure(Set()).isModel(P,t))
   }
 
 }
