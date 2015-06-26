@@ -1,12 +1,11 @@
 package lars.aaai15
 
-import lars.core.semantics.formulas._
-import lars.core.semantics.formulas.Term
-import WindowOperators.ch2
-import lars.core.semantics.streams.{S, Evaluation, Timeline}
+import lars.core.semantics.formulas.Term.str2Term
+import lars.core.semantics.formulas.WindowOperators.ch2
+import lars.core.semantics.formulas.{Term, _}
+import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.semantics.structure.M
-import lars.core.Util.str2Term
-import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindow}
+import lars.core.windowfn.timebased.{TimeBasedWindow, TimeBasedWindowParameters}
 import org.scalatest.FunSuite
 
 /**
@@ -24,6 +23,9 @@ class ExamplesAAAI15 extends FunSuite {
   case class exp(vehicleId:Term, station: Term) extends Atom
   case class plan(lineId:Term, fromStation: Term, toStation:Term, dur: Term) extends Atom
   case class line(vehicleId: Term, lineId:Term) extends Atom
+  case class jam(lineId: Term) extends Atom
+  case class gc(vehliceId1: Term, vehicleId2:Term, lineId: Term) extends Atom
+  case class old(vehicleId: Term) extends Atom
 
   val T = Timeline(0,50)
   val v = Evaluation(Map(36 -> Set(tram("a1","b")), 40 -> Set(tram("a3","h"))))
@@ -61,11 +63,12 @@ class ExamplesAAAI15 extends FunSuite {
     val a3 = C("a3")
     val m = C("m")
     //
+    val w3 = tw.toOp((0,5,1))
     val fm1 = W(tw,ch2,p(0,5,1),Diam(exp(a3,m)))
-    val fm2 = fm1 // TODO W(tw,ch2,(0,5,1),D(a)); TODO W2(tw,(0,5,1),D(a))
+    val fm2 = w3(Diam(exp(a3,m))) //same as fm1
     //
-    for (f <- List(fm1,fm2)) {
-      assert(mm/ss/42 ||- fm1)
+    for (fm <- List(fm1,fm2)) {
+      assert(mm/ss/42 ||- fm)
       //
       val s1 = tw(ss, 42, (0, 5, 1))
       assert(s1.T == (Timeline(42, 47)))
@@ -74,6 +77,23 @@ class ExamplesAAAI15 extends FunSuite {
       //
       assert(mm/ss/43 ||- exp(a3,m))
     }
+
+  }
+
+  test("ex6") {
+
+    val w3 = TimeBasedWindow.toOp(3)
+    val wp5 = TimeBasedWindow.toOp((0,5,1))
+    val w20 = TimeBasedWindow.toOp(20)
+    val wp = TimeBasedWindow.toOp(1); //TODO partition-based window
+    //TODO ground vs non-ground -- do ground version first
+//    val r2 = Rule(At("T",exp("Id","Y")), //TODO At with param
+//                  wp(At("T1",tram("Id","X"))) and line("Id","L") and
+//                  Not(w20(Diam(jam("X")))) and plan("L","X","Y","Z")
+//                  and "T = T1 + Z") //TODO calculation
+//    val r3 = Rule(gc("Id1","Id2","X"),
+//                  At("T",exp("Id1","X")) and At("T",wp5(Diam(exp("Id2","X")))) and
+//                  "Id1 != Id2" and Not(old("Id2")))
 
   }
 

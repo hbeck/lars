@@ -10,3 +10,9 @@ case class V(s:String) extends Term // TODO equality local to formula/program
 //Constant
 case class C(s:String) extends Term
 
+
+object Term {
+  implicit def str2Term(s: String): Term = {
+    if (s.charAt(0).isLower) C(s) else V(s)
+  }
+}

@@ -1,17 +1,11 @@
 package lars.core
 
-import lars.core.semantics.formulas.{C, Term, V}
-
 import scala.language.implicitConversions
 
 /**
  * Created by hb on 5/19/15.
  */
 object Util {
-
-  implicit def str2Term(s: String): Term = {
-    if (s.charAt(0).isLower) C(s) else V(s)
-  }
 
   //TODO revisit
   def merge[K,V](m1: Map[K,Set[V]], m2: Map[K,Set[V]]) = {
