@@ -10,13 +10,13 @@ import lars.core.semantics.streams.S
 case class MSt(m: M, s: S, t: Int) {
 
   //entailment
-  def ||- (fm: Formula) : Boolean = {
+  def ||- (fm: Formula): Boolean = {
 
     val T = s.T
     val v:Map[Int,Set[Atom]] = m.v.mapping
 
     fm match {
-      case a: Atom           => v.getOrElse(t,Set()).contains(a) || m.B.contains(a)
+      case a: Atom => v.getOrElse(t,Set()).contains(a) || m.B.contains(a)
       case Not(fm1)          => !(this ||- fm1)
       case And(fm1, fm2)     => (this ||- fm1) && (this ||- fm2)
       case Or(fm1, fm2)      => (this ||- fm1) || (this ||- fm2)
@@ -29,7 +29,13 @@ case class MSt(m: M, s: S, t: Int) {
         val s1 = w(ch(s0, s), t, x)
         m / s1 / t ||- fm1
       }
-      //TODO more convenient W variants (sans choice)
+      //extended atoms (hack - TODO)
+      case DiamAtom(a) => this ||- Diam(a)
+      case BoxAtom(a) => this ||- Box(a)
+      case AtAtom(t,a) => this ||- At(t,a)
+      case WAtAtom(w,aa) => this ||- w(aa)
+      case WDiamAtom(w,da) => this ||- w(da)
+      case WBoxAtom(w,ba) => this ||- w(ba)
     }
   }
 }

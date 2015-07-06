@@ -12,7 +12,19 @@ abstract class Formula {
   def implies(fm: Formula): Formula = Implies(this, fm)
 }
 
-abstract class Atom extends Formula {
+abstract class WindowOperator[X <: WindowParameters] extends ((Formula) => W[X]) //TODO which generic params?
+
+abstract class ExtendedAtom extends Formula
+
+//TODO unify 'formula ontology' st is doesnt need recasting later
+case class DiamAtom(a:Atom) extends Formula
+case class BoxAtom(a:Atom) extends Formula
+abstract case class AtAtom(t: Int, a: Atom) extends ExtendedAtom
+abstract case class WAtAtom[X <: WindowParameters](w: WindowOperator[X], aa: AtAtom) extends ExtendedAtom
+abstract case class WDiamAtom[X <: WindowParameters](w: WindowOperator[X], da: DiamAtom) extends ExtendedAtom
+abstract case class WBoxAtom[X <: WindowParameters](w: WindowOperator[X], ba: BoxAtom) extends ExtendedAtom
+
+abstract class Atom extends ExtendedAtom {
   //TODO terms list
   //override def equals(that:Any): Boolean =
   //  that match {
@@ -24,7 +36,7 @@ abstract class Atom extends Formula {
   }
 }
 
-case class Atom0() extends Atom
+//case class Atom0() extends Atom
 
 case class Not(fm: Formula) extends Formula
 case class And(fm1: Formula, fm2: Formula) extends Formula
