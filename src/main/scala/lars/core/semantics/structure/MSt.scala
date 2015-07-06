@@ -39,10 +39,10 @@ case class MSt(m: M, s: S, t: Int) {
       //extended atoms (hack - TODO)
       case DiamAtom(a)       => this ||- Diam(a)
       case BoxAtom(a)        => this ||- Box(a)
-      case AtAtom(t,a)       => this ||- At(t,a)
-      case WAtAtom(wop,aa)   => this ||- W(wop,aa)
+      case AtAtom(u,a)       => this ||- At(u,a)
       case WDiamAtom(wop,da) => this ||- W(wop,da)
       case WBoxAtom(wop,ba)  => this ||- W(wop,ba)
+      case WAtAtom(wop,aa)   => this ||- W(wop,aa)
     }
   }
 }

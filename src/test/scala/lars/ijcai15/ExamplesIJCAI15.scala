@@ -5,6 +5,7 @@ import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.timebased.{TimeBasedWindow, TimeBasedWindowParam, TimeBasedWindowParameters}
+import lars.strat.StratUtil
 import org.scalatest.FunSuite
 
 /**
@@ -151,6 +152,10 @@ class ExamplesIJCAI15 extends FunSuite {
     val w3 = WindowOperator2(w3fn)
     //TODO At(t,x) vs AtAtom(t,x)
     val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
+    //
+    val returnedEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp)
+    val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,AtAtom(t,y)),AtAtom(t,y),y)
+    assert(returnedEAtoms == expectedEAtoms)
     //TODO
   }
 
