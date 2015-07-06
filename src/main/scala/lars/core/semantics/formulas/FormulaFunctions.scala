@@ -14,11 +14,11 @@ object FormulaFunctions {
   def diamond(fm: Formula) = Diam(fm)
   def at = (t:Int) => ((fm: Formula) => At(t,fm))
   //general window, with choice function as parameter
-  def gwin[X <: WindowParameters] = (w:WindowFunction[X], ch: StreamChoice, x: X) => ((fm: Formula) => W(w,ch,x,fm))
+  def gwin[X <: WindowParameters] = (w:WindowFunction[X], ch: StreamChoice, x: X) => ((fm: Formula) => W(WindowOperator(w,ch,x),fm))
   //typical window with choice2
-  def win[X <: WindowParameters] = (w:WindowFunction[X], x:X) => ((fm:Formula) => W(w,ch2,x,fm))
+  def win[X <: WindowParameters] = (w:WindowFunction[X], x:X) => ((fm:Formula) => W(WindowOperator(w,ch2,x),fm))
   //window with choice 1
-  def win1[X <: WindowParameters] = (w:WindowFunction[X], x:X) => ((fm:Formula) => W(w,ch1,x,fm))
+  def win1[X <: WindowParameters] = (w:WindowFunction[X], x:X) => ((fm:Formula) => W(WindowOperator(w,ch1,x),fm))
 
 }
 

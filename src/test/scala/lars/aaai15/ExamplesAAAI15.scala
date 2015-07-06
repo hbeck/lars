@@ -64,7 +64,7 @@ class ExamplesAAAI15 extends FunSuite {
     val m = C("m")
     //
     val w3 = tw.toOp((0,5,1))
-    val fm1 = W(tw,ch2,p(0,5,1),Diam(exp(a3,m)))
+    val fm1 = W(WindowOperator(tw,ch2,p(0,5,1)),Diam(exp(a3,m)))
     val fm2 = w3(Diam(exp(a3,m))) //same as fm1
     //
     for (fm <- List(fm1,fm2)) {

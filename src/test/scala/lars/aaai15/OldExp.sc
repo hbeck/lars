@@ -3,7 +3,6 @@ import FormulaFunctions._
 import WindowOperators._
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.semantics.structure.M
-import lars.core.Util.str2Term
 
 import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindow}
 import scala.collection.immutable.{HashMap, HashSet}
@@ -50,7 +49,7 @@ val params1 = TimeBasedWindowParameters(0,5,1)
 val w_5 = gwin(tau,ch2,params1)
 //
 "M,S*,42 ||- w+5 d exp(a3,m) ?"
-m/s/42 ||- W(tau,ch2,params1,diamond(a43)) //true
+m/s/42 ||- W(WindowOperator(tau,ch2,params1),diamond(a43)) //true
 //
 "M,S*,42 ||- w+5 d exp(a3,m) ?"
 m/s/42 ||- w_5 (diamond(a43)) //true
