@@ -26,9 +26,11 @@ case class MSt(m: M, s: S, t: Int) {
       case At(u,fm1)         => (T contains u) && (m/s/u ||- fm1)
       case W(wop,fm1)        => {
         val s0 = S(m.T, m.v)
-        val s1 = wop.wfn(wop.ch(s0,s),t,wop.x)
-        m/s1/t ||- fm1
+        val s1 = wop.wfn(wop.ch(s0, s), t)
+        m / s1 / t ||- fm1
       }
+      //TODO better: abstract case class W, since W itself is the operator
+      //
 //      case W(w,ch,x,fm1)     => {
 //        val s0 = S(m.T, m.v)
 //        val s1 = w(ch(s0, s), t, x)

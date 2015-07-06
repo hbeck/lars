@@ -1,8 +1,5 @@
 package lars.core.semantics.formulas
 
-import lars.core.semantics.formulas.WindowOperators.StreamChoice
-import lars.core.windowfn.{WindowFunction, WindowParameters}
-
 /**
  * Created by hb on 5/26/15.
  */
@@ -12,17 +9,15 @@ abstract class Formula {
   def implies(fm: Formula): Formula = Implies(this, fm)
 }
 
-case class WindowOperator[X <: WindowParameters](wfn: WindowFunction[X], ch:StreamChoice, x:X)
-
 abstract class ExtendedAtom extends Formula
 
 //TODO unify 'formula ontology' s.t. is doesnt need recasting later
 case class DiamAtom(a:Atom) extends Formula
 case class BoxAtom(a:Atom) extends Formula
-abstract case class AtAtom(t: Int, a: Atom) extends ExtendedAtom
-abstract case class WAtAtom[X <: WindowParameters](w: WindowOperator[X], aa: AtAtom) extends ExtendedAtom
-abstract case class WDiamAtom[X <: WindowParameters](w: WindowOperator[X], da: DiamAtom) extends ExtendedAtom
-abstract case class WBoxAtom[X <: WindowParameters](w: WindowOperator[X], ba: BoxAtom) extends ExtendedAtom
+case class AtAtom(t: Int, a: Atom) extends ExtendedAtom
+case class WAtAtom(w: WindowOperator, aa: AtAtom) extends ExtendedAtom
+case class WDiamAtom(w: WindowOperator, da: DiamAtom) extends ExtendedAtom
+case class WBoxAtom(w: WindowOperator, ba: BoxAtom) extends ExtendedAtom
 
 abstract class Atom extends ExtendedAtom {
   //TODO terms list
@@ -46,4 +41,4 @@ case class Diam(fm: Formula) extends Formula
 case class Box(fm: Formula) extends Formula
 case class At(t: Int, fm: Formula) extends Formula
 //case class W[X <: WindowParameters](wfn: WindowFunction[X], ch: StreamChoice, x: X, fm: Formula) extends Formula
-case class W[X <: WindowParameters](w: WindowOperator[X], fm: Formula) extends Formula
+case class W(wop: WindowOperator, fm: Formula) extends Formula

@@ -1,11 +1,10 @@
 package lars.aaai15
 
 import lars.core.semantics.formulas.Term.str2Term
-import lars.core.semantics.formulas.WindowOperators.ch2
 import lars.core.semantics.formulas.{Term, _}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.semantics.structure.M
-import lars.core.windowfn.timebased.{TimeBasedWindow, TimeBasedWindowParameters}
+import lars.core.windowfn.timebased.{TimeBasedWindowParam, TimeBasedWindowParameters}
 import org.scalatest.FunSuite
 
 /**
@@ -33,14 +32,14 @@ class ExamplesAAAI15 extends FunSuite {
   val SStar = d ++ S(T,Evaluation(Map(43 -> Set(exp("a3","m")), 44 -> Set(exp("a1","m")))))
 
    test("ex3") {
-     val s1 = TimeBasedWindow(d,42,(4,0,1))
-     val s2 = TimeBasedWindow(d,42,4,0,1)
-     val s3 = TimeBasedWindow(d,42,4)
-     def w = TimeBasedWindow
-     val S4 = w(d,42,4)
+     val s1 = TimeBasedWindowParam(d,42,TimeBasedWindowParameters(4,0,1))
+     def w = TimeBasedWindowParam //alias
+     val s2 = w(d,42,TimeBasedWindowParameters(4,0,1))
+     val s3 = w(d,42,4,0,1)
+     val s4 = w(d,42,4)
      assert(s1 == s2)
      assert(s1 == s3)
-     assert(s1 == S4)
+     assert(s1 == s4)
      val v1 = Evaluation(Map(40 -> Set(tram("a3","h"))))
      assert(s1 == S((38,42),v1))
    }
@@ -58,34 +57,30 @@ class ExamplesAAAI15 extends FunSuite {
     val vInt = Evaluation(Map(43 -> Set(exp("a3","m")), 44 -> Set(exp("a1","m"))))
     val ss = d ++ S(T,vInt)
     val mm = M(ss.T,ss.v,B) //bad
-    val tw = TimeBasedWindow //alias
+    val tw = TimeBasedWindowParam //alias
     val p = TimeBasedWindowParameters //alias
     val a3 = C("a3")
     val m = C("m")
     //
-    val w3 = tw.toOp((0,5,1))
-    val fm1 = W(WindowOperator(tw,ch2,p(0,5,1)),Diam(exp(a3,m)))
-    val fm2 = w3(Diam(exp(a3,m))) //same as fm1
+    val wp5 = tw.toOp2(0,5,1)
+    val fm = W(wp5,Diam(exp(a3,m)))
     //
-    for (fm <- List(fm1,fm2)) {
-      assert(mm/ss/42 ||- fm)
-      //
-      val s1 = tw(ss, 42, (0, 5, 1))
-      assert(s1.T == (Timeline(42, 47)))
-      assert(s1.v == vInt)
-      assert(mm/s1/43 ||- exp(a3,m))
-      //
-      assert(mm/ss/43 ||- exp(a3,m))
-    }
-
+    assert(mm/ss/42 ||- fm)
+    //
+    val s1 = tw(ss, 42, (0, 5, 1))
+    assert(s1.T == (Timeline(42, 47)))
+    assert(s1.v == vInt)
+    assert(mm/s1/43 ||- exp(a3,m))
+    //
+    assert(mm/ss/43 ||- exp(a3,m))
   }
 
   test("ex6") {
 
-    val w3 = TimeBasedWindow.toOp(3)
-    val wp5 = TimeBasedWindow.toOp((0,5,1))
-    val w20 = TimeBasedWindow.toOp(20)
-    val wp = TimeBasedWindow.toOp(1); //TODO partition-based window
+    val w3 = TimeBasedWindowParam.toOp2(3)
+    val wp5 = TimeBasedWindowParam.toOp2(0,5,1)
+    val w20 = TimeBasedWindowParam.toOp2(20)
+    val wp = TimeBasedWindowParam.toOp2(1); //TODO partition-based window
     //TODO ground vs non-ground -- do ground version first
 //    val r2 = Rule(At("T",exp("Id","Y")), //TODO At with param
 //                  wp(At("T1",tram("Id","X"))) and line("Id","L") and

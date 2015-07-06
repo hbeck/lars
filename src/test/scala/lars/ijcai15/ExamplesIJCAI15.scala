@@ -4,7 +4,7 @@ import lars.core.Util
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
-import lars.core.windowfn.timebased.TimeBasedWindow
+import lars.core.windowfn.timebased.{TimeBasedWindow, TimeBasedWindowParam, TimeBasedWindowParameters}
 import org.scalatest.FunSuite
 
 /**
@@ -28,11 +28,11 @@ class ExamplesIJCAI15 extends FunSuite {
   val v = Evaluation(Map(m(37.2) -> Set(busG), m(39.1) -> Set(tramB)))
   val D = S(T,v)
   //
-  def w = TimeBasedWindow
-  val w3 = w.toOp(m(3))
-  val w5 = w.toOp(m(5))
-  val w1 = w.toOp(m(1))
-  val wp5 = w.toOp((m(0),m(5),1))
+  def w = TimeBasedWindowParam
+  val w3 = w.toOp2(m(3))
+  val w5 = w.toOp2(m(5))
+  val w1 = w.toOp2(m(1))
+  val wp5 = w.toOp2(m(0),m(5),1)
   val M = D.toStructure()
 
   test("ex3") {
@@ -44,7 +44,7 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   test("ex4") {
-    val f = w3(At(m(37.2),busG))
+    val f = W(w3,(At(m(37.2),busG)))
     for (t <- m(37.2) to m(40.2)) {
       assert(M/t |= f)
     }
@@ -53,11 +53,11 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   //for r1, r2, only relevant ground instances given
-  val r1g = Rule(At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on)
-  val r2g = Rule(At(m(39.1)+m(5),expTrM), w5(At(m(39.1),tramB) and on))
-  val r3 = Rule(on, w1(Diam(request)))
-  val r4 = Rule(takeBusM, wp5(Diam(expBusM)) and Not(takeTrM) and Not(w3(Diam(jam))))
-  val r5 = Rule(takeTrM, wp5(Diam(expTrM)) and Not(takeBusM))
+  val r1g = Rule(At(m(37.2)+m(3),expBusM), W(w3,At(m(37.2),busG)) and on)
+  val r2g = Rule(At(m(39.1)+m(5),expTrM), W(w5,At(m(39.1),tramB) and on))
+  val r3 = Rule(on, W(w1,Diam(request)))
+  val r4 = Rule(takeBusM, W(wp5,Diam(expBusM)) and Not(takeTrM) and Not(W(w3,Diam(jam))))
+  val r5 = Rule(takeTrM, W(wp5,Diam(expTrM)) and Not(takeBusM))
   //
   val P = Program(Set(r1g,r2g,r3,r4,r5))
 
@@ -82,12 +82,12 @@ class ExamplesIJCAI15 extends FunSuite {
     assert((m1/m(44.1) |= Diam(expTrM)))
     assert((m1/m(0) |= Diam(expTrM)))
     assert((m1/m(50) |= Diam(expTrM)))
-    assert((m1/m(44.1) |= wp5(expTrM)))
-    assert((m1/m(44.1) |= wp5(Diam(expTrM))))
-    assert((m1/(m(44.1)+1) |= wp5(Diam(expTrM))) == false)
-    assert((m1/(m(44.1)-1) |= wp5(Diam(expTrM))))
-    assert((m1/(m(39.1)) |= wp5(Diam(expTrM))))
-    assert((m1/(m(39.1)-1) |= wp5(Diam(expTrM))) == false)
+    assert((m1/m(44.1) |= W(wp5,expTrM)))
+    assert((m1/m(44.1) |= W(wp5,Diam(expTrM))))
+    assert((m1/(m(44.1)+1) |= W(wp5,Diam(expTrM))) == false)
+    assert((m1/(m(44.1)-1) |= W(wp5,Diam(expTrM))))
+    assert((m1/(m(39.1)) |= W(wp5,Diam(expTrM))))
+    assert((m1/(m(39.1)-1) |= W(wp5,Diam(expTrM))) == false)
     assert((m1/t |= takeBusM) == false)
     assert((m1/t |= Not(takeBusM)))
     //
@@ -100,10 +100,10 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(PR1.rules == reductRules)
     //manual model check for all rules of the reduct
     //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
-    assert(m1/t |= w3(At(m(37.2),busG)))
+    assert(m1/t |= W(w3,At(m(37.2),busG)))
     assert(m1/t |= on)
     assert(m1/t |= At(m(37.2)+m(3),expBusM))
-    assert(m1/t |= Implies(And(w3(At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
+    assert(m1/t |= Implies(And(W(w3,At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
     //
     assert(m1/t |= r1g)
     assert(m1/t |= r2g)
@@ -141,6 +141,17 @@ class ExamplesIJCAI15 extends FunSuite {
     println(""+cntModels+" models")
     //using all atoms yields a model
     assert((Dp++A).toStructure(Set()).isModel(P,t))
+  }
+
+  test("ex7") {
+    val t:Int = 0
+    object x extends Atom
+    object y extends Atom
+    val w3fn = TimeBasedWindow(TimeBasedWindowParameters(3,0,1))
+    val w3 = WindowOperator2(w3fn)
+    //TODO At(t,x) vs AtAtom(t,x)
+    val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
+    //TODO
   }
 
 }
