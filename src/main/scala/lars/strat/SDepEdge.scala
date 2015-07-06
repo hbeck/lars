@@ -8,6 +8,6 @@ import lars.core.semantics.formulas.ExtendedAtom
 case class SDepEdge(from:ExtendedAtom, to:ExtendedAtom, dep: SDep)
 
 sealed class SDep
-case object Eq extends SDep
-case object Gr extends SDep
-case object Geq extends SDep
+case object eql extends SDep
+case object grt extends SDep
+case object geq extends SDep

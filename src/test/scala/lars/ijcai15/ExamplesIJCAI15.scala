@@ -5,7 +5,7 @@ import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.timebased.{TimeBasedWindow, TimeBasedWindowParam, TimeBasedWindowParameters}
-import lars.strat.StratUtil
+import lars.strat._
 import org.scalatest.FunSuite
 
 /**
@@ -153,9 +153,31 @@ class ExamplesIJCAI15 extends FunSuite {
     //TODO At(t,x) vs AtAtom(t,x)
     val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
     //
-    val returnedEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp)
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,AtAtom(t,y)),AtAtom(t,y),y)
-    assert(returnedEAtoms == expectedEAtoms)
+    val actualEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp,true)
+    assert(actualEAtoms == expectedEAtoms)
+    //
+    def e(from:ExtendedAtom, to:ExtendedAtom, d:SDep) = SDepEdge(from, to, d)
+    val expectedSDG = SDepGraph(Set[SDepEdge](
+      e(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)),geq),
+      e(WAtAtom(w3,AtAtom(t,y)),y,grt),
+      e(AtAtom(t,x),x,eql),
+      e(x,AtAtom(t,x),eql),
+      e(AtAtom(t,y),y,eql),
+      e(y,AtAtom(t,y),eql)
+    ))
+    val actualSDG = SDepGraph.from(Pp)
+    for (e <- actualSDG.edges) {
+      println(e)
+    }
+    for (e <- actualSDG.edges) {
+      assert(expectedSDG.edges contains e)
+    }
+    for (e <- expectedSDG.edges) {
+      assert(actualSDG.edges contains e)
+    }
+    assert(actualSDG.edges == expectedSDG.edges)
+    assert(actualSDG == expectedSDG)
     //TODO
   }
 
