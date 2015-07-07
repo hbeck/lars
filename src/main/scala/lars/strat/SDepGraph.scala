@@ -17,10 +17,6 @@ object SDepGraph {
   def from(P: Program): SDepGraph = {
     val hba = headBodyArcs(P.rules,Set[SDepEdge]())
     val na = nestingArcs(P)
-    for (x <- na) {
-      println(x)
-    }
-    println("---")
     SDepGraph(hba ++ na)
   }
 
@@ -41,11 +37,7 @@ object SDepGraph {
   }
 
   private def nestingArcs(P: Program): Set[SDepEdge] = {
-    val eats = StratUtil.extendedAtoms(P,false)
-    for (ea <- eats) {
-      println(ea)
-    }
-    println("--")
+    val eats = StratUtil.extendedAtoms(P,true)
     var mset = mutable.HashSet[SDepEdge]()
     for (ea <- eats) {
       ea match { //consider only 'relevant' once - see TODO marks concerning dual ontology
@@ -63,6 +55,7 @@ object SDepGraph {
         case WAtAtom(wop, aa) => {
           mset += SDepEdge(WAtAtom(wop,aa),aa.a,grt)
         }
+        case x => if (!x.isInstanceOf[Atom]) { assert(false) } //atoms are only to-Nodes
       }
     }
     mset.toSet

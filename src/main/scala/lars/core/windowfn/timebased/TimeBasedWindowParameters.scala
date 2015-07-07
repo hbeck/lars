@@ -6,7 +6,23 @@ import lars.core.windowfn.WindowParameters
  * Created by hb on 5/26/15.
  */
 //l: to the left (past), u: to the right (future), d: hopsize
-case class TimeBasedWindowParameters(l:Int, u:Int=0, d:Int=1) extends WindowParameters
+case class TimeBasedWindowParameters(l:Int, u:Int=0, d:Int=1) extends WindowParameters {
+  override def toString = {
+    if (l != 0) {
+      if (u == 0 && d == 1)
+        ""+l
+      else if (u!=0 && d == 1)
+        l + "+" + u
+      else
+        "(" + l + "," + u + "," + d + ")"
+    } else {
+      if (u != 0 && d == 1)
+        "+"+u
+      else
+        "(" + l + "," + u + "," + d + ")"
+    }
+  }
+}
 
 object TimeBasedWindowParameters {
 

@@ -8,4 +8,5 @@ import lars.core.windowfn.WindowFunction
  */
 case class TimeBasedWindow(x: TimeBasedWindowParameters) extends WindowFunction /* [TimeBasedWindowParameters](x) */ {
   def apply(s: S, t: Int): S = TimeBasedWindowParam.apply(s,t,x)
+  override def toString = x.toString
 }

@@ -14,4 +14,8 @@ case class Rule(head:Formula, body:Formula) {
       case _ => false
     }
   }
+
+  override def toString = {
+    head + " ← " + body
+  }
 }

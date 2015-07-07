@@ -55,10 +55,13 @@ class ExamplesIJCAI15 extends FunSuite {
 
   //for r1, r2, only relevant ground instances given
   val r1g = Rule(At(m(37.2)+m(3),expBusM), W(w3,At(m(37.2),busG)) and on)
-  val r2g = Rule(At(m(39.1)+m(5),expTrM), W(w5,At(m(39.1),tramB) and on))
+  val r2g = Rule(At(m(39.1)+m(5),expTrM), W(w5,At(m(39.1),tramB)) and on)
   val r3 = Rule(on, W(w1,Diam(request)))
   val r4 = Rule(takeBusM, W(wp5,Diam(expBusM)) and Not(takeTrM) and Not(W(w3,Diam(jam))))
   val r5 = Rule(takeTrM, W(wp5,Diam(expTrM)) and Not(takeBusM))
+//  for (rule <- Set (r1g,r2g,r3,r4,r5)) {
+//    println(rule)
+//  }
   //
   val P = Program(Set(r1g,r2g,r3,r4,r5))
 
@@ -138,8 +141,8 @@ class ExamplesIJCAI15 extends FunSuite {
           cntModels += 1
       }
     }
-    println("checked "+cntAll+" interpretations")
-    println(""+cntModels+" models")
+//    println("\nchecked "+cntAll+" interpretations")
+//    println(""+cntModels+" models")
     //using all atoms yields a model
     assert((Dp++A).toStructure(Set()).isModel(P,t))
   }
@@ -167,9 +170,9 @@ class ExamplesIJCAI15 extends FunSuite {
       e(y,AtAtom(t,y),eql)
     ))
     val actualSDG = SDepGraph.from(Pp)
-    for (e <- actualSDG.edges) {
-      println(e)
-    }
+//    for (e <- actualSDG.edges) {
+//      println(e)
+//    }
     for (e <- actualSDG.edges) {
       assert(expectedSDG.edges contains e)
     }
@@ -178,7 +181,6 @@ class ExamplesIJCAI15 extends FunSuite {
     }
     assert(actualSDG.edges == expectedSDG.edges)
     assert(actualSDG == expectedSDG)
-    //TODO
   }
 
 }

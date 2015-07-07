@@ -23,7 +23,9 @@ object WindowOperators {
 
 class WindowOperator(val wfn: WindowFunction, val ch:StreamChoice)
 case class WindowOperator1(override val wfn: WindowFunction) extends WindowOperator(wfn,ch1)
-case class WindowOperator2(override val wfn: WindowFunction) extends WindowOperator(wfn,ch2)
+case class WindowOperator2(override val wfn: WindowFunction) extends WindowOperator(wfn,ch2) {
+  override def toString = "⊞^{"+wfn+"}"
+}
 
 class WindowOperatorParam[X <: WindowParameters](wfn: WindowFunctionParam[X], ch:StreamChoice, x:X)
 //case class WindowOperator1Param[X <: WindowParameters](wfn: WindowFunctionParam[X], x:X) extends WindowOperatorParam[X](wfn,ch1,x)
