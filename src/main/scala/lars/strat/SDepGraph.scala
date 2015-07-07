@@ -7,10 +7,23 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 /**
- * Stream Depenedency Graph
+ * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-case class SDepGraph(edges:Set[SDepEdge])
+case class SDepGraph(edges:Set[SDepEdge]) {
+
+  def nodes(): Set[ExtendedAtom] = {
+    @tailrec
+    def nodes(xs:Set[SDepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
+      if (xs isEmpty) {
+        return result
+      }
+      val e = xs.head
+      nodes(xs.tail, result ++ Set(e.from,e.to))
+    }
+    nodes(edges,Set[ExtendedAtom]())
+  }
+}
 
 object SDepGraph {
 
