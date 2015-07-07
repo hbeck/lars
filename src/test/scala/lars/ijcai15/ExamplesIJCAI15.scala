@@ -155,6 +155,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val w3 = WindowOperator2(w3fn)
     //TODO At(t,x) vs AtAtom(t,x)
     val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
+    //println(Pp)
     //
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,AtAtom(t,y)),AtAtom(t,y),y)
     val actualEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp,true)

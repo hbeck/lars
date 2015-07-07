@@ -13,4 +13,11 @@ case class Program(rules:Set[Rule]) {
     val rs = this.rules.filter(mt |= _.body)
     Program(rs)
   }
+  override def toString = {
+    val sb = new StringBuilder
+    for (rule <- rules) {
+      sb.append(rule).append(". ")
+    }
+    sb.toString
+  }
 }
