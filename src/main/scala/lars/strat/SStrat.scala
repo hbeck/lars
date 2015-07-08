@@ -20,12 +20,14 @@ object SStrat {
   def create(P: Program): Option[SStrat] = {
 
     // dependency graph g
+    val g = SDepGraph.from(P)
 
     // determine strongly connected components (SCCs)
+    val sccs = Map[ExtendedAtom,Set[ExtendedAtom]]() //TODO
 
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
-
+    
     // else, view resulting component graph, consisting of the SCCs as nodes;
     // no edges so far
 
