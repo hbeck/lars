@@ -1,13 +1,13 @@
 import lars.core.semantics.formulas.WindowOperators.ch2
 import lars.core.semantics.formulas._
-import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindowParam}
+import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindow}
 case class gc(t1:Term, t2: Term, t3: Term) extends Atom
 case class exp(t1:Term, t2: Term) extends Atom
 case class old(t:Term) extends Atom
 val h = gc("Id1","Id2","X") //TODO variable object?
 //
 var t:Int = 0 // TODO
-val wt = TimeBasedWindowParam
+val wt = TimeBasedWindow
 val prm = TimeBasedWindowParameters(0,5,1)
 //
 val b1 = At(t,exp("Id1","X"))

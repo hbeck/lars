@@ -3,8 +3,8 @@ package lars.core.windowfn
 import lars.core.semantics.streams.S
 
 /**
- * Window function closer to general definition. Parameters fixed.
+ * Window function
  *
- * Created by hb on 5/26/15.
+ * Created by hb on 7/6/15.
  */
-abstract class WindowFunction /* [X <: WindowParameters](x: X) */ extends ((S, Int) => S)
+abstract class WindowFunction[X <: WindowParameters]() extends ((S,Int,X) => S)
