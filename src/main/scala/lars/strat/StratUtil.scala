@@ -98,7 +98,7 @@ object StratUtil {
         Set(WAtAtom(wop, aa)) ++ extendedAtoms(aa, sub)
       } else {
         Set(WAtAtom(wop, aa))
-      } 
+      }
     }
   }
 

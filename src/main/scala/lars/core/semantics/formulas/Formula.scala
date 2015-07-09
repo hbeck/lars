@@ -4,6 +4,7 @@ package lars.core.semantics.formulas
  * Created by hb on 5/26/15.
  */
 abstract class Formula {
+
   def and(fm: Formula): Formula = And(this,fm)
   def or(fm: Formula): Formula = Or(this, fm)
   def implies(fm: Formula): Formula = Implies(this, fm)
