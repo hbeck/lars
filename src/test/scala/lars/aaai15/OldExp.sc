@@ -4,7 +4,7 @@ import WindowOperators._
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.semantics.structure.M
 
-import lars.core.windowfn.timebased.{TimeBasedWindowParameters, TimeBasedWindow}
+import lars.core.windowfn.time.{TimeWindowParameters, TimeWindow}
 import scala.collection.immutable.{HashMap, HashSet}
 //
 case class tram(vehicleId:Term, station: Term) extends Atom
@@ -17,10 +17,10 @@ val v = Evaluation(HashMap(36 -> Set(a36),40 -> Set(a40)))
 val D = S(T,v) //Ex 2
 //
 "w(D,42,(4,0,1))" // Ex 3
-val params0 = TimeBasedWindowParameters(4,0,1)
-val Sw = TimeBasedWindow apply (D,42,params0)
-val Sw2 = TimeBasedWindow apply (D,42,4,0,1) //alternative input
-val Sw3 = TimeBasedWindow apply (D,42,4) //=> D,42,4,0,1
+val params0 = TimeWindowParameters(4,0,1)
+val Sw = TimeWindow apply (D,42,params0)
+val Sw2 = TimeWindow apply (D,42,4,0,1) //alternative input
+val Sw3 = TimeWindow apply (D,42,4) //=> D,42,4,0,1
 //
 val T0 = T
 val a43 = exp("a3","m")
@@ -44,8 +44,8 @@ m/s/42 ||- At(43,a43)
 //
 "M,S*,42 ||- @43 exp(a3,m) ?"
 m/s/42 ||- at(43) (a43)
-val tau = TimeBasedWindow
-val params1 = TimeBasedWindowParameters(0,5,1)
+val tau = TimeWindow
+val params1 = TimeWindowParameters(0,5,1)
 val w_5 = gwin(tau,ch2,params1)
 //
 "M,S*,42 ||- w+5 d exp(a3,m) ?"

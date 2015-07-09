@@ -4,7 +4,7 @@ import lars.core.Util
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
-import lars.core.windowfn.timebased.{TimeBasedWindowFixedParams, TimeBasedWindow, TimeBasedWindowParameters}
+import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindow, TimeWindowParameters}
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -29,7 +29,7 @@ class ExamplesIJCAI15 extends FunSuite {
   val v = Evaluation(Map(m(37.2) -> Set(busG), m(39.1) -> Set(tramB)))
   val D = S(T,v)
   //
-  def w = TimeBasedWindow
+  def w = TimeWindow
   val w3 = w.toOp2(m(3))
   val w5 = w.toOp2(m(5))
   val w1 = w.toOp2(m(1))
@@ -151,7 +151,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val t:Int = 0
     object x extends Atom
     object y extends Atom
-    val w3fn = TimeBasedWindowFixedParams(TimeBasedWindowParameters(3,0,1))
+    val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))
     val w3 = WindowOperator2(w3fn)
     //TODO At(t,x) vs AtAtom(t,x)
     val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))

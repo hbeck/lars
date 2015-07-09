@@ -1,4 +1,4 @@
-package lars.core.windowfn.timebased
+package lars.core.windowfn.time
 
 import java.lang.Math._
 
@@ -9,9 +9,9 @@ import lars.core.windowfn.WindowFunction
 /**
  * Created by hb on 5/26/15.
  */
-object TimeBasedWindow extends WindowFunction[TimeBasedWindowParameters] {
+object TimeWindow extends WindowFunction[TimeWindowParameters] {
 
-  override def apply(s: S, t: Int, x: TimeBasedWindowParameters): S = {
+  override def apply(s: S, t: Int, x: TimeWindowParameters): S = {
 
     assert(x.d > 0)
 
@@ -28,15 +28,15 @@ object TimeBasedWindow extends WindowFunction[TimeBasedWindowParameters] {
   }
 
   def apply(S: S, t: Int, xs: Int*) : S = {
-    val x = TimeBasedWindowParameters.from(xs)
+    val x = TimeWindowParameters.from(xs)
     apply(S,t,x)
   }
 
   def apply(S: S, t: Int, x: (Int,Int,Int)) : S = apply(S,t,x._1,x._2,x._3)
 
-  def fix(x: TimeBasedWindowParameters) = TimeBasedWindowFixedParams(x)
+  def fix(x: TimeWindowParameters) = TimeWindowFixedParams(x)
   //def fix(xs: Int*) = TimeBasedWindow(TimeBasedWindowParameters.from(xs))
-  def fix(xs: Seq[Int]) = TimeBasedWindowFixedParams(TimeBasedWindowParameters.from(xs))
+  def fix(xs: Seq[Int]) = TimeWindowFixedParams(TimeWindowParameters.from(xs))
 
   //sloppy
   def toOp1(x:Int) = WindowOperator1(fix(Seq(x,0,1)))

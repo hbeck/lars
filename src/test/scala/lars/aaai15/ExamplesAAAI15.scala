@@ -4,7 +4,7 @@ import lars.core.semantics.formulas.Term.str2Term
 import lars.core.semantics.formulas.{Term, _}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.semantics.structure.M
-import lars.core.windowfn.timebased.{TimeBasedWindow, TimeBasedWindowParameters}
+import lars.core.windowfn.time.{TimeWindow, TimeWindowParameters}
 import org.scalatest.FunSuite
 
 /**
@@ -32,9 +32,9 @@ class ExamplesAAAI15 extends FunSuite {
   val SStar = d ++ S(T,Evaluation(Map(43 -> Set(exp("a3","m")), 44 -> Set(exp("a1","m")))))
 
    test("ex3") {
-     val s1 = TimeBasedWindow(d,42,TimeBasedWindowParameters(4,0,1))
-     def w = TimeBasedWindow //alias
-     val s2 = w(d,42,TimeBasedWindowParameters(4,0,1))
+     val s1 = TimeWindow(d,42,TimeWindowParameters(4,0,1))
+     def w = TimeWindow //alias
+     val s2 = w(d,42,TimeWindowParameters(4,0,1))
      val s3 = w(d,42,4,0,1)
      val s4 = w(d,42,4)
      assert(s1 == s2)
@@ -57,8 +57,8 @@ class ExamplesAAAI15 extends FunSuite {
     val vInt = Evaluation(Map(43 -> Set(exp("a3","m")), 44 -> Set(exp("a1","m"))))
     val ss = d ++ S(T,vInt)
     val mm = M(ss.T,ss.v,B) //bad
-    val tw = TimeBasedWindow //alias
-    val p = TimeBasedWindowParameters //alias
+    val tw = TimeWindow //alias
+    val p = TimeWindowParameters //alias
     val a3 = C("a3")
     val m = C("m")
     //
@@ -77,10 +77,10 @@ class ExamplesAAAI15 extends FunSuite {
 
   test("ex6") {
 
-    val w3 = TimeBasedWindow.toOp2(3)
-    val wp5 = TimeBasedWindow.toOp2(0,5,1)
-    val w20 = TimeBasedWindow.toOp2(20)
-    val wp = TimeBasedWindow.toOp2(1); //TODO partition-based window
+    val w3 = TimeWindow.toOp2(3)
+    val wp5 = TimeWindow.toOp2(0,5,1)
+    val w20 = TimeWindow.toOp2(20)
+    val wp = TimeWindow.toOp2(1); //TODO partition-based window
     //TODO ground vs non-ground -- do ground version first
 //    val r2 = Rule(At("T",exp("Id","Y")), //TODO At with param
 //                  wp(At("T1",tram("Id","X"))) and line("Id","L") and
