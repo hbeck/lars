@@ -167,8 +167,8 @@ class ExamplesIJCAI15 extends FunSuite {
     val actualEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp,true)
     assert(actualEAtoms == expectedEAtoms)
     //
-    def e(from:ExtendedAtom, to:ExtendedAtom, d:SDep) = SDepEdge(from, to, d)
-    val expectedSDG = SDepGraph(Set[SDepEdge](
+    def e(from:ExtendedAtom, to:ExtendedAtom, d:SDep) = DepEdge(from, to, d)
+    val expectedSDG = DepGraph(Set[DepEdge](
       e(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)),geq),
       e(WAtAtom(w3,AtAtom(t,y)),y,grt),
       e(AtAtom(t,x),x,eql),
@@ -176,7 +176,7 @@ class ExamplesIJCAI15 extends FunSuite {
       e(AtAtom(t,y),y,eql),
       e(y,AtAtom(t,y),eql)
     ))
-    val actualSDG = SDepGraph.from(Pp)
+    val actualSDG = DepGraph(Pp)
 //    for (e <- actualSDG.edges) {
 //      println(e)
 //    }

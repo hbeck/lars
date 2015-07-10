@@ -119,7 +119,7 @@ object StratUtil {
 
   @tailrec
   private def extendedAtoms(rules: Set[Rule], result: Set[ExtendedAtom], sub: Boolean): Set[ExtendedAtom] = {
-    if (rules isEmpty) {
+    if (rules.isEmpty) {
       return result
     }
     val rule = rules.head

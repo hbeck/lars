@@ -2,6 +2,8 @@ package lars.core.semantics
 
 import lars.core.semantics.formulas.Atom
 
+import scala.language.implicitConversions
+
 /**
  * Created by hb on 5/26/15.
  */

@@ -5,7 +5,7 @@ import lars.core.semantics.formulas.ExtendedAtom
 /**
  * Created by hb on 7/6/15.
  */
-case class SDepEdge(from:ExtendedAtom, to:ExtendedAtom, dep: SDep) {
+case class DepEdge(from:ExtendedAtom, to:ExtendedAtom, dep: SDep) {
   override def toString = from + " {" + dep + "} " + to
 }
 

@@ -10,12 +10,12 @@ import scala.collection.mutable
  * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-case class SDepGraph(edges:Set[SDepEdge]) {
+case class DepGraph(edges:Set[DepEdge]) {
 
   def nodes(): Set[ExtendedAtom] = {
     @tailrec
-    def nodes(xs:Set[SDepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
-      if (xs isEmpty) {
+    def nodes(xs:Set[DepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
+      if (xs.isEmpty) {
         return result
       }
       val e = xs.head
@@ -25,48 +25,48 @@ case class SDepGraph(edges:Set[SDepEdge]) {
   }
 }
 
-object SDepGraph {
+object DepGraph {
 
-  def from(P: Program): SDepGraph = {
-    val hba = headBodyArcs(P.rules,Set[SDepEdge]())
+  def apply(P: Program): DepGraph = {
+    val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
-    SDepGraph(hba ++ na)
+    DepGraph(hba ++ na)
   }
 
   @tailrec
-  private def headBodyArcs(rules: Set[Rule], result: Set[SDepEdge]) : Set[SDepEdge] = {
-    if (rules isEmpty) {
+  private def headBodyArcs(rules: Set[Rule], result: Set[DepEdge]) : Set[DepEdge] = {
+    if (rules.isEmpty) {
       return result
     }
     val rule = rules.head
     val alpha = rule.head.asInstanceOf[ExtendedAtom] //TODO not automatic at the moment due to 'dual' ontology
     val betas: Set[ExtendedAtom] = StratUtil.extendedAtoms(rule.body, false)
 
-    var curr = mutable.HashSet[SDepEdge]()
+    var curr = mutable.HashSet[DepEdge]()
     for (beta <- betas) {
-      curr += SDepEdge(alpha,beta,geq)
+      curr += DepEdge(alpha,beta,geq)
     }
     headBodyArcs(rules.tail, result ++ curr.toSet)
   }
 
-  private def nestingArcs(P: Program): Set[SDepEdge] = {
+  private def nestingArcs(P: Program): Set[DepEdge] = {
     val eats = StratUtil.extendedAtoms(P,true)
-    var mset = mutable.HashSet[SDepEdge]()
+    var mset = mutable.HashSet[DepEdge]()
     for (ea <- eats) {
       ea match { //consider only 'relevant' once - see TODO marks concerning dual ontology
         case AtAtom(u, a) => {
-          mset += SDepEdge(AtAtom(u,a),a,eql)
-          mset += SDepEdge(a,AtAtom(u,a),eql)
+          mset += DepEdge(AtAtom(u,a),a,eql)
+          mset += DepEdge(a,AtAtom(u,a),eql)
         }
         //TODO unify following three cases
         case WDiamAtom(wop, da) => {
-          mset += SDepEdge(WDiamAtom(wop,da),da.a,grt)
+          mset += DepEdge(WDiamAtom(wop,da),da.a,grt)
         }
         case WBoxAtom(wop, ba) => {
-          mset += SDepEdge(WBoxAtom(wop,ba),ba.a,grt)
+          mset += DepEdge(WBoxAtom(wop,ba),ba.a,grt)
         }
         case WAtAtom(wop, aa) => {
-          mset += SDepEdge(WAtAtom(wop,aa),aa.a,grt)
+          mset += DepEdge(WAtAtom(wop,aa),aa.a,grt)
         }
         case x => if (!x.isInstanceOf[Atom]) { assert(false) } //atoms are only to-Nodes
       }
