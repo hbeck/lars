@@ -12,16 +12,64 @@ import scala.collection.mutable
  */
 case class DepGraph(edges:Set[DepEdge]) {
 
-  def nodes(): Set[ExtendedAtom] = {
-    @tailrec
-    def nodes(xs:Set[DepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
-      if (xs.isEmpty) {
-        return result
+  val adjList: Map[ExtendedAtom,Set[ExtendedAtom]] = {
+    val mMap = new collection.mutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]()
+    for (edge@DepEdge(from, to, dep) <- edges) {
+      if (mMap.contains(from)) {
+        mMap.update(from, mMap(from) + to)
+      } else {
+        mMap.put(from, Set(to))
       }
-      val e = xs.head
-      nodes(xs.tail, result ++ Set(e.from,e.to))
     }
-    nodes(edges,Set[ExtendedAtom]())
+    mMap.toMap
+  }
+
+  def nodes(): Set[ExtendedAtom] = {
+    adjList.keySet
+  }
+
+  def neighbours(n: ExtendedAtom) = adjList(n)
+
+//  def nodes(): Set[ExtendedAtom] = {
+//    @tailrec
+//    def nodes(xs:Set[DepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
+//      if (xs.isEmpty) {
+//        return result
+//      }
+//      val e = xs.head
+//      nodes(xs.tail, result ++ Set(e.from,e.to))
+//    }
+//    nodes(edges,Set[ExtendedAtom]())
+//  }
+
+  def reverse(): DepGraph = {
+    val s = collection.mutable.Set[DepEdge]()
+    for (edge <- edges) {
+      s += edge.reverse()
+    }
+    DepGraph(s.toSet)
+  }
+
+  //subgraph induced by given nodes
+  def subGraph(nodes: Set[ExtendedAtom]): DepGraph = {
+    val s = collection.mutable.Set[DepEdge]()
+    for (edge <- edges) {
+      if (nodes.contains(edge.from) && nodes.contains(edge.to)) {
+        s += edge
+      }
+    }
+    DepGraph(s.toSet)
+  }
+
+  //remaining graph when removing the given nodes
+  def -- (nodes: Set[ExtendedAtom]) : DepGraph = {
+    val s = collection.mutable.Set[DepEdge]()
+    for (edge <- edges) {
+      if (!nodes.contains(edge.from) && !nodes.contains(edge.to)) {
+        s += edge
+      }
+    }
+    DepGraph(s.toSet)
   }
 }
 
