@@ -24,25 +24,25 @@ case class MSt(m: M, s: S, t: Int) {
       case Diam(fm1)         => T.timePoints exists { m/s/_ ||- fm1 } //TODO see Timeline definition
       case Box(fm1)          => T.timePoints forall { m/s/_ ||- fm1 }
       case At(u,fm1)         => (T contains u) && (m/s/u ||- fm1)
-      case W(wop,fm1)        => {
+      //
+      case W(wfn,x,fm1,ch)     => {
+        val s0 = S(m.T, m.v)
+        val s1 = wfn(ch(s0, s), t, x)
+        m / s1 / t ||- fm1
+      }
+      case Wop(wop,fm1)        => {
         val s0 = S(m.T, m.v)
         val s1 = wop.wfn(wop.ch(s0, s), t)
         m / s1 / t ||- fm1
       }
-      //TODO better: abstract case class W, since W itself is the operator
-      //
-//      case W(w,ch,x,fm1)     => {
-//        val s0 = S(m.T, m.v)
-//        val s1 = w(ch(s0, s), t, x)
-//        m / s1 / t ||- fm1
-//      }
+
       //extended atoms (hack - TODO)
       case DiamAtom(a)       => this ||- Diam(a)
       case BoxAtom(a)        => this ||- Box(a)
       case AtAtom(u,a)       => this ||- At(u,a)
-      case WDiamAtom(wop,da) => this ||- W(wop,da)
-      case WBoxAtom(wop,ba)  => this ||- W(wop,ba)
-      case WAtAtom(wop,aa)   => this ||- W(wop,aa)
+      case WDiamAtom(wop,da) => this ||- Wop(wop,da)
+      case WBoxAtom(wop,ba)  => this ||- Wop(wop,ba)
+      case WAtAtom(wop,aa)   => this ||- Wop(wop,aa)
     }
   }
 }

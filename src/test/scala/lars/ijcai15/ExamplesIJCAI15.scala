@@ -4,7 +4,7 @@ import lars.core.Util
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
-import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindow, TimeWindowParameters}
+import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -30,10 +30,10 @@ class ExamplesIJCAI15 extends FunSuite {
   val D = S(T,v)
   //
   def w = TimeWindow
-  val w3 = w.toOp2(m(3))
-  val w5 = w.toOp2(m(5))
-  val w1 = w.toOp2(m(1))
-  val wp5 = w.toOp2(m(0),m(5),1)
+  val wop3 = w.toOp(m(3))
+  val wop5 = w.toOp(m(5))
+  val wop1 = w.toOp(m(1))
+  val wopP5 = w.toOp(m(0),m(5),1)
   val M = D.toStructure()
 
   test("ex3") {
@@ -45,20 +45,26 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   test("ex4") {
-    val f = W(w3,(At(m(37.2),busG)))
+    val sfm = At(m(37.2), busG)
+    def x = TimeWindowParameters
+    val fm1 = W(w, x(m(3)), sfm)
+    val fm2 = Wop(wop3, sfm) //alt
     for (t <- m(37.2) to m(40.2)) {
-      assert(M/t |= f)
+      for (fm <- Seq(fm1, fm2))
+        assert(M / t |= fm)
     }
-    assert(false == (M/(m(37.2)-1) |= f))
-    assert(false == (M/(m(40.2)+1) |= f))
+    for (fm <- Seq(fm1, fm2)) {
+      assert(false == (M / (m(37.2) - 1) |= fm))
+      assert(false == (M / (m(40.2) + 1) |= fm))
+    }
   }
 
   //for r1, r2, only relevant ground instances given
-  val r1g = Rule(At(m(37.2)+m(3),expBusM), W(w3,At(m(37.2),busG)) and on)
-  val r2g = Rule(At(m(39.1)+m(5),expTrM), W(w5,At(m(39.1),tramB)) and on)
-  val r3 = Rule(on, W(w1,Diam(request)))
-  val r4 = Rule(takeBusM, W(wp5,Diam(expBusM)) and Not(takeTrM) and Not(W(w3,Diam(jam))))
-  val r5 = Rule(takeTrM, W(wp5,Diam(expTrM)) and Not(takeBusM))
+  val r1g = Rule(At(m(37.2)+m(3),expBusM), Wop(wop3,At(m(37.2),busG)) and on)
+  val r2g = Rule(At(m(39.1)+m(5),expTrM), Wop(wop5,At(m(39.1),tramB)) and on)
+  val r3 = Rule(on, Wop(wop1,Diam(request)))
+  val r4 = Rule(takeBusM, Wop(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(Wop(wop3,Diam(jam))))
+  val r5 = Rule(takeTrM, Wop(wopP5,Diam(expTrM)) and Not(takeBusM))
 //  for (rule <- Set (r1g,r2g,r3,r4,r5)) {
 //    println(rule)
 //  }
@@ -86,12 +92,12 @@ class ExamplesIJCAI15 extends FunSuite {
     assert((m1/m(44.1) |= Diam(expTrM)))
     assert((m1/m(0) |= Diam(expTrM)))
     assert((m1/m(50) |= Diam(expTrM)))
-    assert((m1/m(44.1) |= W(wp5,expTrM)))
-    assert((m1/m(44.1) |= W(wp5,Diam(expTrM))))
-    assert((m1/(m(44.1)+1) |= W(wp5,Diam(expTrM))) == false)
-    assert((m1/(m(44.1)-1) |= W(wp5,Diam(expTrM))))
-    assert((m1/(m(39.1)) |= W(wp5,Diam(expTrM))))
-    assert((m1/(m(39.1)-1) |= W(wp5,Diam(expTrM))) == false)
+    assert((m1/m(44.1) |= Wop(wopP5,expTrM)))
+    assert((m1/m(44.1) |= Wop(wopP5,Diam(expTrM))))
+    assert((m1/(m(44.1)+1) |= Wop(wopP5,Diam(expTrM))) == false)
+    assert((m1/(m(44.1)-1) |= Wop(wopP5,Diam(expTrM))))
+    assert((m1/(m(39.1)) |= Wop(wopP5,Diam(expTrM))))
+    assert((m1/(m(39.1)-1) |= Wop(wopP5,Diam(expTrM))) == false)
     assert((m1/t |= takeBusM) == false)
     assert((m1/t |= Not(takeBusM)))
     //
@@ -104,10 +110,10 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(PR1.rules == reductRules)
     //manual model check for all rules of the reduct
     //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
-    assert(m1/t |= W(w3,At(m(37.2),busG)))
+    assert(m1/t |= Wop(wop3,At(m(37.2),busG)))
     assert(m1/t |= on)
     assert(m1/t |= At(m(37.2)+m(3),expBusM))
-    assert(m1/t |= Implies(And(W(w3,At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
+    assert(m1/t |= Implies(And(Wop(wop3,At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
     //
     assert(m1/t |= r1g)
     assert(m1/t |= r2g)
@@ -152,7 +158,7 @@ class ExamplesIJCAI15 extends FunSuite {
     object x extends Atom
     object y extends Atom
     val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))
-    val w3 = WindowOperator2(w3fn)
+    val w3 = WindowOperatorFixedParams(w3fn)
     //TODO At(t,x) vs AtAtom(t,x)
     val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
     //println(Pp)

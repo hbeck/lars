@@ -24,53 +24,64 @@ object StratUtil {
       case Implies(fm1, fm2) => extendedAtoms(fm1, sub) union extendedAtoms(fm2, sub)
       case Diam(fm1) => extendedAtoms(fm1, sub)
       case Box(fm1) => extendedAtoms(fm1, sub)
-      case At(u, fm1) => if (fm1.isInstanceOf[Atom]) {
-        val a = fm1.asInstanceOf[Atom]
-        if (sub) {
-          Set(a, AtAtom(u, a))
+      case At(u, fm1) =>
+        if (fm1.isInstanceOf[Atom]) {
+          val a = fm1.asInstanceOf[Atom]
+          if (sub) {
+            Set(a, AtAtom(u, a))
+          } else {
+            Set(AtAtom(u, a))
+          }
         } else {
-          Set(AtAtom(u, a))
+          extendedAtoms(fm1, sub)
         }
+      case W(wfn,x,fm,ch) => {
+        val wfx = wfn.fix(x)
+        val wop = new WindowOperatorFixedParams(wfx,ch)
+        extendedAtoms(Wop(wop,fm),sub)
       }
-      else {
-        extendedAtoms(fm1, sub)
-      }
-      case W(wop, fm1) => {
+      case Wop(wop, fm1) => {
         fm1 match {
-          case DiamAtom(a) => if (sub) {
-            Set(WDiamAtom(wop, DiamAtom(a)), a)
-          } else {
-            Set(WDiamAtom(wop, DiamAtom(a)))
-          }
-          case BoxAtom(a) => if (sub) {
-            Set(WBoxAtom(wop, BoxAtom(a)), a)
-          } else {
-            Set(WBoxAtom(wop, BoxAtom(a)))
-          }
-          case AtAtom(u, a) => if (sub) {
-            Set(WAtAtom(wop, AtAtom(u, a)), AtAtom(u, a), a)
-          } else {
-            Set(WAtAtom(wop, AtAtom(u, a)))
-          }
+          case DiamAtom(a) =>
+            if (sub) {
+              Set(WDiamAtom(wop, DiamAtom(a)), a)
+            } else {
+              Set(WDiamAtom(wop, DiamAtom(a)))
+            }
+          case BoxAtom(a) =>
+            if (sub) {
+              Set(WBoxAtom(wop, BoxAtom(a)), a)
+            } else {
+              Set(WBoxAtom(wop, BoxAtom(a)))
+            }
+          case AtAtom(u, a) =>
+            if (sub) {
+              Set(WAtAtom(wop, AtAtom(u, a)), AtAtom(u, a), a)
+            } else {
+              Set(WAtAtom(wop, AtAtom(u, a)))
+            }
           //
-          case Diam(fm1) => if (fm1.isInstanceOf[Atom]) {
-            val a = fm1.asInstanceOf[Atom]
-            extendedAtoms(WDiamAtom(wop, DiamAtom(a)), sub)
-          } else {
-            extendedAtoms(fm1, sub)
-          }
-          case Box(fm1) => if (fm1.isInstanceOf[Atom]) {
-            val a = fm1.asInstanceOf[Atom]
-            extendedAtoms(WBoxAtom(wop, BoxAtom(a)), sub)
-          } else {
-            extendedAtoms(fm1, sub)
-          }
-          case At(u, fm1) => if (fm1.isInstanceOf[Atom]) {
-            val a = fm1.asInstanceOf[Atom]
-            extendedAtoms(WAtAtom(wop, AtAtom(u, a)), sub)
-          } else {
-            extendedAtoms(fm1, sub)
-          }
+          case Diam(fm1) =>
+            if (fm1.isInstanceOf[Atom]) {
+              val a = fm1.asInstanceOf[Atom]
+              extendedAtoms(WDiamAtom(wop, DiamAtom(a)), sub)
+            } else {
+              extendedAtoms(fm1, sub)
+            }
+          case Box(fm1) =>
+            if (fm1.isInstanceOf[Atom]) {
+              val a = fm1.asInstanceOf[Atom]
+              extendedAtoms(WBoxAtom(wop, BoxAtom(a)), sub)
+            } else {
+              extendedAtoms(fm1, sub)
+            }
+          case At(u, fm1) =>
+            if (fm1.isInstanceOf[Atom]) {
+              val a = fm1.asInstanceOf[Atom]
+              extendedAtoms(WAtAtom(wop, AtAtom(u, a)), sub)
+            } else {
+              extendedAtoms(fm1, sub)
+            }
           //
           case x => extendedAtoms(fm1, sub)
         }
@@ -79,26 +90,30 @@ object StratUtil {
       case DiamAtom(a) => Set(a)
       case BoxAtom(a) => Set(a)
       //extended atoms
-      case AtAtom(u, a) => if (sub) {
-        Set(AtAtom(u, a), a)
-      } else {
-        Set(AtAtom(u, a))
-      }
-      case WDiamAtom(wop, da) => if (sub) {
-        Set(WDiamAtom(wop, da)) ++ extendedAtoms(da, sub)
-      } else {
-        Set(WDiamAtom(wop, da))
-      }
-      case WBoxAtom(wop, ba) => if (sub) {
-        Set(WBoxAtom(wop, ba)) ++ extendedAtoms(ba, sub)
-      } else {
-        Set(WBoxAtom(wop, ba))
-      }
-      case WAtAtom(wop, aa) => if (sub) {
-        Set(WAtAtom(wop, aa)) ++ extendedAtoms(aa, sub)
-      } else {
-        Set(WAtAtom(wop, aa))
-      }
+      case AtAtom(u, a) =>
+        if (sub) {
+          Set(AtAtom(u, a), a)
+        } else {
+          Set(AtAtom(u, a))
+        }
+      case WDiamAtom(wop, da) =>
+        if (sub) {
+          Set(WDiamAtom(wop, da)) ++ extendedAtoms(da, sub)
+        } else {
+          Set(WDiamAtom(wop, da))
+        }
+      case WBoxAtom(wop, ba) =>
+        if (sub) {
+          Set(WBoxAtom(wop, ba)) ++ extendedAtoms(ba, sub)
+        } else {
+          Set(WBoxAtom(wop, ba))
+        }
+      case WAtAtom(wop, aa) =>
+        if (sub) {
+          Set(WAtAtom(wop, aa)) ++ extendedAtoms(aa, sub)
+        } else {
+          Set(WAtAtom(wop, aa))
+        }
     }
   }
 

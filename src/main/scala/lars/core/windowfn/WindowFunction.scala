@@ -7,4 +7,6 @@ import lars.core.semantics.streams.S
  *
  * Created by hb on 7/6/15.
  */
-abstract class WindowFunction[X <: WindowParameters]() extends ((S,Int,X) => S)
+abstract class WindowFunction[X <: WindowParameters]() extends ((S,Int,X) => S) {
+  def fix(x:X): WindowFunctionFixedParams
+}

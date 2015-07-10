@@ -2,7 +2,8 @@ package lars.core.windowfn.time
 
 import java.lang.Math._
 
-import lars.core.semantics.formulas.{WindowOperator1, WindowOperator2}
+import lars.core.semantics.formulas.WindowOperators.ch1
+import lars.core.semantics.formulas.{WindowOperatorFixedParams}
 import lars.core.semantics.streams.{S, Timeline}
 import lars.core.windowfn.WindowFunction
 
@@ -39,9 +40,9 @@ object TimeWindow extends WindowFunction[TimeWindowParameters] {
   def fix(xs: Seq[Int]) = TimeWindowFixedParams(TimeWindowParameters.from(xs))
 
   //sloppy
-  def toOp1(x:Int) = WindowOperator1(fix(Seq(x,0,1)))
-  def toOp2(x:Int) = WindowOperator2(fix(Seq(x,0,1)))
-  def toOp1(xs: Int*) = WindowOperator1(fix(xs))
-  def toOp2(xs: Int*) = WindowOperator2(fix(xs))
+  def toOp1(x:Int) = WindowOperatorFixedParams(fix(Seq(x,0,1)),ch1)
+  def toOp(x:Int) = WindowOperatorFixedParams(fix(Seq(x,0,1)))
+  def toOp1(xs: Int*) = WindowOperatorFixedParams(fix(xs),ch1)
+  def toOp(xs: Int*) = WindowOperatorFixedParams(fix(xs))
 
 }

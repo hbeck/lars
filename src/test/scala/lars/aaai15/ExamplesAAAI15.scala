@@ -23,7 +23,7 @@ class ExamplesAAAI15 extends FunSuite {
   case class plan(lineId:Term, fromStation: Term, toStation:Term, dur: Term) extends Atom
   case class line(vehicleId: Term, lineId:Term) extends Atom
   case class jam(lineId: Term) extends Atom
-  case class gc(vehliceId1: Term, vehicleId2:Term, lineId: Term) extends Atom
+  case class gc(vehicleId1: Term, vehicleId2:Term, lineId: Term) extends Atom
   case class old(vehicleId: Term) extends Atom
 
   val T = Timeline(0,50)
@@ -62,8 +62,8 @@ class ExamplesAAAI15 extends FunSuite {
     val a3 = C("a3")
     val m = C("m")
     //
-    val wp5 = tw.toOp2(0,5,1)
-    val fm = W(wp5,Diam(exp(a3,m)))
+    val wp5 = tw.toOp(0,5,1)
+    val fm = Wop(wp5,Diam(exp(a3,m)))
     //
     assert(mm/ss/42 ||- fm)
     //
@@ -77,10 +77,10 @@ class ExamplesAAAI15 extends FunSuite {
 
   test("ex6") {
 
-    val w3 = TimeWindow.toOp2(3)
-    val wp5 = TimeWindow.toOp2(0,5,1)
-    val w20 = TimeWindow.toOp2(20)
-    val wp = TimeWindow.toOp2(1); //TODO partition-based window
+    val w3 = TimeWindow.toOp(3)
+    val wp5 = TimeWindow.toOp(0,5,1)
+    val w20 = TimeWindow.toOp(20)
+    val wp = TimeWindow.toOp(1); //TODO partition-based window
     //TODO ground vs non-ground -- do ground version first
 //    val r2 = Rule(At("T",exp("Id","Y")), //TODO At with param
 //                  wp(At("T1",tram("Id","X"))) and line("Id","L") and
