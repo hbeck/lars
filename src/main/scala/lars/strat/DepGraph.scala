@@ -10,22 +10,17 @@ import scala.collection.mutable
  * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-case class DepGraph(edges:Set[DepEdge]) {
+case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added explicitly for unconnected ones
 
   val adjList: Map[ExtendedAtom,Set[ExtendedAtom]] = {
     val mMap = new collection.mutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]()
+    for (n <- nodes) {
+      mMap += n -> Set[ExtendedAtom]()
+    }
     for (edge@DepEdge(from, to, dep) <- edges) {
-      if (mMap.contains(from)) {
-        mMap.update(from, mMap(from) + to)
-      } else {
-        mMap.put(from, Set(to))
-      }
+      mMap.update(from, mMap(from) + to)
     }
     mMap.toMap
-  }
-
-  def nodes(): Set[ExtendedAtom] = {
-    adjList.keySet
   }
 
   def neighbours(n: ExtendedAtom) = adjList(n)
@@ -47,7 +42,7 @@ case class DepGraph(edges:Set[DepEdge]) {
     for (edge <- edges) {
       s += edge.reverse()
     }
-    DepGraph(s.toSet)
+    DepGraph(nodes,s.toSet)
   }
 
   //subgraph induced by given nodes
@@ -58,27 +53,34 @@ case class DepGraph(edges:Set[DepEdge]) {
         s += edge
       }
     }
-    DepGraph(s.toSet)
+    DepGraph(nodes,s.toSet)
   }
 
   //remaining graph when removing the given nodes
   def -- (nodes: Set[ExtendedAtom]) : DepGraph = {
-    val s = collection.mutable.Set[DepEdge]()
-    for (edge <- edges) {
-      if (!nodes.contains(edge.from) && !nodes.contains(edge.to)) {
-        s += edge
-      }
+    val newNodes = this.nodes -- nodes
+    subGraph(newNodes)
+  }
+
+  override def equals(other:Any) : Boolean = {
+    other match {
+      case g: DepGraph => this == g
+      case _ => false
     }
-    DepGraph(s.toSet)
+  }
+
+  def ==(other: DepGraph): Boolean = {
+    this.edges == other.edges
   }
 }
 
 object DepGraph {
 
   def apply(P: Program): DepGraph = {
+    val nodes = StratUtil.extendedAtoms(P,true) //TODO true okay?
     val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
-    DepGraph(hba ++ na)
+    DepGraph(nodes, hba ++ na)
   }
 
   @tailrec

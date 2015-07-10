@@ -21,7 +21,7 @@ class ComponentGraph(val nodes:collection.immutable.Set[DepGraph]) {
     adjList(n).contains(m)
   }
 
-  def add(from:DepGraph,to:DepGraph): Unit = {
+  private def add(from:DepGraph,to:DepGraph): Unit = {
     adjList(from) += to
   }
 
@@ -84,7 +84,7 @@ class ComponentGraph(val nodes:collection.immutable.Set[DepGraph]) {
 
   }
 
-  def addToStratumIdx(nodes: Set[DepGraph], k:Int) : Unit = {
+  private def addToStratumIdx(nodes: Set[DepGraph], k:Int) : Unit = {
     for (n <- nodes) {
       val i = graph2stratum(n)
       graph2stratum.update(n,i+k)

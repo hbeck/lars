@@ -15,9 +15,10 @@ object Stratify extends (Program => Option[Strat]) {
    * @return a Stream Stratification (SStrat) for program P, if it has one
    */
   def apply(P: Program): Option[Strat] = {
+    apply(DepGraph(P))
+  }
 
-    // dependency graph g
-    val depGraph = DepGraph(P)
+  def apply(depGraph: DepGraph) : Option[Strat] = {
 
     // determine strongly connected components (SCCs)
     val sccs: Map[ExtendedAtom,DepGraph] = SCCs(depGraph)
@@ -40,6 +41,10 @@ object Stratify extends (Program => Option[Strat]) {
     // for every component of the DAG, assign stratum index
     cg.assignStratumNumbers()
 
+    Option(makeStrat(cg))
+  }
+
+  protected[TestStratify] def makeStrat(cg:ComponentGraph) : Strat = {
     val nodesInStratum = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
     for (i <- 0 to cg.maxStratum()) {
       nodesInStratum += i -> new HashSet[ExtendedAtom]()
@@ -48,11 +53,11 @@ object Stratify extends (Program => Option[Strat]) {
     val graphs = graphStratum.keys
     for (g <- graphs) {
       val stratum = graphStratum(g)
-      nodesInStratum(stratum) ++= g.nodes()
+      nodesInStratum(stratum) ++= g.nodes
     }
 
     val m = nodesInStratum.toMap
-    Option(Strat(m))
+    Strat(m)
   }
 
 }

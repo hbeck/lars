@@ -35,7 +35,7 @@ object SCCs extends (DepGraph => Map[ExtendedAtom,DepGraph]) {
         }
       }
     }
-    dfsPush(G,G.nodes().head)
+    dfsPush(G,G.nodes.head)
 
     val R = G.reverse()
     val visited = new collection.mutable.HashSet[ExtendedAtom]()
