@@ -30,14 +30,14 @@ class TestStratify extends FunSuite {
 
   val depGraph = DepGraph(nodes,edges)
 
+  val sccs: Map[ExtendedAtom,DepGraph] = SCCs(depGraph)
+
   val c_x1x2 = sccs(x1)
   val c_y1 = sccs(y1)
   val c_y2 = sccs(y2)
   val c_z1 = sccs(y1)
   val c_z2 = sccs(z2)
   val c_w = sccs(w)
-
-  val sccs: Map[ExtendedAtom,DepGraph] = SCCs(depGraph)
 
   test("SCC") {
     assert(sccs.keySet.size == 6)

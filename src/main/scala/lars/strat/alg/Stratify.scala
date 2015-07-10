@@ -44,7 +44,7 @@ object Stratify extends (Program => Option[Strat]) {
     Option(makeStrat(cg))
   }
 
-  protected[TestStratify] def makeStrat(cg:ComponentGraph) : Strat = {
+  def makeStrat(cg:ComponentGraph) : Strat = {
     val nodesInStratum = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
     for (i <- 0 to cg.maxStratum()) {
       nodesInStratum += i -> new HashSet[ExtendedAtom]()
