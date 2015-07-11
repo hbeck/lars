@@ -7,9 +7,9 @@ import lars.strat.DepGraph
  * strongly connected components
  *
  * Created by hb on 7/10/15.
+ * see http://algs4.cs.princeton.edu/42directed/BruteSCC.java.html
  */
 object SCCs extends (DepGraph => Map[ExtendedAtom,DepGraph]) {
-
 
   //Kosaraju's Algorithm:
   // Let G be a directed graph and S be an empty stack.

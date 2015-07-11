@@ -23,7 +23,7 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
     mMap.toMap
   }
 
-  def neighbours(n: ExtendedAtom) = adjList(n)
+  def neighbours(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
 
 //  def nodes(): Set[ExtendedAtom] = {
 //    @tailrec
