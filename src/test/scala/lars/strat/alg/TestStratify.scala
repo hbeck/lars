@@ -78,4 +78,50 @@ class TestStratify extends FunSuite {
     assert(strat.maxStratum == 2)
   }
 
+  test("TestSCC objects stratified x y z") {
+    var s: Strat = Stratify(g_x).get
+    assert(s.maxStratum == 0)
+    assert(s(0) == Set(x))
+    //
+    s = Stratify(g_xy_1).get
+    assert(s.maxStratum == 1)
+    assert(s(0) == Set(y))
+    assert(s(1) == Set(x))
+    //
+    s = Stratify(g_xy_2).get
+    assert(s.maxStratum == 0)
+    assert(s(0) == Set(x,y))
+    //
+    //
+    s = Stratify(g_xz).get
+    assert(s.maxStratum == 0)
+    assert(s(0) == Set(x,z))
+    //
+    s = Stratify(g_xyz_1).get
+    assert(s.maxStratum == 1)
+    assert(s(0) == Set(y,z))
+    assert(s(1) == Set(x))
+    //
+    s = Stratify(g_xyz_2).get
+    assert(s.maxStratum == 0)
+    assert(s(0) == Set(x,y,z))
+    //
+    s = Stratify(g1).get
+    assert(s.maxStratum == 0)
+    assert(s(0) == Set(a,b,c,d,f))
+  }
+
+//  test("special") {
+//    val s = Stratify(g2).get
+//    assert(s.maxStratum == 1)
+//    assert(s(1) == Set(a,b,c,d,f))
+//    assert(s(0) == Set(h,i,j))
+//  }
+
+  test("no stratification") {
+    val cycleG = g(Set(x,y),e(x,y,grt),e(y,x,grt))
+    val s: Option[Strat] = Stratify(cycleG)
+    assert(s.isEmpty)
+  }
+
 }
