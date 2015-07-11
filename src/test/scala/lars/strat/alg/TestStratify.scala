@@ -17,15 +17,15 @@ class TestStratify extends FunSuite {
   object z2 extends Atom
   object w extends Atom
 
-  val x1_x2 = DepEdge(x1,x2,geq)
-  val x2_x1 = DepEdge(x2,x1,geq)
-  val x1_y1 = DepEdge(x1,y1,geq)
-  val y1_z1 = DepEdge(y1,z1,grt)
-  val y1_z2 = DepEdge(y1,z2,geq)
-  val x2_y2 = DepEdge(x2,y2,geq)
-  val w_y2 = DepEdge(w,y2,grt)
+  val x1_x2 = e(x1,x2,geq)
+  val x2_x1 = e(x2,x1,geq)
+  val x1_y1 = e(x1,y1,geq)
+  val y1_z1 = e(y1,z1,grt)
+  val y1_z2 = e(y1,z2,geq)
+  val x2_y2 = e(x2,y2,geq)
+  val w_y2 = e(w,y2,grt)
 
-  val nodes = Set[ExtendedAtom](x1,x2,y1,y2,z2,w)
+  val nodes = Set[ExtendedAtom](x1,x2,y1,y2,z1,z2,w)
   val edges = Set[DepEdge](x1_x2,x2_x1,x1_y1,y1_z1,y1_z2,x2_y2,w_y2)
 
   val depGraph = DepGraph(nodes,edges)
@@ -35,17 +35,17 @@ class TestStratify extends FunSuite {
   val c_x1x2 = sccs(x1)
   val c_y1 = sccs(y1)
   val c_y2 = sccs(y2)
-  val c_z1 = sccs(y1)
+  val c_z1 = sccs(z1)
   val c_z2 = sccs(z2)
   val c_w = sccs(w)
 
   test("SCC") {
-    assert(sccs.keySet.size == 6)
-    val g_x1x2 = DepGraph(Set(x1,x2),Set(x1_x2,x2_x1))
+    assert(sccs.keySet.size == 7)
+    val g_x1x2 = g(Set(x1,x2),x1_x2,x2_x1)
     assert(c_x1x2 == g_x1x2)
     assert(sccs(x2) == g_x1x2)
     for (n <- Set(y1,y2,z1,z2,w)) {
-      assert(sccs(n) == DepGraph(Set(n),Set()))
+      assert(sccs(n) == g(Set(n)))
     }
   }
 
@@ -58,7 +58,6 @@ class TestStratify extends FunSuite {
     assert(cg.hasEdge(c_y1,c_z2))
     assert(cg.hasEdge(c_w,c_y2))
 
-    cg.assignStratumNumbers()
     assert(cg.maxStratum() == 2)
 
     val idx = cg.graph2stratum

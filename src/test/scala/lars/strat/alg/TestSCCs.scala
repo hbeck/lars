@@ -1,6 +1,6 @@
 package lars.strat.alg
 
-import lars.core.semantics.formulas.{ExtendedAtom, Atom}
+import lars.core.semantics.formulas.Atom
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -12,9 +12,6 @@ class TestSCCs extends FunSuite {
   object x extends Atom
   object y extends Atom
   object z extends Atom
-  
-  def e(from:ExtendedAtom, to:ExtendedAtom, dep: Dep) = DepEdge(from,to,dep)  
-  def g(s:Set[ExtendedAtom], e:DepEdge*): DepGraph = DepGraph(s,e.toSet)
 
   test("test x y z") {
     val g_xy_1 = g(Set(x))

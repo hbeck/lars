@@ -70,7 +70,7 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
   }
 
   def ==(other: DepGraph): Boolean = {
-    this.edges == other.edges
+    this.nodes == other.nodes && this.edges == other.edges
   }
 }
 

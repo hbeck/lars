@@ -17,6 +17,8 @@ class ComponentGraph(val nodes:collection.immutable.Set[DepGraph]) {
     adjList += (n -> Set[DepGraph]())
   }
 
+  //
+
   def hasEdge(n:DepGraph, m:DepGraph) : Boolean = {
     adjList(n).contains(m)
   }
@@ -33,7 +35,7 @@ class ComponentGraph(val nodes:collection.immutable.Set[DepGraph]) {
   //   - index i-1 for neighbors m where e(n,m)
   //
   // normalize every component s.t. lowest index in every component is 0
-  def assignStratumNumbers() : Unit = {
+  private def assignStratumNumbers() : Unit = {
 
     //initialize ds:
     val out:Map[DepGraph,Set[DepGraph]] = new HashMap[DepGraph,Set[DepGraph]] //new copy of adjList
@@ -119,6 +121,7 @@ object ComponentGraph {
         cg.add(fromC,toC)
       }
     }
+    cg.assignStratumNumbers()
     cg
   }
 

@@ -35,11 +35,9 @@ object Stratify extends (Program => Option[Strat]) {
 
     // else, view resulting component graph, consisting of the SCCs as nodes
     // edges between fromC and toC, if {from,to}C is are different components
-    // of the nodes from/to with a dependency in {>=,>}
-    val cg = ComponentGraph(depGraph,sccs)
-
+    // of the nodes from/to with a dependency in {>=,>};
     // for every component of the DAG, assign stratum index
-    cg.assignStratumNumbers()
+    val cg = ComponentGraph(depGraph,sccs)
 
     Option(makeStrat(cg))
   }
