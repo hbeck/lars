@@ -7,7 +7,7 @@ import lars.strat.DepGraph
  * Created by hb on 7/11/15.
  * see http://algs4.cs.princeton.edu/42directed/TransitiveClosure.java.html
  */
-class TransitiveClosure(G: DepGraph) {
+case class TransitiveClosure(G: DepGraph) {
 
   var tc = new collection.mutable.HashMap[ExtendedAtom,DirectedDFS]()
   for (v <- G.nodes) {
