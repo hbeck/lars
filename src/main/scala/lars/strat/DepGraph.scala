@@ -37,14 +37,6 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
 //    nodes(edges,Set[ExtendedAtom]())
 //  }
 
-  def reverse(): DepGraph = {
-    val s = collection.mutable.Set[DepEdge]()
-    for (edge <- edges) {
-      s += edge.reverse()
-    }
-    DepGraph(nodes,s.toSet)
-  }
-
   //subgraph induced by given nodes
   def subGraph(nodes: Set[ExtendedAtom]): DepGraph = {
     val s = collection.mutable.Set[DepEdge]()

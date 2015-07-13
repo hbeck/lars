@@ -1,11 +1,12 @@
 package lars.ijcai15
 
-import lars.core.Util
+import lars.core.MapUtils
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
+import lars.strat.alg.Stratify
 import org.scalatest.FunSuite
 
 /**
@@ -75,8 +76,8 @@ class ExamplesIJCAI15 extends FunSuite {
     val t = m(39.7)
     val Dp = D + (t -> request)
     val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
-    val mI1 = Util.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
-    val mI2 = Util.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
+    val mI1 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
+    val mI2 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
     //
     val I1 = Dp ++ S(T,Evaluation(mI1))
     val I2 = Dp ++ S(T,Evaluation(mI2))
@@ -153,16 +154,15 @@ class ExamplesIJCAI15 extends FunSuite {
     assert((Dp++A).toStructure(Set()).isModel(P,t))
   }
 
+  val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))
+  val w3 = WindowOperatorFixedParams(w3fn)
+  val t:Int = 0
+  object x extends Atom
+  object y extends Atom
+  val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
+  //TODO At(t,x) vs AtAtom(t,x)
+
   test("ex7") {
-    val t:Int = 0
-    object x extends Atom
-    object y extends Atom
-    val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))
-    val w3 = WindowOperatorFixedParams(w3fn)
-    //TODO At(t,x) vs AtAtom(t,x)
-    val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
-    //println(Pp)
-    //
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,AtAtom(t,y)),AtAtom(t,y),y)
     val actualEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp,true)
     assert(actualEAtoms == expectedEAtoms)
@@ -189,6 +189,31 @@ class ExamplesIJCAI15 extends FunSuite {
     }
     assert(actualSDG.edges == expectedSDG.edges)
     assert(actualSDG == expectedSDG)
+  }
+
+  test("ex8") {
+    val opt: Option[Strat] = Stratify(Pp)
+    assert(opt.isDefined)
+    val strat = opt.get
+    assert(strat.maxStratum == 2)
+    assert(strat(0) == Set(AtAtom(t,y),y))
+    assert(strat(1) == Set(WAtAtom(w3,AtAtom(t,y))))
+    assert(strat(2) == Set(AtAtom(t,x),x))
+    // can call also in direction as given in paper:
+    assert(strat(AtAtom(t,y)) == 0)
+    assert(strat(y) == 0)
+    assert(strat(WAtAtom(w3,AtAtom(t,y))) == 1)
+    assert(strat(AtAtom(t,x)) == 2)
+    assert(strat(x) == 2)
+    // decision was made to have a 'maximal' stratification in the algorithm
+    // however, ex8 as presented in the paper is also a stratification:
+    val stratEx8 = Strat.isStratification(Map(
+      AtAtom(t,y) -> 0,
+      y -> 0,
+      WAtAtom(w3,AtAtom(t,y)) -> 1,
+      AtAtom(t,x) -> 1,
+      x -> 1),
+      Pp)
   }
 
 }

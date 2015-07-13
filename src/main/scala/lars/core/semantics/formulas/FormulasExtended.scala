@@ -3,6 +3,8 @@ package lars.core.semantics.formulas
 import lars.core.semantics.formulas.WindowOperators.{StreamChoice, ch2}
 import lars.core.windowfn.WindowFunctionFixedParams
 
+//TODO rethink this dual ontology. especially At(u,a) == AtAtom(u,a) etc...
+
 /**
  * Created by hb on 7/10/15.
  */

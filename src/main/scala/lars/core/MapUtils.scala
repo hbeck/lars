@@ -5,7 +5,19 @@ import scala.language.implicitConversions
 /**
  * Created by hb on 5/19/15.
  */
-object Util {
+object MapUtils {
+
+  //returns a map v->K for every value V in K's Iterable of values
+  //assuming that each v is unique in all K's sets
+  def reverse[K,V](map: Map[K, Iterable[V]]): Map[V, K] = {
+    val mMap = new collection.mutable.HashMap[V,K]()
+    for ((k,values) <- map) {
+      for (v <- values) {
+        mMap += v -> k
+      }
+    }
+    mMap.toMap
+  }
 
   //TODO revisit
   def merge[K,V](m1: Map[K,Set[V]], m2: Map[K,Set[V]]) = {
@@ -24,5 +36,7 @@ object Util {
   }
 
   //TODO extract all map functions with maps of type [X,Set[Y]]
+
+
 
 }

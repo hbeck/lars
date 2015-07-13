@@ -1,6 +1,6 @@
 package lars.core.semantics.streams
 
-import lars.core.Util.merge
+import lars.core.MapUtils.merge
 import lars.core.semantics.formulas.Atom
 
 import scala.collection.immutable.HashMap
