@@ -12,13 +12,13 @@ import lars.strat.DepGraph
 object SCCs extends (DepGraph => Map[ExtendedAtom,DepGraph]) {
 
   override def apply(G: DepGraph): Map[ExtendedAtom, DepGraph] = {
-    val ds = BruteSCC(G)
+    val comps = BruteSCC(G)
     val componentM = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
-    for (id <- 0 to ds.count) {
+    for (id <- comps.compId.values) {
       componentM(id)=Set[ExtendedAtom]()
     }
     for (n <- G.nodes) {
-      val id = ds.compId(n)
+      val id = comps.compId(n)
       val set = componentM(id) + n
       componentM(id)=set
     }

@@ -106,13 +106,12 @@ class TestStratify extends FunSuite {
     assert(s.maxStratum == 0)
     assert(s(0) == Set(x,y,z))
     //
+    //
     s = Stratify(g1).get
     assert(s.maxStratum == 0)
     assert(s(0) == Set(a,b,c,d,f))
-  }
-
-  test("special") {
-    val s = Stratify(g2).get
+    //
+    s = Stratify(g2).get
     assert(s.maxStratum == 1)
     assert(s(1) == Set(a,b,c,d,f))
     assert(s(0) == Set(h,i,j))

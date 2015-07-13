@@ -37,5 +37,4 @@ package object alg {
     g1.nodes ++ Set(h,i,j),
     g1.edges ++ Set(e(a,h,grt),e(c,i,grt),e(f,j,grt),e(i,j,geq),e(j,i,geq)))
 
-
 }
