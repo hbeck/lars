@@ -207,13 +207,16 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(strat(x) == 2)
     // decision was made to have a 'maximal' stratification in the algorithm
     // however, ex8 as presented in the paper is also a stratification:
-    val stratEx8 = Stratification.isStratification(Map(
+    assert(
+      Stratification.isStratification(Map(
       AtAtom(t,y) -> 0,
       y -> 0,
       WAtAtom(w3,AtAtom(t,y)) -> 1,
       AtAtom(t,x) -> 1,
       x -> 1),
-      Pp)
+      Pp))
+    //
+    assert(Strata(Pp)(0)==Pp)
   }
 
   /*
@@ -263,7 +266,15 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 0)
     }
 
+    val stratum: Map[Int, Program] = Strata(P)
 
+    val P0 = Program(Set(r3))
+    val P1 = Program(Set(r1g,r2g))
+    val P2 = Program(Set(r4,r5))
+
+    assert(stratum(0) == P0)
+    assert(stratum(1) == P1)
+    assert(stratum(2) == P2)
   }
 
 }
