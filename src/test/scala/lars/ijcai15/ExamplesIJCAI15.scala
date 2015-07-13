@@ -164,11 +164,11 @@ class ExamplesIJCAI15 extends FunSuite {
 
   test("ex7") {
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,AtAtom(t,y)),AtAtom(t,y),y)
-    val actualEAtoms: Set[ExtendedAtom] = StratUtil.extendedAtoms(Pp,true)
+    val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(Pp,true)
     assert(actualEAtoms == expectedEAtoms)
     //
     def e(from:ExtendedAtom, to:ExtendedAtom, d:Dep) = DepEdge(from, to, d)
-    val nodes = StratUtil.extendedAtoms(Pp,true)
+    val nodes = ExtendedAtoms(Pp,true)
     val expectedSDG = DepGraph(nodes,Set[DepEdge](
       e(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)),geq),
       e(WAtAtom(w3,AtAtom(t,y)),y,grt),
@@ -214,6 +214,54 @@ class ExamplesIJCAI15 extends FunSuite {
       AtAtom(t,x) -> 1,
       x -> 1),
       Pp)
+  }
+
+  /*
+  val r1g = Rule(At(m(37.2)+m(3),expBusM), Wop(wop3,At(m(37.2),busG)) and on)
+  val r2g = Rule(At(m(39.1)+m(5),expTrM), Wop(wop5,At(m(39.1),tramB)) and on)
+  val r3 = Rule(on, Wop(wop1,Diam(request)))
+  val r4 = Rule(takeBusM, Wop(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(Wop(wop3,Diam(jam))))
+  val r5 = Rule(takeTrM, Wop(wopP5,Diam(expTrM)) and Not(takeBusM))
+  */
+  
+  test("strata for running program") {
+    val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(P,true)
+    val expectedExtendedAtoms = Set(
+      AtAtom(m(37.2)+m(3),expBusM), expBusM, WAtAtom(wop3,AtAtom(m(37.2),busG)), AtAtom(m(37.2),busG), busG, on,
+      AtAtom(m(39.1)+m(5),expTrM), expTrM, WAtAtom(wop5,AtAtom(m(39.1),tramB)), AtAtom(m(39.1),tramB), tramB,
+      WDiamAtom(wop1,DiamAtom(request)), request,
+      takeBusM, WDiamAtom(wopP5,DiamAtom(expBusM)), takeTrM, WDiamAtom(wop3,DiamAtom(jam)), jam,
+      WDiamAtom(wopP5,DiamAtom(expTrM)), expTrM
+    )
+    assert(extendedAtoms == expectedExtendedAtoms)
+    //
+    val strat = Stratify(P).get
+    //
+    assert(strat.maxStratum == 5)
+    // 5
+    for (x <- Set(takeBusM, takeTrM)) {
+      assert(strat(x) == 5)
+    }
+    // 4
+    for (x <- Set(WDiamAtom(wopP5,DiamAtom(expBusM)),WDiamAtom(wop3,DiamAtom(jam)),WDiamAtom(wopP5,DiamAtom(expTrM)))) {
+      assert(strat(x) == 4)
+    }
+    // 3
+    for (x <- Set(AtAtom(m(37.2)+m(3),expBusM), expBusM, AtAtom(m(39.1)+m(5),expTrM), expTrM, jam)) {
+      assert(strat(x) == 3)
+    }
+    // 2
+    for (x <- Set(on,WAtAtom(wop3,AtAtom(m(37.2),busG)),WAtAtom(wop5,AtAtom(m(39.1),tramB)))) {
+      assert(strat(x) == 2)
+    }
+    // 1
+    for (x <- Set(AtAtom(m(37.2),busG),busG,WDiamAtom(wop1,DiamAtom(request)),AtAtom(m(39.1),tramB), tramB)) {
+      assert(strat(x) == 1)
+    }
+    // 0
+    for (x <- Set(request)) {
+      assert(strat(x) == 0)
+    }
   }
 
 }

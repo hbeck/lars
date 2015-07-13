@@ -69,7 +69,7 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
 object DepGraph {
 
   def apply(P: Program): DepGraph = {
-    val nodes = StratUtil.extendedAtoms(P,true) //TODO true okay?
+    val nodes = ExtendedAtoms(P,true) //TODO true okay?
     val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
     DepGraph(nodes, hba ++ na)
@@ -81,8 +81,8 @@ object DepGraph {
       return result
     }
     val rule = rules.head
-    val alpha = rule.head.asInstanceOf[ExtendedAtom] //TODO not automatic at the moment due to 'dual' ontology
-    val betas: Set[ExtendedAtom] = StratUtil.extendedAtoms(rule.body, false)
+    val alpha = ExtendedAtoms(rule.head, false).head
+    val betas: Set[ExtendedAtom] = ExtendedAtoms(rule.body, false)
 
     var curr = mutable.HashSet[DepEdge]()
     for (beta <- betas) {
@@ -92,7 +92,7 @@ object DepGraph {
   }
 
   private def nestingArcs(P: Program): Set[DepEdge] = {
-    val eats = StratUtil.extendedAtoms(P,true)
+    val eats = ExtendedAtoms(P,true)
     var mset = mutable.HashSet[DepEdge]()
     for (ea <- eats) {
       ea match { //consider only 'relevant' once - see TODO marks concerning dual ontology
