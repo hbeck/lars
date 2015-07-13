@@ -10,7 +10,7 @@ import scala.collection.immutable.Map
 /**
  * Created by hb on 5/26/15.
  */
-case class S(T: Timeline, v: Evaluation) {
+case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
   def <= (other:S) = {
     (this.T <= other.T) && (this.v <= other.v)
@@ -94,6 +94,10 @@ case class S(T: Timeline, v: Evaluation) {
     s.toSet
   }
 
+  def atoms(): Set[Atom] = {
+    v.mapping.values.reduce((s1,s2) => s1 ++ s2)
+  }
+
   override def equals(that:Any) : Boolean = {
     that match {
       case other: S => this == other
@@ -113,7 +117,12 @@ case class S(T: Timeline, v: Evaluation) {
     M.isMinimalModel(R,t,D)
   }
 
-  def properSubstreams(): Iterator[S] = {
+  //
+  def substreams(): Iterator[S] = {
+    substreams(false)
+  }
+
+  def substreams(proper:Boolean): Iterator[S] = {
     //from all mappings k -> {v1, ..., vn} create a set
     //k -> v1, ..., k -> vn;
     //create a set of all these single-atom mappings (for all keys)
@@ -124,14 +133,17 @@ case class S(T: Timeline, v: Evaluation) {
     val timestampedAtoms = tsAtoms.toSet
 
     //iterate over the power set, create stream
-    var properSubstreams = Set[S]()
+    var substreams = Set[S]()
     for (subset <- timestampedAtoms.subsets()) {
-      if (subset != timestampedAtoms) {
-        //properSubstreams += S.fromTimestampedAtoms(s.T,subset)
-        properSubstreams += S(T, Evaluation.fromTimestampedAtoms(subset))
+      if (!proper || subset != timestampedAtoms) {
+        substreams += S(T, Evaluation.fromTimestampedAtoms(subset))
       }
     }
-    properSubstreams.iterator //TODO proper (lazy) iterator
+    substreams.iterator //TODO proper (lazy) iterator
+  }
+
+  def properSubstreams(): Iterator[S] = {
+    substreams(true)
   }
 
 }

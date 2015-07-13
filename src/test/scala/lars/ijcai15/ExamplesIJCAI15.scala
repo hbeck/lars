@@ -2,7 +2,7 @@ package lars.ijcai15
 
 import lars.core.MapUtils
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.{Program, Rule}
+import lars.core.semantics.programs.{AS, Program, Rule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
@@ -135,23 +135,15 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(X.isAnswerStream(P,Dp,t) == false) //m(44.1) -> expTrM missing
     //
     //
-    var cntAll=0
-    var cntModels=0
-    val A = (I1 ++ I2) -- Dp
-    for (addS <- A.properSubstreams()) {
-      cntAll += 1
-      val candidateS = Dp ++ addS
-      if (candidateS.isAnswerStream(P,Dp,t)) {
-        assert(candidateS == I1 || candidateS == I2)
-          cntModels += 1
-      } else if (candidateS.toStructure(Set()).isModel(P,t)) {
-          cntModels += 1
-      }
-    }
-//    println("\nchecked "+cntAll+" interpretations")
-//    println(""+cntModels+" models")
     //using all atoms yields a model
-    assert((Dp++A).toStructure(Set()).isModel(P,t))
+    assert((I1 ++ I2).toStructure(Set()).isModel(P,t))
+    //
+    val answerStreams = AS(P,Dp,t)
+    assert(answerStreams.size == 2)
+//    println("answer streams: "+answerStreams.size)
+//    for (as <- answerStreams) {
+//      println(as)
+//    }
   }
 
   val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))

@@ -23,9 +23,4 @@ case class Mt(m: M, t: Int) {
     p.rules.forall(this |= _)
   }
 
-  def isMinimal() : Boolean = {
-    //TODO
-    false
-  }
-
 }

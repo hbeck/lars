@@ -8,7 +8,7 @@ import scala.collection.immutable.HashMap
 /**
  * Created by hb on 5/26/15.
  */
-case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
+case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) extends (Int => Set[Atom]) {
 
   def apply(t:Int) = mapping.getOrElse(t,Set[Atom]())
 
