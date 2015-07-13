@@ -19,6 +19,19 @@ object MapUtils {
     mMap.toMap
   }
 
+  //returns a reversed map, where the keys are collected by their values as their new key
+  def reverseSet[K,V](map: Map[K,V]): Map[V,Set[K]] = {
+    val mMap = new collection.mutable.HashMap[V,Set[K]]()
+    for ((k,v) <- map) {
+      if (mMap.contains(v)) {
+        mMap(v) = mMap(v) + k
+      } else {
+        mMap(v) = collection.immutable.Set(k)
+      }
+    }
+    mMap.toMap
+  }
+
   //TODO revisit
   def merge[K,V](m1: Map[K,Set[V]], m2: Map[K,Set[V]]) = {
     val keys:Set[K] = m1.keySet.union(m2.keySet)

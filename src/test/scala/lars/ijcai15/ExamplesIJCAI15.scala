@@ -192,7 +192,7 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   test("ex8") {
-    val opt: Option[Strat] = Stratify(Pp)
+    val opt: Option[Stratification] = Stratify(Pp)
     assert(opt.isDefined)
     val strat = opt.get
     assert(strat.maxStratum == 2)
@@ -207,7 +207,7 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(strat(x) == 2)
     // decision was made to have a 'maximal' stratification in the algorithm
     // however, ex8 as presented in the paper is also a stratification:
-    val stratEx8 = Strat.isStratification(Map(
+    val stratEx8 = Stratification.isStratification(Map(
       AtAtom(t,y) -> 0,
       y -> 0,
       WAtAtom(w3,AtAtom(t,y)) -> 1,
@@ -224,7 +224,7 @@ class ExamplesIJCAI15 extends FunSuite {
   val r5 = Rule(takeTrM, Wop(wopP5,Diam(expTrM)) and Not(takeBusM))
   */
   
-  test("strata for running program") {
+  test("ex9") {
     val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(P,true)
     val expectedExtendedAtoms = Set(
       AtAtom(m(37.2)+m(3),expBusM), expBusM, WAtAtom(wop3,AtAtom(m(37.2),busG)), AtAtom(m(37.2),busG), busG, on,
@@ -262,6 +262,8 @@ class ExamplesIJCAI15 extends FunSuite {
     for (x <- Set(request)) {
       assert(strat(x) == 0)
     }
+
+
   }
 
 }

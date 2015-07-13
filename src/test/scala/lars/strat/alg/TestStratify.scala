@@ -69,7 +69,7 @@ class TestStratify extends FunSuite {
     assert(idx(c_w) == 2)
   }
 
-  val strat:Strat = Stratify.makeStrat(cg)
+  val strat:Stratification = Stratification(cg)
 
   test("makeStrat") {
     assert(strat(0) == Set(z1,z2))
@@ -79,7 +79,7 @@ class TestStratify extends FunSuite {
   }
 
   test("TestSCC objects stratified x y z") {
-    var s: Strat = Stratify(g_x).get
+    var s: Stratification = Stratify(g_x).get
     assert(s.maxStratum == 0)
     assert(s(0) == Set(x))
     //
@@ -119,7 +119,7 @@ class TestStratify extends FunSuite {
 
   test("no stratification") {
     val cycleG = g(Set(x,y),e(x,y,grt),e(y,x,grt))
-    val s: Option[Strat] = Stratify(cycleG)
+    val s: Option[Stratification] = Stratify(cycleG)
     assert(s.isEmpty)
   }
 

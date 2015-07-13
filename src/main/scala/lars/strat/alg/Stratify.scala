@@ -2,23 +2,21 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.Program
-import lars.strat.{DepGraph, Strat, grt}
-
-import scala.collection.mutable.{Set, HashSet}
+import lars.strat.{DepGraph, Stratification, grt}
 
 /**
  * Created by hb on 7/10/15.
  */
-object Stratify extends (Program => Option[Strat]) {
+object Stratify {
 
   /**
    * @return a Stream Stratification (SStrat) for program P, if it has one
    */
-  def apply(P: Program): Option[Strat] = {
+  def apply(P: Program): Option[Stratification] = {
     apply(DepGraph(P))
   }
 
-  def apply(depGraph: DepGraph) : Option[Strat] = {
+  def apply(depGraph: DepGraph) : Option[Stratification] = {
 
     // determine strongly connected components (SCCs)
     val sccs: Map[ExtendedAtom,DepGraph] = SCCs(depGraph)
@@ -39,23 +37,7 @@ object Stratify extends (Program => Option[Strat]) {
     // for every component of the DAG, assign stratum index
     val cg = ComponentGraph(depGraph,sccs)
 
-    Option(makeStrat(cg))
-  }
-
-  def makeStrat(cg:ComponentGraph) : Strat = {
-    val nodesInStratum = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
-    for (i <- 0 to cg.maxStratum()) {
-      nodesInStratum += i -> new HashSet[ExtendedAtom]()
-    }
-    val graphStratum = cg.graph2stratum
-    val graphs = graphStratum.keys
-    for (g <- graphs) {
-      val stratum = graphStratum(g)
-      nodesInStratum(stratum) ++= g.nodes
-    }
-
-    val m = nodesInStratum.toMap
-    Strat(m)
+    Option(Stratification(cg))
   }
 
 }
