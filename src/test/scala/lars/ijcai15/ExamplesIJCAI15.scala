@@ -71,10 +71,10 @@ class ExamplesIJCAI15 extends FunSuite {
 //  }
   //
   val P = Program(Set(r1g,r2g,r3,r4,r5))
+  val t = m(39.7)
+  val Dp = D + (t -> request)
 
   test("ex6") {
-    val t = m(39.7)
-    val Dp = D + (t -> request)
     val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
     val mI1 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
     val mI2 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
@@ -148,7 +148,6 @@ class ExamplesIJCAI15 extends FunSuite {
 
   val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))
   val w3 = WindowOperatorFixedParams(w3fn)
-  val t:Int = 0
   object x extends Atom
   object y extends Atom
   val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
@@ -267,6 +266,44 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(stratum(0) == P0)
     assert(stratum(1) == P1)
     assert(stratum(2) == P2)
+
+    //example for property 1:
+    val ias: Set[S] = IAS(P,Dp,t)
+    //println(ias)
+    assert(AS(P,Dp,t) == ias)
+
+    val performanceTest = false
+
+    if (performanceTest) {
+      def runtime(any: => Any): Double = {
+        val s = System.currentTimeMillis()
+        for (i <- 1 to 100) {
+          any
+        }
+        var d = (System.currentTimeMillis() - s) / 1000.0
+        println(d)
+        return d
+      }
+
+      var runs = 5
+      //
+      var rt_as = 0.0
+      runtime(AS(P, Dp, t)) //jvm opt
+      for (i <- 1 to runs) {
+        rt_as += runtime(AS(P, Dp, t))
+      }
+      var rt_ias = 0.0
+      rt_ias += runtime(IAS(P, Dp, t))
+      for (i <- 1 to runs) {
+        rt_ias += runtime(IAS(P, Dp, t))
+      }
+
+      println("avg:")
+      println("AS: " + (rt_as / (1.0 * runs)) + " sec")
+      println("IAS: " + (rt_ias / (1.0 * runs)) + " sec")
+
+    }
+
   }
 
 }
