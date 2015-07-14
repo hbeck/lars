@@ -1,6 +1,7 @@
 import lars.core.semantics.formulas.WindowOperators.ch2
 import lars.core.semantics.formulas._
 import lars.core.windowfn.time.{TimeWindowParameters, TimeWindow}
+//
 case class gc(t1:Term, t2: Term, t3: Term) extends Atom
 case class exp(t1:Term, t2: Term) extends Atom
 case class old(t:Term) extends Atom
