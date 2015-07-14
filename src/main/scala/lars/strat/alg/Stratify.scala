@@ -1,18 +1,20 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
-import lars.core.semantics.programs.Program
+import lars.core.semantics.programs.general.GeneralProgram
 import lars.strat.{DepGraph, Stratification, grt}
 
 /**
  * Created by hb on 7/10/15.
+ *
+ * note: we can have different stratifications and study the impact on performance later
  */
 object Stratify {
 
   /**
    * @return a Stream Stratification (SStrat) for program P, if it has one
    */
-  def apply(P: Program): Option[Stratification] = {
+  def apply(P: GeneralProgram): Option[Stratification] = {
     apply(DepGraph(P))
   }
 

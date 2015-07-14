@@ -2,7 +2,7 @@ package lars.core.semantics.programs.inspect
 
 import lars.core.semantics.formulas.Atom
 import lars.core.semantics.programs.Program
-import lars.strat.ExtendedAtoms
+import lars.core.semantics.programs.standard.ExtendedAtoms
 
 /**
  * Created by hb on 7/14/15.

@@ -1,6 +1,7 @@
 package lars.strat
 
-import lars.core.semantics.programs.{AS, Program}
+import lars.core.semantics.programs.AS
+import lars.core.semantics.programs.general.GeneralProgram
 import lars.core.semantics.streams.S
 
 import scala.collection.mutable
@@ -10,8 +11,8 @@ import scala.collection.mutable
  */
 object IAS {
 
-  def apply(P:Program, D: S, t: Int): Set[S] = {
-    val p: Map[Int, Program] = Strata(P)
+  def apply(P:GeneralProgram, D: S, t: Int): Set[S] = {
+    val p: Map[Int, GeneralProgram] = Strata(P)
     val I = new mutable.HashMap[Int,Set[S]]()
     I(0) = AS(p(0),D,t)
     val n = p.size-1

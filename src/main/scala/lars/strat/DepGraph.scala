@@ -1,7 +1,8 @@
 package lars.strat
 
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.{Rule, Program}
+import lars.core.semantics.programs.general.{GeneralRule, GeneralProgram}
+import lars.core.semantics.programs.standard.ExtendedAtoms
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -68,7 +69,7 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
 
 object DepGraph {
 
-  def apply(P: Program): DepGraph = {
+  def apply(P: GeneralProgram): DepGraph = {
     val nodes = ExtendedAtoms(P,true) //TODO true okay?
     val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
@@ -76,7 +77,7 @@ object DepGraph {
   }
 
   @tailrec
-  private def headBodyArcs(rules: Set[Rule], result: Set[DepEdge]) : Set[DepEdge] = {
+  private def headBodyArcs(rules: Set[GeneralRule], result: Set[DepEdge]) : Set[DepEdge] = {
     if (rules.isEmpty) {
       return result
     }
@@ -91,7 +92,7 @@ object DepGraph {
     headBodyArcs(rules.tail, result ++ curr.toSet)
   }
 
-  private def nestingArcs(P: Program): Set[DepEdge] = {
+  private def nestingArcs(P: GeneralProgram): Set[DepEdge] = {
     val eats = ExtendedAtoms(P,true)
     var mset = mutable.HashSet[DepEdge]()
     for (ea <- eats) {

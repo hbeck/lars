@@ -2,7 +2,9 @@ package lars.ijcai15
 
 import lars.core.MapUtils
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.{AS, Program, Rule}
+import lars.core.semantics.programs.general.{GeneralRule, GeneralProgram}
+import lars.core.semantics.programs.AS
+import lars.core.semantics.programs.standard.ExtendedAtoms
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
@@ -61,16 +63,16 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   //for r1, r2, only relevant ground instances given
-  val r1g = Rule(At(m(37.2)+m(3),expBusM), Wop(wop3,At(m(37.2),busG)) and on)
-  val r2g = Rule(At(m(39.1)+m(5),expTrM), Wop(wop5,At(m(39.1),tramB)) and on)
-  val r3 = Rule(on, Wop(wop1,Diam(request)))
-  val r4 = Rule(takeBusM, Wop(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(Wop(wop3,Diam(jam))))
-  val r5 = Rule(takeTrM, Wop(wopP5,Diam(expTrM)) and Not(takeBusM))
+  val r1g = GeneralRule(At(m(37.2)+m(3),expBusM), Wop(wop3,At(m(37.2),busG)) and on)
+  val r2g = GeneralRule(At(m(39.1)+m(5),expTrM), Wop(wop5,At(m(39.1),tramB)) and on)
+  val r3 = GeneralRule(on, Wop(wop1,Diam(request)))
+  val r4 = GeneralRule(takeBusM, Wop(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(Wop(wop3,Diam(jam))))
+  val r5 = GeneralRule(takeTrM, Wop(wopP5,Diam(expTrM)) and Not(takeBusM))
 //  for (rule <- Set (r1g,r2g,r3,r4,r5)) {
 //    println(rule)
 //  }
   //
-  val P = Program(Set(r1g,r2g,r3,r4,r5))
+  val P = GeneralProgram(Set(r1g,r2g,r3,r4,r5))
   val t = m(39.7)
   val Dp = D + (t -> request)
 
@@ -104,7 +106,7 @@ class ExamplesIJCAI15 extends FunSuite {
     //
     assert((m1/t |= r5.body))
     //
-    val reductRules = Set[Rule](r1g,r2g,r3,r5);
+    val reductRules = Set[GeneralRule](r1g,r2g,r3,r5);
     assert(P.rules.filter(m1/t |= _.body) == reductRules) //note: .sameElements also checks order
     //
     val PR1 = P.reduct(m1,t)
@@ -150,7 +152,7 @@ class ExamplesIJCAI15 extends FunSuite {
   val w3 = WindowOperatorFixedParams(w3fn)
   object x extends Atom
   object y extends Atom
-  val Pp = Program(Set(Rule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
+  val Pp = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAtAtom(w3,AtAtom(t,y)))))
   //TODO At(t,x) vs AtAtom(t,x)
 
   test("ex7") {
@@ -257,11 +259,11 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 0)
     }
 
-    val stratum: Map[Int, Program] = Strata(P)
+    val stratum: Map[Int, GeneralProgram] = Strata(P)
 
-    val P2 = Program(Set(r3))
-    val P3 = Program(Set(r1g,r2g))
-    val P5 = Program(Set(r4,r5))
+    val P2 = GeneralProgram(Set(r3))
+    val P3 = GeneralProgram(Set(r1g,r2g))
+    val P5 = GeneralProgram(Set(r4,r5))
 
     assert(stratum(0) == P2)
     assert(stratum(1) == P3)
