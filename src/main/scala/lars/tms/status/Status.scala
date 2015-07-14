@@ -3,8 +3,10 @@ package lars.tms.status
 /**
  * Created by hb on 7/14/15.
  */
-abstract class Status
+sealed trait Status
 
-case class in() extends Status
-case class out() extends Status
-case class unknown() extends Status
+object Status {
+  case object in extends Status
+  case object out extends Status
+  case object unknown extends Status
+}

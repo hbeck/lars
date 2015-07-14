@@ -1,7 +1,8 @@
 package lars.tms.status.rule
 
 import lars.core.semantics.programs.standard.StdRule
-import lars.tms.status.{out, Labels, in}
+import lars.tms.status.Status.{out, in}
+import lars.tms.status.Labels
 
 /**
  * Created by hb on 7/14/15.

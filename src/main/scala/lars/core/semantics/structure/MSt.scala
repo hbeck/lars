@@ -37,13 +37,6 @@ case class MSt(m: M, s: S, t: Int) {
         val s1 = wop.wfn(wop.ch(s0, s), t)
         m / s1 / t ||- fm1
       }
-//      //extended atoms (hack - TODO)
-//      case DiamAtom(a)       => this ||- Diam(a)
-//      case BoxAtom(a)        => this ||- Box(a)
-//      case AtAtom(u,a)       => this ||- At(u,a)
-//      case WDiamAtom(wop,da) => this ||- Wop(wop,da)
-//      case WBoxAtom(wop,ba)  => this ||- Wop(wop,ba)
-//      case WAtAtom(wop,aa)   => this ||- Wop(wop,aa)
     }
   }
 }

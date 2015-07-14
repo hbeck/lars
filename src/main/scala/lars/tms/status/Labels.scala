@@ -1,4 +1,6 @@
 package lars.tms.status
+
+import lars.core.ClosedIntInterval
 import lars.core.semantics.formulas.ExtendedAtom
 
 
@@ -8,10 +10,10 @@ import lars.core.semantics.formulas.ExtendedAtom
  */
 case class Labels(val labelOf: collection.mutable.Map[ExtendedAtom,Label]) {
 
-  def label(x:ExtendedAtom) = labelOf(x)
+  def label(x:ExtendedAtom): Label = labelOf(x)
 
-  def status(x: ExtendedAtom) = labelOf(x).status
+  def status(x: ExtendedAtom): Status = labelOf(x).status
 
-  def intervals(x: ExtendedAtom) = labelOf(x).intervals
+  def intervals(x: ExtendedAtom): collection.mutable.Set[ClosedIntInterval] = labelOf(x).intervals
 
 }
