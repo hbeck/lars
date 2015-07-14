@@ -23,7 +23,7 @@ object ExtendedAtoms {
       //case a: Atom => Set(a)
       case x: ExtendedAtom => {
         if (nested) {
-          Set(x, x.atom)
+          x.nested
         } else {
           Set(x)
         }

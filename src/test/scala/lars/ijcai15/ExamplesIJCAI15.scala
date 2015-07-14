@@ -153,7 +153,7 @@ class ExamplesIJCAI15 extends FunSuite {
   object x extends Atom
   object y extends Atom
   val Pp = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAtAtom(w3,t,y))))
-  //TODO At(t,x) vs AtAtom(t,x)
+  //TODO StdProgram
 
   test("ex7") {
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,t,y),AtAtom(t,y),y)

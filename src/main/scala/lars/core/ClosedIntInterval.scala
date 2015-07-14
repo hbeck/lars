@@ -22,15 +22,15 @@ class ClosedIntInterval(lower:Int, upper:Int) extends Interval[Int](lower,upper)
 
   override def contains(i: Int): Boolean = lower <= i && i <= upper
 
-  def ++ [T <: ClosedIntInterval](other: T) = new ClosedIntInterval(Math.min(lower,other.lower),Math.max(upper,other.upper)).asInstanceOf[T]
+  def ++ [T <: ClosedIntInterval](other: T) = new ClosedIntInterval(Math.min(lower,other.lower),Math.max(upper,other.upper))
 
-  def + [T <: ClosedIntInterval](i: Int) : T = {
+  def + [T <: ClosedIntInterval](i: Int) : ClosedIntInterval = {
     if (this contains i)
-      this.asInstanceOf[T]
+      this
     else if (i < lower)
-      new ClosedIntInterval(i,upper).asInstanceOf[T]
+      new ClosedIntInterval(i,upper)
     else
-      new ClosedIntInterval(lower,i).asInstanceOf[T]
+      new ClosedIntInterval(lower,i)
   }
 
 }

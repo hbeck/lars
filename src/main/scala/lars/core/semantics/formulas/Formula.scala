@@ -29,6 +29,7 @@ abstract class Binary(val fm1: Formula, val fm2: Formula) extends Formula {
 
 trait ExtendedAtom extends Formula {
   def atom:Atom
+  def nested:Set[ExtendedAtom] = Set[ExtendedAtom](this,atom)
   override def atoms():Set[Atom] = Set[Atom](atom)
 }
 
@@ -46,6 +47,7 @@ abstract class Atom extends ExtendedAtom {
     else s.substring(0,idx)
   }
   override def atom = this
+  override def nested = Set(this)
 }
 
 object Verum extends Atom
@@ -82,15 +84,6 @@ object And {
 
 case class Or(override val fm1: Formula, override val fm2: Formula) extends Binary(fm1,fm2) {
   override def toString = par(fm1) + " ∨ " + par(fm2)
-}
-object Or {
-  def apply(formulas:Set[Formula]): Formula = {
-    formulas.size match {
-      case 0 => Verum
-      case 1 => formulas.head
-      case _ => formulas.reduce((x,y) => Or(x,y))
-    }
-  }
 }
 
 case class Implies(override val fm1: Formula, override val fm2: Formula) extends Binary(fm1,fm2) {

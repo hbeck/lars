@@ -8,6 +8,7 @@ import lars.core.semantics.formulas._
 case class WAtAtom(w: WindowOperatorFixedParams, t:Int, a: Atom) extends Unary(At(t,a)) /* Wop(w,At(t,a)) */ with ExtendedAtom {
   override def toString = w + "@{" + t+ "}"+a
   override def atom = a
+  override def nested = Set[ExtendedAtom](this,AtAtom(t,a),a)
 }
 //object WAtAtom {
 //  def apply(x:WopFm): WAtAtom = {
