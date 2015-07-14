@@ -259,13 +259,13 @@ class ExamplesIJCAI15 extends FunSuite {
 
     val stratum: Map[Int, Program] = Strata(P)
 
-    val P0 = Program(Set(r3))
-    val P1 = Program(Set(r1g,r2g))
-    val P2 = Program(Set(r4,r5))
+    val P2 = Program(Set(r3))
+    val P3 = Program(Set(r1g,r2g))
+    val P5 = Program(Set(r4,r5))
 
-    assert(stratum(0) == P0)
-    assert(stratum(1) == P1)
-    assert(stratum(2) == P2)
+    assert(stratum(0) == P2)
+    assert(stratum(1) == P3)
+    assert(stratum(2) == P5)
 
     //example for property 1:
     val ias: Set[S] = IAS(P,Dp,t)
@@ -275,6 +275,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val performanceTest = false
 
     if (performanceTest) {
+
       def runtime(any: => Any): Double = {
         val s = System.currentTimeMillis()
         for (i <- 1 to 100) {
