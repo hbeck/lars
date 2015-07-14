@@ -17,42 +17,48 @@ object TupleWindow extends WindowFunction[TupleWindowParameters] {
     val u = x.u
 
     //tuple time bound
-    val tlSet = Set(tMin) ++ (tMin to t).filter( tp => (s|Timeline(tp,t)).size >= l )
+    val tlSet = Set(tMin) ++ (tMin to t).filter(tp => (s | Timeline(tp, t)).size >= l)
     val tl = tlSet.reduce(math.max)
-    val tuSet = Set(tMax) ++ (t+1 to tMax).filter( tp => (s|Timeline(t+1,tp)).size >= u)
+    val tuSet = Set(tMax) ++ (t to tMax).filter(tp => (s | Timeline(t, tp)).size >= u) //bug in reactknow paper, says (t+1 to tMax)!
     val tu = tuSet.reduce(math.min)
 
-    val Tl = Timeline(tl,t)
-    val Tu = Timeline(t+1,tu)
+    val Tl = Timeline(tl, t)
+    val Tu = Timeline(math.min(t + 1, tu), tu)
 
-    val Tp = Timeline(tl,tu)
+    val Tp = Timeline(tl, tu)
 
-    val mMap = new collection.mutable.HashMap[Int,Set[Atom]]()
+    val mMap = new collection.mutable.HashMap[Int, Set[Atom]]()
 
     val v = s.v
     var lAlready = 0
     var uAlready = 0
-    for (tp <- tl+1 to tu-1) {
-      mMap(tp)=v(tp)
+    for (tp <- tl + 1 to tu - 1) {
+      mMap(tp) = v(tp)
       if (tp <= t) {
         lAlready += v(tp).size
       } else {
         uAlready += v(tp).size
       }
     }
-    if ((s|Tl).size <= l) {
-      mMap(tl)=v(tl)
-    } else { //>l
-      val diff = l - lAlready
-      val Xl = v(tl).take(diff)
-      mMap(tl)=Xl
+    if (l > 0) {
+      if ((s | Tl).size <= l) {
+        mMap(tl) = v(tl)
+      } else {
+        //>l
+        val diff = l - lAlready
+        val Xl = v(tl).take(diff)
+        mMap(tl) = Xl
+      }
     }
-    if ((s|Tu).size <= u) {
-      mMap(tu)=v(tu)
-    } else { //>u
-      val diff = u - uAlready
-      val Xu = v(tu).take(diff)
-      mMap(tu)=Xu
+    if (u > 0) {
+      if ((s | Tu).size <= u) {
+        mMap(tu) = v(tu)
+      } else {
+        //>u
+        val diff = u - uAlready
+        val Xu = v(tu).take(diff)
+        mMap(tu) = Xu
+      }
     }
 
     val vp = Evaluation(mMap.toMap)
@@ -61,4 +67,5 @@ object TupleWindow extends WindowFunction[TupleWindowParameters] {
   }
 
   override def fix(x: TupleWindowParameters) = TupleWindowFixedParams(x)
+  def fix(l:Int, u:Int=0) = TupleWindowFixedParams(TupleWindowParameters(l,u))
 }

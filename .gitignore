@@ -1,3 +1,4 @@
+*.sc
 *.iml
 .idea/*
 project/*

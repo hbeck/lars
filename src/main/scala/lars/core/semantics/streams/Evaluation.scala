@@ -1,6 +1,6 @@
 package lars.core.semantics.streams
 
-import lars.core.Util.merge
+import lars.core.MapUtils.merge
 import lars.core.semantics.formulas.Atom
 
 import scala.collection.immutable.HashMap
@@ -8,7 +8,7 @@ import scala.collection.immutable.HashMap
 /**
  * Created by hb on 5/26/15.
  */
-case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
+case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) extends (Int => Set[Atom]) {
 
   def apply(t:Int) = mapping.getOrElse(t,Set[Atom]())
 
@@ -23,11 +23,11 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
   }
 
   def == (other: Evaluation) : Boolean = {
-    if (this.mapping.size != other.mapping.size) return false
-    for (k <- mapping.keys) {
-      val m0 = this.mapping.apply(k)
-      val m1 = other.mapping.getOrElse(k,Set())
-      if (!m0.equals(m1)) return false
+    if (this.size != other.size) return false
+    for (t <- mapping.keys) {
+      val m0 = this.mapping.get(t)
+      val m1 = other.mapping.getOrElse(t,Set())
+      if (m0 == m1) return false
     }
     true
   }
@@ -42,7 +42,10 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
     }
   }
 
-  def size : Int = Math.max(1,mapping.values.flatten.size)
+  def size = mapping.values.flatten.size
+
+  //note: paper defines size one for empty stream
+  def nonZeroSize: Int = Math.max(1,mapping.values.flatten.size)
 
   override def toString = {
     val sb = new StringBuilder()
@@ -56,13 +59,13 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]) extends (Int => Set[Atom]) {
 }
 
 object Evaluation {
-  def fromTimestampedAtoms(tsAtoms: Set[(Int,Atom)]): Evaluation = {
+  def from(tsAtoms: Set[(Int,Atom)]): Evaluation = { //TODO rename to apply
     var m: HashMap[Int,Set[Atom]] = HashMap()
     for (tsAtom <- tsAtoms) {
       val k = tsAtom._1
       val atom = tsAtom._2
       if (m contains k) {
-        val ats = (m apply k) + atom
+        val ats = m(k) + atom
         m += (k -> ats)
       } else {
         m += k -> Set[Atom](atom)

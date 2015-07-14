@@ -5,18 +5,18 @@ import lars.core.semantics.formulas.ExtendedAtom
 /**
  * Created by hb on 7/6/15.
  */
-case class SDepEdge(from:ExtendedAtom, to:ExtendedAtom, dep: SDep) {
+case class DepEdge(from:ExtendedAtom, to:ExtendedAtom, dep: Dep) {
   override def toString = from + " {" + dep + "} " + to
 }
 
-sealed class SDep
-case object eql extends SDep {
+sealed abstract class Dep
+
+case object eql extends Dep {
   override def toString = "="
 }
-case object grt extends SDep {
+case object grt extends Dep {
   override def toString = ">"
 }
-
-case object geq extends SDep {
+case object geq extends Dep {
   override def toString = ">="
 }

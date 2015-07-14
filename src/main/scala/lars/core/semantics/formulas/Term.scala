@@ -1,5 +1,7 @@
 package lars.core.semantics.formulas
 
+import scala.language.implicitConversions
+
 /**
  * Created by hb on 5/31/15.
  */

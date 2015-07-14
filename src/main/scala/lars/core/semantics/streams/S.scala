@@ -10,11 +10,15 @@ import scala.collection.immutable.Map
 /**
  * Created by hb on 5/26/15.
  */
-case class S(T: Timeline, v: Evaluation) {
+case class S(T: Timeline, v: Evaluation=Evaluation()) {
+
+  def apply(t:Int) = v(t)
 
   def <= (other:S) = {
     (this.T <= other.T) && (this.v <= other.v)
   }
+
+  def nonZeroSize = v.nonZeroSize
 
   def size = v.size
 
@@ -32,8 +36,8 @@ case class S(T: Timeline, v: Evaluation) {
     val t = tsAtom._1
     val atom = tsAtom._2
     var newAtoms : Set[Atom] = null
-    if (v.mapping contains t) {
-      newAtoms = (v.mapping apply t) + atom
+    if (v.mapping.contains(t)) {
+      newAtoms = (v.mapping(t)) + atom
     } else {
       newAtoms = Set[Atom](atom)
     }
@@ -42,7 +46,7 @@ case class S(T: Timeline, v: Evaluation) {
       if (k == t) {
         m += (k -> newAtoms)
       } else {
-        m += (k -> v.mapping.apply(k))
+        m += (k -> v.mapping(k))
       }
     }
     S(T,Evaluation(m.toMap))
@@ -53,7 +57,7 @@ case class S(T: Timeline, v: Evaluation) {
     if (!(v.mapping contains t)) return this
     //
     val atom = tsAtom._2
-    val currAtoms = (v.mapping apply t)
+    val currAtoms = (v.mapping(t))
     if (!(currAtoms contains atom)) return this
     //
     val newAtoms = currAtoms - atom
@@ -62,7 +66,7 @@ case class S(T: Timeline, v: Evaluation) {
       if (k == t) {
         m += (k -> newAtoms)
       } else {
-        m += (k -> v.mapping.apply(k))
+        m += (k -> v.mapping(k))
       }
     }
     S(T,Evaluation(m.toMap))
@@ -75,7 +79,7 @@ case class S(T: Timeline, v: Evaluation) {
     //better: i) map builder ii) work directly on Evaluation object
     var m = new HashMap[Int,Set[Atom]]()
     for (k <- v.mapping.keys) {
-      val thisV:Set[Atom] = this.v.mapping.apply(k)
+      val thisV:Set[Atom] = this.v.mapping(k)
       val otherV:Set[Atom] = other.v.mapping.getOrElse(k, Set[Atom]().empty)
       val diffV:Set[Atom] = thisV -- otherV
       m += k -> diffV
@@ -87,11 +91,15 @@ case class S(T: Timeline, v: Evaluation) {
   def getTimestampedAtoms():Set[(Int,Atom)] = {
     var s:Set[(Int,Atom)] = Set()
     for (t <- v.mapping.keys) {
-      for (atom <- v.mapping.apply(t)) {
+      for (atom <- v.mapping(t)) {
         s += ((t,atom))
       }
     }
     s.toSet
+  }
+
+  def atoms(): Set[Atom] = {
+    v.mapping.values.reduce((s1,s2) => s1 ++ s2)
   }
 
   override def equals(that:Any) : Boolean = {
@@ -113,7 +121,12 @@ case class S(T: Timeline, v: Evaluation) {
     M.isMinimalModel(R,t,D)
   }
 
-  def properSubstreams(): Iterator[S] = {
+  //
+  def substreams(): Iterator[S] = {
+    substreams(false)
+  }
+
+  def substreams(proper:Boolean): Iterator[S] = {
     //from all mappings k -> {v1, ..., vn} create a set
     //k -> v1, ..., k -> vn;
     //create a set of all these single-atom mappings (for all keys)
@@ -124,21 +137,27 @@ case class S(T: Timeline, v: Evaluation) {
     val timestampedAtoms = tsAtoms.toSet
 
     //iterate over the power set, create stream
-    var properSubstreams = Set[S]()
+    var substreams = Set[S]()
     for (subset <- timestampedAtoms.subsets()) {
-      if (subset != timestampedAtoms) {
-        //properSubstreams += S.fromTimestampedAtoms(s.T,subset)
-        properSubstreams += S(T, Evaluation.fromTimestampedAtoms(subset))
+      if (!proper || subset != timestampedAtoms) {
+        substreams += S(T, Evaluation.from(subset)) //TODO apply, see Evaluation object
       }
     }
-    properSubstreams.iterator //TODO proper (lazy) iterator
+    substreams.iterator //TODO proper (lazy) iterator
+  }
+
+  def properSubstreams(): Iterator[S] = {
+    substreams(true)
   }
 
 }
 
 object S {
-  def fromTimestampedAtoms(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
-    S(T,Evaluation.fromTimestampedAtoms(tsAtoms))
+  def apply(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
+    S(T,Evaluation.from(tsAtoms)) //TODO apply, see Evaluation object
+  }
+  def apply(T:Timeline, tsAtoms: (Int,Atom)*): S = {
+    S(T,Evaluation.from(tsAtoms.toSet)) //TODO apply, see Evaluation object
   }
 }
 
