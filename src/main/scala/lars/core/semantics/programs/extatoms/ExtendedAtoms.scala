@@ -10,7 +10,7 @@ import scala.annotation.tailrec
 object ExtendedAtoms {
 
   def apply(P: StdProgram) : Set[ExtendedAtom] = {
-    P.rules.flatMap( r => r.B + r.H)
+    P.rules.flatMap( r => r.B + r.h)
   }
 
   /**

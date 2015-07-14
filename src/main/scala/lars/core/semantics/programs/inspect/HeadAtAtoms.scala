@@ -10,7 +10,7 @@ import lars.core.semantics.programs.{Program, Rule}
 object HeadAtAtoms {
 
   def apply(P: StdProgram): Set[AtAtom] = {
-    P.rules.map(_.H).filter(_.isInstanceOf[AtAtom]).map(_.asInstanceOf[AtAtom])
+    P.rules.map(_.h).filter(_.isInstanceOf[AtAtom]).map(_.asInstanceOf[AtAtom])
   }
 
   def apply[R <: Rule](P: Program[R]): Set[AtAtom] = {

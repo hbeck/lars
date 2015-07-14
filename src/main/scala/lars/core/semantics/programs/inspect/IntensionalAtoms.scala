@@ -13,7 +13,7 @@ import lars.core.semantics.programs.{Rule, Program}
 object IntensionalAtoms {
 
   def apply(P: StdProgram): Set[Atom] = {
-    P.rules.map(_.H).flatMap(ExtendedAtoms(_,true)).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
+    P.rules.map(_.h).flatMap(ExtendedAtoms(_,true)).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
   }
 
   def apply[R <: Rule](P: Program[R]): Set[Atom] = {

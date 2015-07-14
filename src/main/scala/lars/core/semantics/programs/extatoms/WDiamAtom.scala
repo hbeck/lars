@@ -5,7 +5,7 @@ import lars.core.semantics.formulas._
 /**
  * Created by hb on 7/14/15.
  */
-case class WDiamAtom(w: WindowOperatorFixedParams, a: Atom) extends Unary(Diam(a)) /* Wop(w,Diam(a)) */ with ExtendedAtom {
+case class WDiamAtom(w: WindowOperatorFixedParams, a: Atom) extends WindowAtom(w,Diam(a)) /* Wop(w,Diam(a)) */ with ExtendedAtom {
   override def toString = w + "◇" + a
   override def atom = a
 }
