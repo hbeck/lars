@@ -12,20 +12,20 @@ case class TupleWindowParameters(l: Int, u: Int=0) extends WindowParameters {
       if (u == 0)
         ""+l
       else
-        "(" + l + "," + u + "," + ")"
+        "(" + l + "," + u + ")"
     } else {
       if (u != 0)
         "+"+u
       else
-        "(" + l + "," + u + "," + ")"
+        "(" + l + "," + u + ")"
     }
   }
 }
 
 object TupleWindowParameters {
   def from(xs: Seq[Int]) : TupleWindowParameters = {
-    val l = xs apply 0
-    val u = if (xs.length >= 2) xs apply 1 else 0
+    val l = xs(0)
+    val u = if (xs.length == 2) xs(1) else 0
     TupleWindowParameters(l,u)
   }
 }
