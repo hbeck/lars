@@ -1,7 +1,7 @@
 package lars.strat
 
+import lars.core.semantics.programs.extatoms.ExtendedAtoms
 import lars.core.semantics.programs.general.GeneralProgram
-import lars.core.semantics.programs.standard.ExtendedAtoms
 
 /**
  * Created by hb on 7/13/15.

@@ -1,8 +1,8 @@
 package lars.strat
 
 import lars.core.semantics.formulas._
+import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.general.{GeneralRule, GeneralProgram}
-import lars.core.semantics.programs.standard.ExtendedAtoms
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -93,23 +93,23 @@ object DepGraph {
   }
 
   private def nestingArcs(P: GeneralProgram): Set[DepEdge] = {
-    val eats = ExtendedAtoms(P,true)
+    val xs = ExtendedAtoms(P,true)
     var mset = mutable.HashSet[DepEdge]()
-    for (ea <- eats) {
-      ea match { //consider only 'relevant' once - see TODO marks concerning dual ontology
+    for (x <- xs) {
+      x match { //consider only 'relevant' ones
         case AtAtom(u, a) => {
           mset += DepEdge(AtAtom(u,a),a,eql)
           mset += DepEdge(a,AtAtom(u,a),eql)
         }
         //TODO unify following three cases
-        case WDiamAtom(wop, da) => {
-          mset += DepEdge(WDiamAtom(wop,da),da.a,grt)
+        case WDiamAtom(wop, a) => {
+          mset += DepEdge(WDiamAtom(wop,a),a,grt)
         }
-        case WBoxAtom(wop, ba) => {
-          mset += DepEdge(WBoxAtom(wop,ba),ba.a,grt)
+        case WBoxAtom(wop, a) => {
+          mset += DepEdge(WBoxAtom(wop,a),a,grt)
         }
-        case WAtAtom(wop, aa) => {
-          mset += DepEdge(WAtAtom(wop,aa),aa.a,grt)
+        case WAtAtom(wop, u, a) => {
+          mset += DepEdge(WAtAtom(wop,u,a),a,grt)
         }
         case x => if (!x.isInstanceOf[Atom]) { assert(false) } //atoms are only to-Nodes
       }

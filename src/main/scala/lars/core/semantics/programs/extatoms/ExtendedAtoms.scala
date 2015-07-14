@@ -1,61 +1,17 @@
-package lars.core.semantics.formulas
+package lars.core.semantics.programs.extatoms
 
-import lars.core.semantics.formulas.WindowOperators.{StreamChoice, ch2}
+import lars.core.semantics.formulas._
+import lars.core.semantics.programs.standard.StdProgram
 import lars.core.semantics.programs.{Program, Rule}
-import lars.core.windowfn.WindowFunctionFixedParams
+import lars.core.semantics.formulas.Unary
 
 import scala.annotation.tailrec
 
-/**
- * Created by hb on 7/10/15.
- */
-case class WindowOperatorFixedParams(wfn: WindowFunctionFixedParams, ch:StreamChoice=ch2) {
-  override def toString = "⊞^{"+wfn+"}"
-}
-
-case class AtAtom(override val t: Int, a: Atom) extends At(t,a) with ExtendedAtom {
-  override def toString = "@{"+t+"}"+a
-  override def atom = a
-}
-case class WAtAtom(w: WindowOperatorFixedParams, t:Int, a: Atom) extends Wop(w,At(t,a)) with ExtendedAtom {
-  override def toString = w + "@{" + t+ "}"+a
-  override def atom = a
-}
-case class WDiamAtom(w: WindowOperatorFixedParams, a: Atom) extends Wop(w,Diam(a)) with ExtendedAtom {
-  override def toString = w + "◇" + a
-  override def atom = a
-}
-case class WBoxAtom(w: WindowOperatorFixedParams, a: Atom) extends Wop(w,Box(a)) with ExtendedAtom {
-  override def toString = w + "☐" + a
-  override def atom = a
-}
-
-object AtAtom {
- def apply(x:At) = AtAtom(x.t,x.fm.asInstanceOf[Atom])
-}
-
-object WAtAtom {
-  def apply(x:Wop) = {
-    val at = x.fm.asInstanceOf[At]
-    WAtAtom(x.wop,at.t,at.fm.asInstanceOf[Atom])
-  }
-}
-
-object WDiamAtom {
-  def apply(x:Wop) = {
-    val diamAtom = x.fm.asInstanceOf[Diam]
-    WDiamAtom(x.wop,diamAtom.fm.asInstanceOf[Atom])
-  }
-}
-
-object WBoxAtom {
-  def apply(x:Wop) = {
-    val boxAtom = x.fm.asInstanceOf[Box]
-    WBoxAtom(x.wop,boxAtom.fm.asInstanceOf[Atom])
-  }
-}
-
 object ExtendedAtoms {
+
+  def apply(P: StdProgram) : Set[ExtendedAtom] = {
+    P.rules.flatMap( r => r.B + r.H)
+  }
 
   /**
    * @return returns all maximal extended atoms appearing in the given formula, plus its nested atoms if nested==true
@@ -72,7 +28,7 @@ object ExtendedAtoms {
           Set(x)
         }
       }
-      //Wether At, W, Wop are (different encodings) of ExtendedAtoms needs to be tested ...
+      //Whether At, W, Wop are (different encodings) of ExtendedAtoms needs to be tested ...
       case At(u, fm1) =>
         if (fm1.isInstanceOf[Atom]) {
           apply(AtAtom(u, fm1.asInstanceOf[Atom]), nested)
@@ -83,9 +39,9 @@ object ExtendedAtoms {
         //convert to match uniformly below
         val wfx = wfn.fix(x)
         val wop = new WindowOperatorFixedParams(wfx, ch)
-        apply(Wop(wop, fm), nested)
+        apply(WopFm(wop, fm), nested)
       }
-      case Wop(wop, fm1) => {
+      case WopFm(wop, fm1) => {
         fm1 match {
           case Diam(fm2) =>
             if (fm2.isInstanceOf[Atom]) {
@@ -110,8 +66,8 @@ object ExtendedAtoms {
         }
       }
       //... for all other formulas, only the nested expressions need to be tested (if nested==true)
-      case Unary(fm1) => apply(fm1, nested)
-      case Binary(fm1, fm2) => apply(fm1, nested) union apply(fm2, nested)
+      case x:Unary => apply(x.fm, nested)
+      case x:Binary => apply(x.fm1, nested) union apply(x.fm2, nested)
     }
   }
 

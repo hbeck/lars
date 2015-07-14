@@ -19,11 +19,11 @@ abstract class Formula {
   def atoms(): Set[Atom]
 }
 
-abstract case class Unary(fm: Formula) extends Formula {
+abstract class Unary(val fm: Formula) extends Formula {
   override def atoms = fm.atoms()
 }
 
-abstract case class Binary(fm1: Formula, fm2: Formula) extends Formula {
+abstract class Binary(val fm1: Formula, val fm2: Formula) extends Formula {
   override def atoms = fm1.atoms() ++ fm2.atoms()
 }
 
@@ -62,12 +62,20 @@ case class Not(override val fm: Formula) extends Unary(fm) {
 case class And(override val fm1: Formula, override val fm2: Formula) extends Binary(fm1,fm2) {
   override def toString = par(fm1) + " ∧ " + par(fm2)
 }
+
 object And {
-  def apply[T <: Formula](formulas:Set[T]) : Formula = {
+  def apply[T <: Formula](formulas:Set[T]): Formula = {
     formulas.size match {
       case 0 => Verum
       case 1 => formulas.head
-      case _ => formulas.reduce((x,y) => And(x,y))
+      case _ => { //does not work: formulas.reduce((x,y) => And(x,y))
+        val seq: Seq[T] = formulas.toSeq
+        var fm = And(seq(0),seq(1))
+        for (i <- 2 to (seq.size-1)) {
+          fm = And(fm,seq(i))
+        }
+        fm
+      }
     }
   }
 }
@@ -76,7 +84,7 @@ case class Or(override val fm1: Formula, override val fm2: Formula) extends Bina
   override def toString = par(fm1) + " ∨ " + par(fm2)
 }
 object Or {
-  def apply[T <: Formula](formulas:Set[T]) : Formula = {
+  def apply(formulas:Set[Formula]): Formula = {
     formulas.size match {
       case 0 => Verum
       case 1 => formulas.head
@@ -110,6 +118,6 @@ case class W[X <: WindowParameters](wfn: WindowFunction[X], x: X, override val f
   }
 }
 
-case class Wop(wop: WindowOperatorFixedParams, override val fm: Formula) extends Unary(fm) {
+case class WopFm(wop: WindowOperatorFixedParams, override val fm: Formula) extends Unary(fm) {
   override def toString = wop + par(fm)
 }

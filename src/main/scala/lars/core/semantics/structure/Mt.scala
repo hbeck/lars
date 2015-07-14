@@ -15,11 +15,11 @@ case class Mt(m: M, t: Int) {
     mst ||- fm
   }
 
-  def |=(r: Rule): Boolean = {
+  def |=[R <: Rule](r: R): Boolean = {
     !(this |= r.body) || (this |= r.head)
   }
 
-  def |=(p: Program): Boolean = {
+  def |=[R <: Rule](p: Program[R]): Boolean = {
     p.rules.forall(this |= _)
   }
 

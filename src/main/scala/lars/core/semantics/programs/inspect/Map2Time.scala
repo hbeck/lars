@@ -1,6 +1,7 @@
 package lars.core.semantics.programs.inspect
 
-import lars.core.semantics.formulas.{Atom, AtAtom}
+import lars.core.semantics.formulas.Atom
+import lars.core.semantics.programs.extatoms.AtAtom
 
 /**
  * Created by hb on 7/14/15.

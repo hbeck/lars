@@ -2,6 +2,7 @@ package lars.core.semantics.programs.standard
 
 import lars.core.semantics.programs.Rule
 import lars.core.semantics.formulas._
+import lars.core.semantics.programs.extatoms.AtAtom
 
 /**
  * Created by hb on 6/23/15.

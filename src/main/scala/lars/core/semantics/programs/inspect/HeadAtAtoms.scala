@@ -1,15 +1,19 @@
 package lars.core.semantics.programs.inspect
 
-import lars.core.semantics.formulas.AtAtom
-import lars.core.semantics.programs.general.GeneralProgram
-import lars.core.semantics.programs.standard.ExtendedAtoms
+import lars.core.semantics.programs.extatoms.{AtAtom, ExtendedAtoms}
+import lars.core.semantics.programs.standard.StdProgram
+import lars.core.semantics.programs.{Program, Rule}
 
 /**
  * Created by hb on 7/14/15.
  */
 object HeadAtAtoms {
 
-  def apply(P: GeneralProgram): Set[AtAtom] = {
+  def apply(P: StdProgram): Set[AtAtom] = {
+    P.rules.map(_.H).filter(_.isInstanceOf[AtAtom]).map(_.asInstanceOf[AtAtom])
+  }
+
+  def apply[R <: Rule](P: Program[R]): Set[AtAtom] = {
     P.rules.map(_.head).flatMap(ExtendedAtoms(_, true)).filter(_.isInstanceOf[AtAtom]).map(_.asInstanceOf[AtAtom])
   }
 

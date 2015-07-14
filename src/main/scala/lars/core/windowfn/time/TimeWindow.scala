@@ -2,8 +2,8 @@ package lars.core.windowfn.time
 
 import java.lang.Math._
 
+import lars.core.semantics.formulas.WindowOperatorFixedParams
 import lars.core.semantics.formulas.WindowOperators.ch1
-import lars.core.semantics.formulas.{WindowOperatorFixedParams}
 import lars.core.semantics.streams.{S, Timeline}
 import lars.core.windowfn.WindowFunction
 

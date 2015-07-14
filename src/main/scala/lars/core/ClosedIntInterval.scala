@@ -3,7 +3,7 @@ package lars.core
 /**
  * Created by hb on 7/14/15.
  */
-case class ClosedIntInterval(lower:Int, upper:Int) extends Interval[Int](lower,upper) {
+class ClosedIntInterval(lower:Int, upper:Int) extends Interval[Int](lower,upper) {
 
   assert(lower <= upper)
 
@@ -22,15 +22,15 @@ case class ClosedIntInterval(lower:Int, upper:Int) extends Interval[Int](lower,u
 
   override def contains(i: Int): Boolean = lower <= i && i <= upper
 
-  def ++ (other: ClosedIntInterval) = ClosedIntInterval(Math.min(lower,other.lower),Math.max(upper,other.upper))
+  def ++ [T <: ClosedIntInterval](other: T) = new ClosedIntInterval(Math.min(lower,other.lower),Math.max(upper,other.upper)).asInstanceOf[T]
 
-  def + (i: Int) : ClosedIntInterval = {
+  def + [T <: ClosedIntInterval](i: Int) : T = {
     if (this contains i)
-      this
+      this.asInstanceOf[T]
     else if (i < lower)
-      ClosedIntInterval(i,upper)
+      new ClosedIntInterval(i,upper).asInstanceOf[T]
     else
-      ClosedIntInterval(lower,i)
+      new ClosedIntInterval(lower,i).asInstanceOf[T]
   }
 
 }

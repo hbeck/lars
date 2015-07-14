@@ -10,7 +10,7 @@ import lars.core.semantics.streams.S
 object AS {
 
   //naive implementation for the moment
-  def apply(P: Program, D: S, t: Int): Set[S] = {
+  def apply[R <: Rule](P: Program[R], D: S, t: Int): Set[S] = {
     val AInt = IntensionalAtoms(P)
     val atomsInHead = HeadOrdinaryAtoms(P)
     val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t))

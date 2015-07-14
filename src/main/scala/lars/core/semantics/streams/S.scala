@@ -1,6 +1,7 @@
 package lars.core.semantics.streams
 
 import lars.core.semantics.formulas.Atom
+import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.programs.general.GeneralProgram
 import lars.core.semantics.structure.M
 
@@ -108,7 +109,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
   def toStructure() = M(T,v,Set[Atom]())
   def toStructure(B:Set[Atom]) = M(T,v,B)
 
-  def isAnswerStream(P:GeneralProgram, D:S, t:Int, B:Set[Atom]=Set()) : Boolean = {
+  def isAnswerStream[R <: Rule](P:Program[R], D:S, t:Int, B:Set[Atom]=Set()) : Boolean = {
 
     //TODO assert this is a superstream of D with fresh atoms
     //

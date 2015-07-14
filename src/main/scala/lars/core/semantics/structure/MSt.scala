@@ -32,7 +32,7 @@ case class MSt(m: M, s: S, t: Int) {
         val s1 = wfn(ch(s0, s), t, x)
         m / s1 / t ||- fm1
       }
-      case Wop(wop,fm1)        => {
+      case WopFm(wop,fm1)        => {
         val s0 = S(m.T, m.v)
         val s1 = wop.wfn(wop.ch(s0, s), t)
         m / s1 / t ||- fm1
