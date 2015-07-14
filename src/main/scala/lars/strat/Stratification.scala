@@ -42,9 +42,9 @@ object Stratification {
     val G = DepGraph(P)
     for (e <- G.edges) {
       e.dep match {
-        case geq => if (strat(e.from) < strat(e.to)) return false
-        case grt => if (strat(e.from) <= strat(e.to)) return false
-        case eql => if (strat(e.from) != strat(e.to)) return false
+        case `geq` => if (strat(e.from) < strat(e.to)) return false
+        case `grt` => if (strat(e.from) <= strat(e.to)) return false
+        case `eql` => if (strat(e.from) != strat(e.to)) return false
       }
     }
     return true
