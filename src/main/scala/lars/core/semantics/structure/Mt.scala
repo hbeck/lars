@@ -19,7 +19,7 @@ case class Mt(m: M, t: Int) {
     !(this |= r.body) || (this |= r.head)
   }
 
-  def |=[R <: Rule, Pr <: Program[R]](P: Pr): Boolean = {
+  def |=[R <: Rule](P: Program[R]): Boolean = {
     P.rules.forall(this |= _)
   }
 

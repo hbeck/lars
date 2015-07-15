@@ -2,6 +2,7 @@ package lars.core.semantics.programs
 
 import lars.core.semantics.programs.general.inspect.{HeadAtAtomsAfter, HeadOrdinaryAtoms, IntensionalAtoms, Map2Time}
 import lars.core.semantics.streams.S
+import lars.core.semantics.structure.IsAnswerStream
 
 /**
  * Created by hb on 7/13/15.
@@ -9,7 +10,7 @@ import lars.core.semantics.streams.S
 object AS {
 
   //naive implementation for the moment
-  def apply[R <: Rule, Pr <: Program[R]](P: Pr, D: S, t: Int): Set[S] = {
+  def apply[R <: Rule](P: Program[R], D: S, t: Int): Set[S] = {
     val AInt = IntensionalAtoms(P)
     val atomsInHead = HeadOrdinaryAtoms(P)
     val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t))
@@ -31,7 +32,7 @@ object AS {
     for (addS <- I.substreams()) { //todo iterate bottom up
       cntAll += 1
       val candidateS = D ++ addS
-      if (candidateS.isAnswerStream(P,D,t)) {
+      if (IsAnswerStream(candidateS,P,D,t)) {
         answerStreams += candidateS
         //TODO: skip additions to this model
       }

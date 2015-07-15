@@ -15,4 +15,5 @@ case class StdProgram(override val rules:Set[StdRule]) extends Program[StdRule](
   }
 
   override def apply(rules:Set[StdRule]): StdProgram = StdProgram(rules)
+
 }

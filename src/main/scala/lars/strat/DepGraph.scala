@@ -2,7 +2,7 @@ package lars.strat
 
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
-import lars.core.semantics.programs.{Program, Rule}
+import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -69,7 +69,7 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
 
 object DepGraph {
 
-  def apply[R <: Rule, Pr <: Program[R]](P: Pr): DepGraph = {
+  def apply(P: StdProgram): DepGraph = {
     val nodes = ExtendedAtoms(P,true) //TODO true okay?
     val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
@@ -77,22 +77,22 @@ object DepGraph {
   }
 
   @tailrec
-  private def headBodyArcs[R <: Rule](rules: Set[R], result: Set[DepEdge]) : Set[DepEdge] = {
+  private def headBodyArcs(rules: Set[StdRule], result: Set[DepEdge]) : Set[DepEdge] = {
     if (rules.isEmpty) {
       return result
     }
     val rule = rules.head
-    val alpha = ExtendedAtoms(rule.head, false).head
-    val betas: Set[ExtendedAtom] = ExtendedAtoms(rule.body, false)
+//    val alpha = ExtendedAtoms(rule.head, false).head
+//    val betas: Set[ExtendedAtom] = ExtendedAtoms(rule.body, false)
 
     var curr = mutable.HashSet[DepEdge]()
-    for (beta <- betas) {
-      curr += DepEdge(alpha,beta,geq)
+    for (beta <- rule.B) {
+      curr += DepEdge(rule.h,beta,geq)
     }
     headBodyArcs(rules.tail, result ++ curr.toSet)
   }
 
-  private def nestingArcs[R <: Rule, Pr <: Program[R]](P: Pr): Set[DepEdge] = {
+  private def nestingArcs(P: StdProgram): Set[DepEdge] = {
     val xs = ExtendedAtoms(P,true)
     var mset = mutable.HashSet[DepEdge]()
     for (x <- xs) {
@@ -101,18 +101,8 @@ object DepGraph {
           mset += DepEdge(AtAtom(y.t,y.a),y.a,eql)
           mset += DepEdge(y.a,AtAtom(y.t,y.a),eql)
         }
-        //TODO unify following three cases
-//        case y:WindowAtom => {
-//          mset += DepEdge(y,y.atom,grt)
-//        }
-        case y:WDiam => {
-          mset += DepEdge(WDiam(y.wop,y.a),y.a,grt)
-        }
-        case y:WBox => {
-          mset += DepEdge(WBox(y.wop,y.a),y.a,grt)
-        }
-        case y:WAt => {
-          mset += DepEdge(WAt(y.wop,y.t,y.a),y.a,grt)
+        case y:WindowAtom => {
+          mset += DepEdge(y,y.atom,grt)
         }
         case x => if (!x.isInstanceOf[Atom]) { assert(false) } //atoms are only to-Nodes
       }

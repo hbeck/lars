@@ -4,10 +4,10 @@ import lars.core.MapUtils
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs._
 import lars.core.semantics.programs.extatoms.{AtAtom, ExtendedAtoms, WAt, WDiam}
-import lars.core.semantics.programs.Rule
 import lars.core.semantics.programs.general.{GeneralProgram, GeneralRule}
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
+import lars.core.semantics.structure.IsAnswerStream
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
 import lars.strat.alg.Stratify
@@ -121,7 +121,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val reductRules = Set[GeneralRule](r1g_gen,r2g_gen,r3_gen,r5_gen);
     assert(PGen.rules.filter(m1/t |= _.body) == reductRules) //note: .sameElements also checks order
     //
-    val PR1 = PGen.reduct(m1,t)
+    val PR1 = Reduct(PGen,m1,t)
     assert(PR1.rules == reductRules)
     //manual model check for all rules of the reduct
     //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
@@ -138,15 +138,15 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(m1.isMinimalModel(PR1,t,Dp))
     //
     //
-    assert(I1.isAnswerStream(PGen,Dp,t))
-    assert(I2.isAnswerStream(PGen,Dp,t))
+    assert(IsAnswerStream(I1,PGen,Dp,t))
+    assert(IsAnswerStream(I2,PGen,Dp,t))
     //
     var X = Dp ++ S(T,Evaluation(common))
-    assert(X.isAnswerStream(PGen,Dp,t) == false) //t -> takeTrM (or t -> takeBus) missing
+    assert(IsAnswerStream(X,PGen,Dp,t) == false) //t -> takeTrM (or t -> takeBus) missing
     X = I1 + (t -> expTrM)
-    assert(X.isAnswerStream(PGen,Dp,t) == false) //non minimal
+    assert(IsAnswerStream(X,PGen,Dp,t) == false) //non minimal
     X = I1 - (m(44.1) -> expTrM)
-    assert(X.isAnswerStream(PGen,Dp,t) == false) //m(44.1) -> expTrM missing
+    assert(IsAnswerStream(X,PGen,Dp,t) == false) //m(44.1) -> expTrM missing
     //
     //
     //using all atoms yields a model
@@ -186,7 +186,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val reductRules = Set[StdRule](r1g,r2g,r3,r5);
     assert(P.rules.filter(m1/t |= _.body) == reductRules) //note: .sameElements also checks order
     //
-    val PR1 = P.reduct(m1,t)
+    val PR1 = Reduct(P,m1,t)
     assert(PR1.rules == reductRules)
     //manual model check for all rules of the reduct
     //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
@@ -203,15 +203,15 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(m1.isMinimalModel(PR1,t,Dp))
     //
     //
-    assert(I1.isAnswerStream(P,Dp,t))
-    assert(I2.isAnswerStream(P,Dp,t))
+    assert(IsAnswerStream(I1,P,Dp,t))
+    assert(IsAnswerStream(I2,P,Dp,t))
     //
     var X = Dp ++ S(T,Evaluation(common))
-    assert(X.isAnswerStream(P,Dp,t) == false) //t -> takeTrM (or t -> takeBus) missing
+    assert(IsAnswerStream(X,P,Dp,t) == false) //t -> takeTrM (or t -> takeBus) missing
     X = I1 + (t -> expTrM)
-    assert(X.isAnswerStream(P,Dp,t) == false) //non minimal
+    assert(IsAnswerStream(X,P,Dp,t) == false) //non minimal
     X = I1 - (m(44.1) -> expTrM)
-    assert(X.isAnswerStream(P,Dp,t) == false) //m(44.1) -> expTrM missing
+    assert(IsAnswerStream(X,P,Dp,t) == false) //m(44.1) -> expTrM missing
     //
     //
     //using all atoms yields a model
@@ -232,13 +232,13 @@ class ExamplesIJCAI15 extends FunSuite {
   val PpGen = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAt(w3,t,y))))
   val Pp = StdProgram(Set(StdRule(AtAtom(t,x),WAt(w3,t,y))))
 
-  def test7[R <: Rule, Pr <: Program[R]](program: Pr): Unit = {
+  test("ex7") {
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAt(w3,t,y),AtAtom(t,y),y)
-    val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(program,true)
+    val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(Pp,true)
     assert(actualEAtoms == expectedEAtoms)
     //
     def e(from:ExtendedAtom, to:ExtendedAtom, d:Dep) = DepEdge(from, to, d)
-    val nodes = ExtendedAtoms(program,true)
+    val nodes = ExtendedAtoms(Pp,true)
     val expectedSDG = DepGraph(nodes,Set[DepEdge](
       e(AtAtom(t,x),WAt(w3,t,y),geq),
       e(WAt(w3,t,y),y,grt),
@@ -247,7 +247,7 @@ class ExamplesIJCAI15 extends FunSuite {
       e(AtAtom(t,y),y,eql),
       e(y,AtAtom(t,y),eql)
     ))
-    val actualSDG = DepGraph(program)
+    val actualSDG = DepGraph(Pp)
     //    for (e <- actualSDG.edges) {
     //      println(e)
     //    }
@@ -261,15 +261,8 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(actualSDG == expectedSDG)
   }
 
-  test("ex7 general program") {
-    test7(PpGen)
-  }
-
-  test("ex7 standard program") {
-    test7(Pp)
-  }
-
-  def test8[R <: Rule, Pr <: Program[R]](program: Pr) {
+  test("ex8") {
+    val program = Pp
     val opt: Option[Stratification] = Stratify(program)
     assert(opt.isDefined)
     val strat = opt.get
@@ -308,14 +301,8 @@ class ExamplesIJCAI15 extends FunSuite {
   val ruleMapGen = Map[Int,GeneralRule]()+(1 -> r1g_gen)+(2 -> r2g_gen)+(3 -> r3_gen)+(4 -> r4_gen)+(5 -> r5_gen)
   val ruleMapStd = Map[Int,StdRule]()+(1 -> r1g)+(2 -> r2g)+(3 -> r3)+(4 -> r4)+(5 -> r5)
 
-  test("ex9 gen") {
-    test9(PGen,ruleMapGen)
-  }
-  test("ex9 std") {
-    test9(P,ruleMapStd)
-  }
-  
-  def test9[R <: Rule, Pr <: Program[R]](program: Pr, ruleMap: Map[Int,R]) : Unit = {
+  test("ex9") {
+    val program = P
     val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(program,true)
     val expectedExtendedAtoms = Set(
       AtAtom(m(37.2)+m(3),expBusM), expBusM, WAt(wop3,m(37.2),busG), AtAtom(m(37.2),busG), busG, on,
@@ -354,11 +341,11 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 0)
     }
 
-    val stratum: Map[Int, Pr] = Strata(program)
+    val stratum: Map[Int, StdProgram] = Strata(program)
 
-    val P2 = program(Set(ruleMap(3)))
-    val P3 = program(Set(ruleMap(1),ruleMap(2)))
-    val P5 = program(Set(ruleMap(4),ruleMap(5)))
+    val P2 = program(Set(r3))
+    val P3 = program(Set(r1g,r2g))
+    val P5 = program(Set(r4,r5))
 
     assert(stratum(0) == P2)
     assert(stratum(1) == P3)
@@ -378,12 +365,12 @@ class ExamplesIJCAI15 extends FunSuite {
         for (i <- 1 to 100) {
           any
         }
-        var d = (System.currentTimeMillis() - s) / 1000.0
+        val d = (System.currentTimeMillis() - s) / 1000.0
         println(d)
         return d
       }
 
-      var runs = 5
+      val runs = 5
       //
       var rt_as = 0.0
       runtime(AS(program, Dp, t)) //jvm opt

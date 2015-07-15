@@ -1,5 +1,4 @@
 import lars.core.semantics.formulas._
-import FormulaFunctions._
 import WindowOperators._
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.semantics.structure.M

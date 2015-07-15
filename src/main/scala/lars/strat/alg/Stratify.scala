@@ -1,7 +1,7 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
-import lars.core.semantics.programs.{Program, Rule}
+import lars.core.semantics.programs.standard.StdProgram
 import lars.strat.{DepGraph, Stratification, grt}
 
 /**
@@ -14,7 +14,7 @@ object Stratify {
   /**
    * @return a Stream Stratification (SStrat) for program P, if it has one
    */
-  def apply[R <: Rule, Pr <: Program[R]](P: Pr): Option[Stratification] = {
+  def apply(P: StdProgram): Option[Stratification] = {
     apply(DepGraph(P))
   }
 

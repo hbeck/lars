@@ -13,7 +13,7 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
   def /(stream: S) = MS(this, stream)
   def /(t: Int) = Mt(this,t)
 
-  def isModel[R <: Rule, Pr <: Program[R]](P: Pr, t: Int): Boolean = {
+  def isModel[R <: Rule](P: Program[R], t: Int): Boolean = {
     this/t |= P
   }
 
@@ -22,7 +22,7 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
   }
 
   //wrt data stream D
-  def isMinimalModel[R <: Rule, Pr <: Program[R]](P: Pr, t: Int, D: S): Boolean = {
+  def isMinimalModel[R <: Rule](P: Program[R], t: Int, D: S): Boolean = {
 
     if (!isModel(P,t)) return false
 

@@ -1,7 +1,6 @@
 package lars.core.semantics.streams
 
 import lars.core.semantics.formulas.Atom
-import lars.core.semantics.programs.{Program, Rule}
 import lars.core.semantics.structure.M
 
 import scala.collection.immutable.Map
@@ -26,8 +25,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
   def != (other: S) : Boolean = !(this == other)
 
-  //TODO limitation of fp approach? mutable: insert into set a single atom,
-  //vs copying (at least iterating) the whole thing
+  //TODO make clean
   def + (tsAtom: (Int,Atom)) : S = {
     val t = tsAtom._1
     val atom = tsAtom._2
@@ -108,14 +106,6 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
   def toStructure() = M(T,v,Set[Atom]())
   def toStructure(B:Set[Atom]) = M(T,v,B)
 
-  def isAnswerStream[R <: Rule, Pr <: Program[R]](P: Pr, D:S, t:Int, B:Set[Atom]=Set()) : Boolean = {
-
-    //TODO assert this is a superstream of D with fresh atoms
-    //
-    val M = this.toStructure(B)
-    val R = P.reduct(M,t)
-    M.isMinimalModel(R,t,D)
-  }
 
   //
   def substreams(): Iterator[S] = {
@@ -149,7 +139,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 }
 
 object S {
-  def fromTimestampedAtoms(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
+  def apply(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
     S(T,Evaluation.fromTimestampedAtoms(tsAtoms))
   }
 }

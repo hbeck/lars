@@ -13,5 +13,6 @@ abstract class Program[R <: Rule](val rules:Set[R]) {
      sb.toString
    }
 
-   def apply(rules:Set[R]):Program[R]
+   def apply(rules:Set[R]): Program[R]
+
 }

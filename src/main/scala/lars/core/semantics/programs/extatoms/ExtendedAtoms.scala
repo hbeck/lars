@@ -1,17 +1,25 @@
 package lars.core.semantics.programs.extatoms
 
-import lars.core.semantics.formulas._
+import lars.core.semantics.formulas.{Unary, _}
+import lars.core.semantics.programs.Rule
 import lars.core.semantics.programs.standard.StdProgram
-import lars.core.semantics.programs.{Program, Rule}
-import lars.core.semantics.formulas.Unary
 
 import scala.annotation.tailrec
 
 object ExtendedAtoms {
 
-  def apply(P: StdProgram) : Set[ExtendedAtom] = {
-    P.rules.flatMap( r => r.B + r.h)
+  def apply(P: StdProgram, nested: Boolean) : Set[ExtendedAtom] = {
+    val xs: Set[ExtendedAtom] = P.rules.flatMap( r => r.B + r.h )
+    if (!nested) {
+      return xs
+    }
+    xs ++ xs.flatMap( x => x.nested )
   }
+
+//  //\mathcal{A}^+ if nested == false, else \mathcal{A}^+_{sub}
+//  def apply(P: GeneralProgram, nested: Boolean): Set[ExtendedAtom] = {
+//    apply(P.rules, nested)
+//  }
 
   /**
    * @return returns all maximal extended atoms appearing in the given formula, plus its nested atoms if nested==true
@@ -84,8 +92,4 @@ object ExtendedAtoms {
     fn(rules, Set[ExtendedAtom](), nested)
   }
 
-  //\mathcal{A}^+ if sub == false, else \mathcal{A}^+_{sub}
-  def apply[R <: Rule, Pr <: Program[R]](P: Pr, nested: Boolean): Set[ExtendedAtom] = {
-    apply(P.rules, nested)
-  }
 }
