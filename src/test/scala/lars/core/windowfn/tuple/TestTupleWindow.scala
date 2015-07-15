@@ -2,6 +2,7 @@ package lars.core.windowfn.tuple
 
 import lars.core.semantics.formulas.Atom
 import lars.core.semantics.streams.{S, Timeline}
+import lars.core.windowfn.tuple.TupleWindow
 import org.scalatest.FunSuite
 
 import scala.collection.immutable.Map
