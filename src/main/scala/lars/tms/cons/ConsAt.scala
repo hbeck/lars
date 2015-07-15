@@ -11,14 +11,11 @@ object ConsAt {
 
   def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = {
     x match {
-      case AtAtom(t,a) => {
-        val opt = P.rules.flatMap(_.B).find({
-          case AtAtom(u,b) => (a == b) //TODO directly?
-          case _ => false})
-        if (opt.isDefined) {
-          Set(opt.get)
+      case y@AtAtom(t,a) => {
+        if (P.rules.flatMap(r=> r.B + r.h).contains(y)) {
+          return Set(a)
         } else {
-          Set()
+          return Set()
         }
       }
       case _ => Set()
