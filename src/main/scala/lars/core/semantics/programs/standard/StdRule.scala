@@ -43,4 +43,8 @@ case class StdRule(h:ExtendedAtom, Bp:Set[ExtendedAtom], Bn:Set[ExtendedAtom]=Se
     }
     h + " ← " + sb.toString
   }
+
+  def contains(x: ExtendedAtom): Boolean = {
+    (h == x) || B.contains(x)
+  }
 }

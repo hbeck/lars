@@ -1,4 +1,4 @@
-package lars.core.semantics.programs.inspect
+package lars.core.semantics.programs.general.inspect
 
 import lars.core.semantics.programs.extatoms.{AtAtom, ExtendedAtoms}
 import lars.core.semantics.programs.standard.StdProgram

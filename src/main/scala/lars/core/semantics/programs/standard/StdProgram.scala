@@ -1,5 +1,6 @@
 package lars.core.semantics.programs.standard
 
+import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.Program
 
 /**
@@ -7,4 +8,9 @@ import lars.core.semantics.programs.Program
  *
  * Created by hb on 6/23/15.
  */
-case class StdProgram(override val rules:Set[StdRule]) extends Program[StdRule](rules)
+case class StdProgram(override val rules:Set[StdRule]) extends Program[StdRule](rules) {
+
+  def contains(x: ExtendedAtom): Boolean = {
+    rules.find( r => r.contains(x) ).isDefined
+  }
+}

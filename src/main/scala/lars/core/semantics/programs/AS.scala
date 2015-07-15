@@ -1,7 +1,7 @@
 package lars.core.semantics.programs
 
 import lars.core.semantics.programs.general.GeneralProgram
-import lars.core.semantics.programs.inspect._
+import lars.core.semantics.programs.general.inspect.{Map2Time, HeadOrdinaryAtoms, IntensionalAtoms, HeadAtAtomsAfter}
 import lars.core.semantics.streams.S
 
 /**

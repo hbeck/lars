@@ -16,7 +16,7 @@ object ExtendedAtoms {
   /**
    * @return returns all maximal extended atoms appearing in the given formula, plus its nested atoms if nested==true
    */
-  def apply(fm: Formula, nested: Boolean): Set[ExtendedAtom] = {
+  def apply(fm: Formula, nested: Boolean = true): Set[ExtendedAtom] = {
     fm match {
       case Verum => Set()
       case Falsum => Set()
@@ -85,7 +85,7 @@ object ExtendedAtoms {
   }
 
   //\mathcal{A}^+ if sub == false, else \mathcal{A}^+_{sub}
-  def apply[R <: Rule](P: Program[R], sub: Boolean): Set[ExtendedAtom] = {
-    apply(P.rules, sub)
+  def apply[R <: Rule](P: Program[R], nested: Boolean): Set[ExtendedAtom] = {
+    apply(P.rules, nested)
   }
 }
