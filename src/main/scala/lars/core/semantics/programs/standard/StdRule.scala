@@ -1,7 +1,7 @@
 package lars.core.semantics.programs.standard
 
-import lars.core.semantics.programs.Rule
 import lars.core.semantics.formulas._
+import lars.core.semantics.programs.Rule
 import lars.core.semantics.programs.extatoms.AtAtom
 
 /**
@@ -46,5 +46,29 @@ case class StdRule(h:ExtendedAtom, Bp:Set[ExtendedAtom], Bn:Set[ExtendedAtom]=Se
 
   def contains(x: ExtendedAtom): Boolean = {
     (h == x) || B.contains(x)
+  }
+}
+
+object StdRule {
+  //convenience method
+  //given formulas must be extended atoms or negated extended atoms
+  //accordingly, a positive/negative body is created
+  def apply(h: ExtendedAtom, fms:Formula*): StdRule = {
+    var Bp = Set[ExtendedAtom]()
+    var Bn = Set[ExtendedAtom]()
+    for (fm <- fms) {
+      fm match {
+        case x:ExtendedAtom => { Bp = Bp + x }
+        case Not(fm1) => {
+          if (fm1.isInstanceOf[ExtendedAtom]) {
+            Bn = Bn + fm1.asInstanceOf[ExtendedAtom]
+          } else {
+            assert(false)
+          }
+        }
+        case _ => assert(false)
+      }
+    }
+    StdRule(h,Bp,Bn)
   }
 }

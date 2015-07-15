@@ -9,6 +9,8 @@ case class WDiamAtom(w: WindowOperatorFixedParams, a: Atom) extends WindowAtom(w
   override def toString = w + "◇" + a
   override def atom = a
 }
+//TODO WDiamAtom(w,a) vs WAtom(w,Diam(a))
+
 //object WDiamAtom {
 //  def apply(x:WopFm): WDiamAtom = {
 //    val diamAtom = x.fm.asInstanceOf[Diam]

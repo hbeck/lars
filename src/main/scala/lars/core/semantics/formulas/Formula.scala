@@ -50,6 +50,8 @@ abstract class Atom extends ExtendedAtom {
   override def nested = Set(this)
 }
 
+object Atom {}
+
 object Verum extends Atom
 object Falsum extends Atom
 

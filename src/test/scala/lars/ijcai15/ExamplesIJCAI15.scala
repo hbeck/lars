@@ -5,10 +5,17 @@ import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms.{ExtendedAtoms, WDiamAtom, WAtAtom, AtAtom}
 import lars.core.semantics.programs.general.{GeneralRule, GeneralProgram}
 import lars.core.semantics.programs._
+import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
 import lars.strat.alg.Stratify
+import lars.tms.acons.ACons
+import lars.tms.cons.{ConsAt, ConsH, ConsW}
+import lars.tms.status.Status.{unknown, in}
+import lars.tms.status.rule.fVal
+import lars.tms.status.{Label, Labels}
+import lars.tms.supp.SuppP
 import org.scalatest.FunSuite
 
 /**
@@ -307,6 +314,34 @@ class ExamplesIJCAI15 extends FunSuite {
 
     }
 
+  }
+
+  val R1g = StdRule(AtAtom(m(37.2)+m(3),expBusM), Set(WAtAtom(wop3,m(37.2),busG),on))
+  val R2g = StdRule(AtAtom(m(39.1)+m(5),expTrM), WAtAtom(wop5,m(39.1),tramB), on) //convenience variant
+  val R3 = StdRule(on, WDiamAtom(wop1,request))
+  val R4 = StdRule(takeBusM, WDiamAtom(wopP5,expBusM), Not(takeTrM), Not(WDiamAtom(wop3,jam)))
+  val R5 = StdRule(takeTrM, WDiamAtom(wopP5,expTrM), Not(takeBusM))
+
+  test("ex10") {
+    val P10 = StdProgram(Set[StdRule](R2g))
+    assert(ConsW(P10,AtAtom(m(39.1),tramB)) == Set(WAtAtom(wop5,m(39.1),tramB)))
+    assert(ConsH(P10,WAtAtom(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
+    assert(ConsH(P10,on) == Set(AtAtom(m(44.1),expTrM)))
+    assert(ConsAt(P10,AtAtom(m(44.1),expTrM)) == Set(expTrM))
+
+    val mMap = new collection.mutable.HashMap[ExtendedAtom,Label]()
+    mMap(WAtAtom(wop5,m(39.1),tramB))=Label(in, (m(39.1),m(44.1)))
+    mMap(on)=Label(in,(m(39.7),m(40.7)))
+    for (x <- ExtendedAtoms(P10)) {
+      if (!mMap.contains(x)) {
+        mMap(x)=Label(unknown)
+      }
+    }
+    val L=Labels(mMap)
+
+    assert(fVal(L,R2g))
+    assert(SuppP(P10,L,AtAtom(m(44.1),expTrM)) == Set(WAtAtom(wop5,m(39.1),tramB), on))
+    assert(ACons(P10,L,WAtAtom(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
   }
 
 }
