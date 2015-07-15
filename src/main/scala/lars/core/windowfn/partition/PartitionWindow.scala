@@ -12,6 +12,21 @@ import scala.collection.immutable.HashMap
  */
 object PartitionWindow extends WindowFunction[PartitionWindowParameters] {
 
+  override def apply(s: S, t: Int, x: PartitionWindowParameters): S = {
+
+    res(s,t,TupleWindowParameters(x.l,x.u),x.a)
+  }
+
+  def res(s:S, t:Int, x:TupleWindowParameters, a:Set[Atom]):S = {
+    var wt:S = S(s.T)
+    if(a.size>1){
+      wt = TupleWindow(idx(s,a.head),t,x) ++ res(s,t,x,a.tail)
+    } else if(a.size == 1){
+      wt = TupleWindow(idx(s,a.head),t,x)
+    }
+    wt
+  }
+
   def idx(s:S, a:Atom) : S = {
     var subS = S(s.T)
     for((i,j) <- s.v.mapping){
@@ -22,27 +37,6 @@ object PartitionWindow extends WindowFunction[PartitionWindowParameters] {
       }
     }
     subS
-  }
-
-  def res(s:S, t:Int, x:TupleWindowParameters, a:Set[Atom]):S = {
-    var wt:S = S(s.T)
-    if(a.size>1){
-     wt = TupleWindow(idx(s,a.head),t,x) ++ res(s,t,x,a.tail)
-    } else if(a.size == 1){
-     wt = TupleWindow(idx(s,a.head),t,x)
-    }
-    wt
-  }
-
-  override def apply(s: S, t: Int, x: PartitionWindowParameters): S = {
-
-    var sMap = new HashMap[Int,S]
-
-    val partNum = x.a.size
-
-    var n = 0
-
-    res(s,t,TupleWindowParameters(x.l,x.u),x.a)
   }
 
   override def fix(x: PartitionWindowParameters) = PartitionWindowFixedParams(x)
