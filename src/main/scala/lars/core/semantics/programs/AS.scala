@@ -1,7 +1,6 @@
 package lars.core.semantics.programs
 
-import lars.core.semantics.programs.general.GeneralProgram
-import lars.core.semantics.programs.general.inspect.{Map2Time, HeadOrdinaryAtoms, IntensionalAtoms, HeadAtAtomsAfter}
+import lars.core.semantics.programs.general.inspect.{HeadAtAtomsAfter, HeadOrdinaryAtoms, IntensionalAtoms, Map2Time}
 import lars.core.semantics.streams.S
 
 /**
@@ -10,7 +9,7 @@ import lars.core.semantics.streams.S
 object AS {
 
   //naive implementation for the moment
-  def apply[R <: Rule](P: Program[R], D: S, t: Int): Set[S] = {
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr, D: S, t: Int): Set[S] = {
     val AInt = IntensionalAtoms(P)
     val atomsInHead = HeadOrdinaryAtoms(P)
     val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t))

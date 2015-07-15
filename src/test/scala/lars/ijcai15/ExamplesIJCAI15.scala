@@ -4,6 +4,7 @@ import lars.core.MapUtils
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs._
 import lars.core.semantics.programs.extatoms.{AtAtom, ExtendedAtoms, WAt, WDiam}
+import lars.core.semantics.programs.Rule
 import lars.core.semantics.programs.general.{GeneralProgram, GeneralRule}
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
@@ -228,16 +229,16 @@ class ExamplesIJCAI15 extends FunSuite {
   val w3 = WindowOperatorFixedParams(w3fn)
   object x extends Atom
   object y extends Atom
-  val Pp = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAt(w3,t,y))))
-  //TODO StdProgram
+  val PpGen = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAt(w3,t,y))))
+  val Pp = StdProgram(Set(StdRule(AtAtom(t,x),WAt(w3,t,y))))
 
-  test("ex7") {
+  def test7[R <: Rule, Pr <: Program[R]](program: Pr): Unit = {
     val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAt(w3,t,y),AtAtom(t,y),y)
-    val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(Pp,true)
+    val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(program,true)
     assert(actualEAtoms == expectedEAtoms)
     //
     def e(from:ExtendedAtom, to:ExtendedAtom, d:Dep) = DepEdge(from, to, d)
-    val nodes = ExtendedAtoms(Pp,true)
+    val nodes = ExtendedAtoms(program,true)
     val expectedSDG = DepGraph(nodes,Set[DepEdge](
       e(AtAtom(t,x),WAt(w3,t,y),geq),
       e(WAt(w3,t,y),y,grt),
@@ -246,10 +247,10 @@ class ExamplesIJCAI15 extends FunSuite {
       e(AtAtom(t,y),y,eql),
       e(y,AtAtom(t,y),eql)
     ))
-    val actualSDG = DepGraph(Pp)
-//    for (e <- actualSDG.edges) {
-//      println(e)
-//    }
+    val actualSDG = DepGraph(program)
+    //    for (e <- actualSDG.edges) {
+    //      println(e)
+    //    }
     for (e <- actualSDG.edges) {
       assert(expectedSDG.edges contains e)
     }
@@ -260,8 +261,16 @@ class ExamplesIJCAI15 extends FunSuite {
     assert(actualSDG == expectedSDG)
   }
 
-  test("ex8") {
-    val opt: Option[Stratification] = Stratify(Pp)
+  test("ex7 general program") {
+    test7(PpGen)
+  }
+
+  test("ex7 standard program") {
+    test7(Pp)
+  }
+
+  def test8[R <: Rule, Pr <: Program[R]](program: Pr) {
+    val opt: Option[Stratification] = Stratify(program)
     assert(opt.isDefined)
     val strat = opt.get
     assert(strat.maxStratum == 2)
@@ -283,9 +292,9 @@ class ExamplesIJCAI15 extends FunSuite {
       WAt(w3,t,y) -> 1,
       AtAtom(t,x) -> 1,
       x -> 1),
-      Pp))
+      program))
     //
-    assert(Strata(Pp)(0)==Pp)
+    assert(Strata(program)(0)==program)
   }
 
   /*
@@ -295,9 +304,19 @@ class ExamplesIJCAI15 extends FunSuite {
   val r4 = Rule(takeBusM, Wop(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(Wop(wop3,Diam(jam))))
   val r5 = Rule(takeTrM, Wop(wopP5,Diam(expTrM)) and Not(takeBusM))
   */
+
+  val ruleMapGen = Map[Int,GeneralRule]()+(1 -> r1g_gen)+(2 -> r2g_gen)+(3 -> r3_gen)+(4 -> r4_gen)+(5 -> r5_gen)
+  val ruleMapStd = Map[Int,StdRule]()+(1 -> r1g)+(2 -> r2g)+(3 -> r3)+(4 -> r4)+(5 -> r5)
+
+  test("ex9 gen") {
+    test9(PGen,ruleMapGen)
+  }
+  test("ex9 std") {
+    test9(P,ruleMapStd)
+  }
   
-  test("ex9") {
-    val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(PGen,true)
+  def test9[R <: Rule, Pr <: Program[R]](program: Pr, ruleMap: Map[Int,R]) : Unit = {
+    val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(program,true)
     val expectedExtendedAtoms = Set(
       AtAtom(m(37.2)+m(3),expBusM), expBusM, WAt(wop3,m(37.2),busG), AtAtom(m(37.2),busG), busG, on,
       AtAtom(m(39.1)+m(5),expTrM), expTrM, WAt(wop5,m(39.1),tramB), AtAtom(m(39.1),tramB), tramB,
@@ -307,7 +326,7 @@ class ExamplesIJCAI15 extends FunSuite {
     )
     assert(extendedAtoms == expectedExtendedAtoms)
     //
-    val strat = Stratify(PGen).get
+    val strat = Stratify(program).get
     //
     assert(strat.maxStratum == 5)
     // 5
@@ -335,20 +354,20 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 0)
     }
 
-    val stratum: Map[Int, GeneralProgram] = Strata(PGen)
+    val stratum: Map[Int, Pr] = Strata(program)
 
-    val P2 = GeneralProgram(Set(r3_gen))
-    val P3 = GeneralProgram(Set(r1g_gen,r2g_gen))
-    val P5 = GeneralProgram(Set(r4_gen,r5_gen))
+    val P2 = program(Set(ruleMap(3)))
+    val P3 = program(Set(ruleMap(1),ruleMap(2)))
+    val P5 = program(Set(ruleMap(4),ruleMap(5)))
 
     assert(stratum(0) == P2)
     assert(stratum(1) == P3)
     assert(stratum(2) == P5)
 
     //example for property 1:
-    val ias: Set[S] = IAS(PGen,Dp,t)
+    val ias: Set[S] = IAS(program,Dp,t)
     //println(ias)
-    assert(AS(PGen,Dp,t) == ias)
+    assert(AS(program,Dp,t) == ias)
 
     val performanceTest = false
 
@@ -367,14 +386,14 @@ class ExamplesIJCAI15 extends FunSuite {
       var runs = 5
       //
       var rt_as = 0.0
-      runtime(AS(PGen, Dp, t)) //jvm opt
+      runtime(AS(program, Dp, t)) //jvm opt
       for (i <- 1 to runs) {
-        rt_as += runtime(AS(PGen, Dp, t))
+        rt_as += runtime(AS(program, Dp, t))
       }
       var rt_ias = 0.0
-      rt_ias += runtime(IAS(PGen, Dp, t))
+      rt_ias += runtime(IAS(program, Dp, t))
       for (i <- 1 to runs) {
-        rt_ias += runtime(IAS(PGen, Dp, t))
+        rt_ias += runtime(IAS(program, Dp, t))
       }
 
       println("avg:")
@@ -383,8 +402,6 @@ class ExamplesIJCAI15 extends FunSuite {
 
     }
   }
-
-  
 
   test("ex10") {
     val P10 = StdProgram(Set[StdRule](r2g))

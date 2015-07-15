@@ -2,7 +2,7 @@ package lars.strat
 
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
-import lars.core.semantics.programs.general.{GeneralRule, GeneralProgram}
+import lars.core.semantics.programs.{Program, Rule}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -69,7 +69,7 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
 
 object DepGraph {
 
-  def apply(P: GeneralProgram): DepGraph = {
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr): DepGraph = {
     val nodes = ExtendedAtoms(P,true) //TODO true okay?
     val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
@@ -77,7 +77,7 @@ object DepGraph {
   }
 
   @tailrec
-  private def headBodyArcs(rules: Set[GeneralRule], result: Set[DepEdge]) : Set[DepEdge] = {
+  private def headBodyArcs[R <: Rule](rules: Set[R], result: Set[DepEdge]) : Set[DepEdge] = {
     if (rules.isEmpty) {
       return result
     }
@@ -92,7 +92,7 @@ object DepGraph {
     headBodyArcs(rules.tail, result ++ curr.toSet)
   }
 
-  private def nestingArcs(P: GeneralProgram): Set[DepEdge] = {
+  private def nestingArcs[R <: Rule, Pr <: Program[R]](P: Pr): Set[DepEdge] = {
     val xs = ExtendedAtoms(P,true)
     var mset = mutable.HashSet[DepEdge]()
     for (x <- xs) {
@@ -102,6 +102,9 @@ object DepGraph {
           mset += DepEdge(y.a,AtAtom(y.t,y.a),eql)
         }
         //TODO unify following three cases
+//        case y:WindowAtom => {
+//          mset += DepEdge(y,y.atom,grt)
+//        }
         case y:WDiam => {
           mset += DepEdge(WDiam(y.wop,y.a),y.a,grt)
         }

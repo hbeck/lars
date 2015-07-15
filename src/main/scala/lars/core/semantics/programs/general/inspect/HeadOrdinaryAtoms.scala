@@ -16,7 +16,7 @@ object HeadOrdinaryAtoms {
     P.rules.map(_.h).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
   }
 
-  def apply[R <: Rule](P: Program[R]): Set[Atom] = {
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr): Set[Atom] = {
     P.rules.map(_.head).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
   }
 

@@ -13,7 +13,7 @@ object HeadAtAtoms {
     P.rules.map(_.h).filter(_.isInstanceOf[AtAtom]).map(_.asInstanceOf[AtAtom])
   }
 
-  def apply[R <: Rule](P: Program[R]): Set[AtAtom] = {
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr): Set[AtAtom] = {
     P.rules.map(_.head).flatMap(ExtendedAtoms(_, true)).filter(_.isInstanceOf[AtAtom]).map(_.asInstanceOf[AtAtom])
   }
 

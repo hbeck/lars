@@ -85,7 +85,7 @@ object ExtendedAtoms {
   }
 
   //\mathcal{A}^+ if sub == false, else \mathcal{A}^+_{sub}
-  def apply[R <: Rule](P: Program[R], nested: Boolean): Set[ExtendedAtom] = {
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr, nested: Boolean): Set[ExtendedAtom] = {
     apply(P.rules, nested)
   }
 }

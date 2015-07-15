@@ -2,7 +2,7 @@ package lars.strat
 
 import lars.core.MapUtils
 import lars.core.semantics.formulas.ExtendedAtom
-import lars.core.semantics.programs.general.GeneralProgram
+import lars.core.semantics.programs.{Program, Rule}
 import lars.strat.alg.{ComponentGraph, Stratify}
 
 /**
@@ -21,7 +21,7 @@ case class Stratification(map: Map[Int,Set[ExtendedAtom]]) { //"other" way as de
 
 object Stratification {
   
-  def apply(P:GeneralProgram): Option[Stratification] = Stratify(P)
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr): Option[Stratification] = Stratify(P)
 
   def apply(cg:ComponentGraph) : Stratification = {
     val nodesInStratum = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
@@ -38,7 +38,7 @@ object Stratification {
     Stratification(nodesInStratum.toMap)
   }
   
-  def isStratification(strat: Map[ExtendedAtom,Int], P: GeneralProgram): Boolean = {
+  def isStratification[R <: Rule, Pr <: Program[R]](strat: Map[ExtendedAtom,Int], P: Pr): Boolean = {
     val G = DepGraph(P)
     for (e <- G.edges) {
       e.dep match {

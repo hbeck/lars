@@ -16,7 +16,7 @@ object IntensionalAtoms {
     P.rules.map(_.h).flatMap(ExtendedAtoms(_,true)).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
   }
 
-  def apply[R <: Rule](P: Program[R]): Set[Atom] = {
+  def apply[R <: Rule, Pr <: Program[R]](P: Pr): Set[Atom] = {
     P.rules.map(_.head).flatMap(ExtendedAtoms(_, true)).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
   }
 
