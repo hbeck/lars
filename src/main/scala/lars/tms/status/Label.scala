@@ -8,6 +8,7 @@ import lars.core.ClosedIntInterval
 case class Label(var status: Status, val intervals:collection.mutable.Set[ClosedIntInterval]=new collection.mutable.HashSet[ClosedIntInterval])
 
 object Label {
+
   def apply(status: Status, pairs:(Int,Int)*): Label = {
     val set = new collection.mutable.HashSet[ClosedIntInterval]()
     for (pair <- pairs) {

@@ -113,6 +113,6 @@ case class W[X <: WindowParameters](wfn: WindowFunction[X], x: X, override val f
   }
 }
 
-case class WopFm(wop: WindowOperatorFixedParams, override val fm: Formula) extends Unary(fm) {
+case class WindowFormula(wop: WindowOperatorFixedParams, override val fm: Formula) extends Unary(fm) {
   override def toString = wop + par(fm)
 }

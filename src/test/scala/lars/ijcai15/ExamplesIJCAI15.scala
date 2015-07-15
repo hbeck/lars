@@ -2,20 +2,18 @@ package lars.ijcai15
 
 import lars.core.MapUtils
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.extatoms.{ExtendedAtoms, WDiamAtom, WAtAtom, AtAtom}
-import lars.core.semantics.programs.general.{GeneralRule, GeneralProgram}
 import lars.core.semantics.programs._
-import lars.core.semantics.programs.standard.{StdRule, StdProgram}
+import lars.core.semantics.programs.extatoms.{AtAtom, ExtendedAtoms, WAt, WDiam}
+import lars.core.semantics.programs.general.{GeneralProgram, GeneralRule}
+import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
 import lars.strat.alg.Stratify
-import lars.tms.acons.ACons
 import lars.tms.cons.{ConsAt, ConsH, ConsW}
-import lars.tms.status.Status.{unknown, in}
+import lars.tms.status.Status.in
 import lars.tms.status.rule.fVal
 import lars.tms.status.{Label, Labels}
-import lars.tms.supp.SuppP
 import org.scalatest.FunSuite
 
 /**
@@ -58,7 +56,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val sfm = At(m(37.2), busG)
     def x = TimeWindowParameters
     val fm1 = W(w, x(m(3)), sfm)
-    val fm2 = WopFm(wop3, sfm) //alt
+    val fm2 = WindowFormula(wop3, sfm) //alt
     for (t <- m(37.2) to m(40.2)) {
       for (fm <- Seq(fm1, fm2))
         assert(M / t |= fm)
@@ -70,20 +68,98 @@ class ExamplesIJCAI15 extends FunSuite {
   }
 
   //for r1, r2, only relevant ground instances given
-  val r1g = GeneralRule(At(m(37.2)+m(3),expBusM), WopFm(wop3,At(m(37.2),busG)) and on)
-  val r2g = GeneralRule(At(m(39.1)+m(5),expTrM), WopFm(wop5,At(m(39.1),tramB)) and on)
-  val r3 = GeneralRule(on, WopFm(wop1,Diam(request)))
-  val r4 = GeneralRule(takeBusM, WopFm(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(WopFm(wop3,Diam(jam))))
-  val r5 = GeneralRule(takeTrM, WopFm(wopP5,Diam(expTrM)) and Not(takeBusM))
+  val r1g_gen = GeneralRule(At(m(37.2)+m(3),expBusM), WindowFormula(wop3,At(m(37.2),busG)) and on)
+  val r2g_gen = GeneralRule(At(m(39.1)+m(5),expTrM), WindowFormula(wop5,At(m(39.1),tramB)) and on)
+  val r3_gen = GeneralRule(on, WindowFormula(wop1,Diam(request)))
+  val r4_gen = GeneralRule(takeBusM, WindowFormula(wopP5,Diam(expBusM)) and Not(takeTrM) and Not(WindowFormula(wop3,Diam(jam))))
+  val r5_gen = GeneralRule(takeTrM, WindowFormula(wopP5,Diam(expTrM)) and Not(takeBusM))
 //  for (rule <- Set (r1g,r2g,r3,r4,r5)) {
 //    println(rule)
 //  }
+  val r1g = StdRule(AtAtom(m(37.2)+m(3),expBusM), Set(WAt(wop3,m(37.2),busG),on))
+  val r2g = StdRule(AtAtom(m(39.1)+m(5),expTrM), WAt(wop5,m(39.1),tramB), on) //convenience variant
+  val r3 = StdRule(on, WDiam(wop1,request))
+  val r4 = StdRule(takeBusM, WDiam(wopP5,expBusM), Not(takeTrM), Not(WDiam(wop3,jam)))
+  val r5 = StdRule(takeTrM, WDiam(wopP5,expTrM), Not(takeBusM))
   //
-  val P = GeneralProgram(Set(r1g,r2g,r3,r4,r5))
+  val PGen = GeneralProgram(Set(r1g_gen,r2g_gen,r3_gen,r4_gen,r5_gen))
+  val P = StdProgram(Set(r1g,r2g,r3,r4,r5))
   val t = m(39.7)
   val Dp = D + (t -> request)
 
-  test("ex6") {
+  test("ex6 general program") {
+    val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
+    val mI1 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
+    val mI2 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
+    //
+    val I1 = Dp ++ S(T,Evaluation(mI1))
+    val I2 = Dp ++ S(T,Evaluation(mI2))
+    //
+    // steps for i1
+    val m1 = I1.toStructure(Set[Atom]())
+    assert((m1/t |= r1g_gen.body))
+    assert((m1/t |= r2g_gen.body))
+    assert((m1/t |= r3_gen.body))
+    assert((m1/t |= r4_gen.body) == false)
+    //
+    assert((m1/m(44.1) |= expTrM))
+    assert((m1/m(44.1) |= Diam(expTrM)))
+    assert((m1/m(0) |= Diam(expTrM)))
+    assert((m1/m(50) |= Diam(expTrM)))
+    assert((m1/m(44.1) |= WindowFormula(wopP5,expTrM)))
+    assert((m1/m(44.1) |= WindowFormula(wopP5,Diam(expTrM))))
+    assert((m1/(m(44.1)+1) |= WindowFormula(wopP5,Diam(expTrM))) == false)
+    assert((m1/(m(44.1)-1) |= WindowFormula(wopP5,Diam(expTrM))))
+    assert((m1/(m(39.1)) |= WindowFormula(wopP5,Diam(expTrM))))
+    assert((m1/(m(39.1)-1) |= WindowFormula(wopP5,Diam(expTrM))) == false)
+    assert((m1/t |= takeBusM) == false)
+    assert((m1/t |= Not(takeBusM)))
+    //
+    assert((m1/t |= r5_gen.body))
+    //
+    val reductRules = Set[GeneralRule](r1g_gen,r2g_gen,r3_gen,r5_gen);
+    assert(PGen.rules.filter(m1/t |= _.body) == reductRules) //note: .sameElements also checks order
+    //
+    val PR1 = PGen.reduct(m1,t)
+    assert(PR1.rules == reductRules)
+    //manual model check for all rules of the reduct
+    //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
+    assert(m1/t |= WindowFormula(wop3,At(m(37.2),busG)))
+    assert(m1/t |= on)
+    assert(m1/t |= At(m(37.2)+m(3),expBusM))
+    assert(m1/t |= Implies(And(WindowFormula(wop3,At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
+    //
+    assert(m1/t |= r1g_gen)
+    assert(m1/t |= r2g_gen)
+    assert(m1/t |= r3_gen)
+    assert(m1/t |= r5_gen)
+    //
+    assert(m1.isMinimalModel(PR1,t,Dp))
+    //
+    //
+    assert(I1.isAnswerStream(PGen,Dp,t))
+    assert(I2.isAnswerStream(PGen,Dp,t))
+    //
+    var X = Dp ++ S(T,Evaluation(common))
+    assert(X.isAnswerStream(PGen,Dp,t) == false) //t -> takeTrM (or t -> takeBus) missing
+    X = I1 + (t -> expTrM)
+    assert(X.isAnswerStream(PGen,Dp,t) == false) //non minimal
+    X = I1 - (m(44.1) -> expTrM)
+    assert(X.isAnswerStream(PGen,Dp,t) == false) //m(44.1) -> expTrM missing
+    //
+    //
+    //using all atoms yields a model
+    assert((I1 ++ I2).toStructure(Set()).isModel(PGen,t))
+    //
+    val answerStreams = AS(PGen,Dp,t)
+    assert(answerStreams.size == 2)
+//    println("answer streams: "+answerStreams.size)
+//    for (as <- answerStreams) {
+//      println(as)
+//    }
+  }
+
+  test("ex6 std program") {
     val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
     val mI1 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
     val mI2 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
@@ -98,32 +174,25 @@ class ExamplesIJCAI15 extends FunSuite {
     assert((m1/t |= r3.body))
     assert((m1/t |= r4.body) == false)
     //
-    assert((m1/m(44.1) |= expTrM))
-    assert((m1/m(44.1) |= Diam(expTrM)))
-    assert((m1/m(0) |= Diam(expTrM)))
-    assert((m1/m(50) |= Diam(expTrM)))
-    assert((m1/m(44.1) |= WopFm(wopP5,expTrM)))
-    assert((m1/m(44.1) |= WopFm(wopP5,Diam(expTrM))))
-    assert((m1/(m(44.1)+1) |= WopFm(wopP5,Diam(expTrM))) == false)
-    assert((m1/(m(44.1)-1) |= WopFm(wopP5,Diam(expTrM))))
-    assert((m1/(m(39.1)) |= WopFm(wopP5,Diam(expTrM))))
-    assert((m1/(m(39.1)-1) |= WopFm(wopP5,Diam(expTrM))) == false)
-    assert((m1/t |= takeBusM) == false)
-    assert((m1/t |= Not(takeBusM)))
+    assert((m1/m(44.1) |= WDiam(wopP5,expTrM)))
+    assert((m1/(m(44.1)+1) |= WDiam(wopP5,expTrM)) == false)
+    assert((m1/(m(44.1)-1) |= WDiam(wopP5,expTrM)))
+    assert((m1/(m(39.1)) |= WDiam(wopP5,expTrM)))
+    assert((m1/(m(39.1)-1) |= WDiam(wopP5,expTrM)) == false)
     //
     assert((m1/t |= r5.body))
     //
-    val reductRules = Set[GeneralRule](r1g,r2g,r3,r5);
+    val reductRules = Set[StdRule](r1g,r2g,r3,r5);
     assert(P.rules.filter(m1/t |= _.body) == reductRules) //note: .sameElements also checks order
     //
     val PR1 = P.reduct(m1,t)
     assert(PR1.rules == reductRules)
     //manual model check for all rules of the reduct
     //r1g: At(m(37.2)+m(3),expBusM), w3(At(m(37.2),busG)) and on
-    assert(m1/t |= WopFm(wop3,At(m(37.2),busG)))
+    assert(m1/t |= WAt(wop3,m(37.2),busG))
     assert(m1/t |= on)
-    assert(m1/t |= At(m(37.2)+m(3),expBusM))
-    assert(m1/t |= Implies(And(WopFm(wop3,At(m(37.2),busG)),on),At(m(37.2)+m(3),expBusM)))
+    assert(m1/t |= AtAtom(m(37.2)+m(3),expBusM))
+    assert(m1/t |= Implies(And(WAt(wop3,m(37.2),busG),on),AtAtom(m(37.2)+m(3),expBusM)))
     //
     assert(m1/t |= r1g)
     assert(m1/t |= r2g)
@@ -149,29 +218,29 @@ class ExamplesIJCAI15 extends FunSuite {
     //
     val answerStreams = AS(P,Dp,t)
     assert(answerStreams.size == 2)
-//    println("answer streams: "+answerStreams.size)
-//    for (as <- answerStreams) {
-//      println(as)
-//    }
+    //    println("answer streams: "+answerStreams.size)
+    //    for (as <- answerStreams) {
+    //      println(as)
+    //    }
   }
 
   val w3fn = TimeWindowFixedParams(TimeWindowParameters(3,0,1))
   val w3 = WindowOperatorFixedParams(w3fn)
   object x extends Atom
   object y extends Atom
-  val Pp = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAtAtom(w3,t,y))))
+  val Pp = GeneralProgram(Set(GeneralRule(AtAtom(t,x),WAt(w3,t,y))))
   //TODO StdProgram
 
   test("ex7") {
-    val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAtAtom(w3,t,y),AtAtom(t,y),y)
+    val expectedEAtoms: Set[ExtendedAtom] = Set(AtAtom(t,x),x,WAt(w3,t,y),AtAtom(t,y),y)
     val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(Pp,true)
     assert(actualEAtoms == expectedEAtoms)
     //
     def e(from:ExtendedAtom, to:ExtendedAtom, d:Dep) = DepEdge(from, to, d)
     val nodes = ExtendedAtoms(Pp,true)
     val expectedSDG = DepGraph(nodes,Set[DepEdge](
-      e(AtAtom(t,x),WAtAtom(w3,t,y),geq),
-      e(WAtAtom(w3,t,y),y,grt),
+      e(AtAtom(t,x),WAt(w3,t,y),geq),
+      e(WAt(w3,t,y),y,grt),
       e(AtAtom(t,x),x,eql),
       e(x,AtAtom(t,x),eql),
       e(AtAtom(t,y),y,eql),
@@ -197,12 +266,12 @@ class ExamplesIJCAI15 extends FunSuite {
     val strat = opt.get
     assert(strat.maxStratum == 2)
     assert(strat(0) == Set(AtAtom(t,y),y))
-    assert(strat(1) == Set(WAtAtom(w3,t,y)))
+    assert(strat(1) == Set(WAt(w3,t,y)))
     assert(strat(2) == Set(AtAtom(t,x),x))
     // can call also in direction as given in paper:
     assert(strat(AtAtom(t,y)) == 0)
     assert(strat(y) == 0)
-    assert(strat(WAtAtom(w3,t,y)) == 1)
+    assert(strat(WAt(w3,t,y)) == 1)
     assert(strat(AtAtom(t,x)) == 2)
     assert(strat(x) == 2)
     // decision was made to have a 'maximal' stratification in the algorithm
@@ -211,7 +280,7 @@ class ExamplesIJCAI15 extends FunSuite {
       Stratification.isStratification(Map(
       AtAtom(t,y) -> 0,
       y -> 0,
-      WAtAtom(w3,t,y) -> 1,
+      WAt(w3,t,y) -> 1,
       AtAtom(t,x) -> 1,
       x -> 1),
       Pp))
@@ -228,17 +297,17 @@ class ExamplesIJCAI15 extends FunSuite {
   */
   
   test("ex9") {
-    val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(P,true)
+    val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(PGen,true)
     val expectedExtendedAtoms = Set(
-      AtAtom(m(37.2)+m(3),expBusM), expBusM, WAtAtom(wop3,m(37.2),busG), AtAtom(m(37.2),busG), busG, on,
-      AtAtom(m(39.1)+m(5),expTrM), expTrM, WAtAtom(wop5,m(39.1),tramB), AtAtom(m(39.1),tramB), tramB,
-      WDiamAtom(wop1,request), request,
-      takeBusM, WDiamAtom(wopP5,expBusM), takeTrM, WDiamAtom(wop3,jam), jam,
-      WDiamAtom(wopP5,expTrM), expTrM
+      AtAtom(m(37.2)+m(3),expBusM), expBusM, WAt(wop3,m(37.2),busG), AtAtom(m(37.2),busG), busG, on,
+      AtAtom(m(39.1)+m(5),expTrM), expTrM, WAt(wop5,m(39.1),tramB), AtAtom(m(39.1),tramB), tramB,
+      WDiam(wop1,request), request,
+      takeBusM, WDiam(wopP5,expBusM), takeTrM, WDiam(wop3,jam), jam,
+      WDiam(wopP5,expTrM), expTrM
     )
     assert(extendedAtoms == expectedExtendedAtoms)
     //
-    val strat = Stratify(P).get
+    val strat = Stratify(PGen).get
     //
     assert(strat.maxStratum == 5)
     // 5
@@ -246,7 +315,7 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 5)
     }
     // 4
-    for (x <- Set(WDiamAtom(wopP5,expBusM),WDiamAtom(wop3,jam),WDiamAtom(wopP5,expTrM))) {
+    for (x <- Set(WDiam(wopP5,expBusM),WDiam(wop3,jam),WDiam(wopP5,expTrM))) {
       assert(strat(x) == 4)
     }
     // 3
@@ -254,11 +323,11 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 3)
     }
     // 2
-    for (x <- Set(on,WAtAtom(wop3,m(37.2),busG),WAtAtom(wop5,m(39.1),tramB))) {
+    for (x <- Set(on,WAt(wop3,m(37.2),busG),WAt(wop5,m(39.1),tramB))) {
       assert(strat(x) == 2)
     }
     // 1
-    for (x <- Set(AtAtom(m(37.2),busG),busG,WDiamAtom(wop1,request),AtAtom(m(39.1),tramB), tramB)) {
+    for (x <- Set(AtAtom(m(37.2),busG),busG,WDiam(wop1,request),AtAtom(m(39.1),tramB), tramB)) {
       assert(strat(x) == 1)
     }
     // 0
@@ -266,20 +335,20 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 0)
     }
 
-    val stratum: Map[Int, GeneralProgram] = Strata(P)
+    val stratum: Map[Int, GeneralProgram] = Strata(PGen)
 
-    val P2 = GeneralProgram(Set(r3))
-    val P3 = GeneralProgram(Set(r1g,r2g))
-    val P5 = GeneralProgram(Set(r4,r5))
+    val P2 = GeneralProgram(Set(r3_gen))
+    val P3 = GeneralProgram(Set(r1g_gen,r2g_gen))
+    val P5 = GeneralProgram(Set(r4_gen,r5_gen))
 
     assert(stratum(0) == P2)
     assert(stratum(1) == P3)
     assert(stratum(2) == P5)
 
     //example for property 1:
-    val ias: Set[S] = IAS(P,Dp,t)
+    val ias: Set[S] = IAS(PGen,Dp,t)
     //println(ias)
-    assert(AS(P,Dp,t) == ias)
+    assert(AS(PGen,Dp,t) == ias)
 
     val performanceTest = false
 
@@ -298,14 +367,14 @@ class ExamplesIJCAI15 extends FunSuite {
       var runs = 5
       //
       var rt_as = 0.0
-      runtime(AS(P, Dp, t)) //jvm opt
+      runtime(AS(PGen, Dp, t)) //jvm opt
       for (i <- 1 to runs) {
-        rt_as += runtime(AS(P, Dp, t))
+        rt_as += runtime(AS(PGen, Dp, t))
       }
       var rt_ias = 0.0
-      rt_ias += runtime(IAS(P, Dp, t))
+      rt_ias += runtime(IAS(PGen, Dp, t))
       for (i <- 1 to runs) {
-        rt_ias += runtime(IAS(P, Dp, t))
+        rt_ias += runtime(IAS(PGen, Dp, t))
       }
 
       println("avg:")
@@ -313,35 +382,26 @@ class ExamplesIJCAI15 extends FunSuite {
       println("IAS: " + (rt_ias / (1.0 * runs)) + " sec")
 
     }
-
   }
 
-  val R1g = StdRule(AtAtom(m(37.2)+m(3),expBusM), Set(WAtAtom(wop3,m(37.2),busG),on))
-  val R2g = StdRule(AtAtom(m(39.1)+m(5),expTrM), WAtAtom(wop5,m(39.1),tramB), on) //convenience variant
-  val R3 = StdRule(on, WDiamAtom(wop1,request))
-  val R4 = StdRule(takeBusM, WDiamAtom(wopP5,expBusM), Not(takeTrM), Not(WDiamAtom(wop3,jam)))
-  val R5 = StdRule(takeTrM, WDiamAtom(wopP5,expTrM), Not(takeBusM))
+  
 
   test("ex10") {
-    val P10 = StdProgram(Set[StdRule](R2g))
-    assert(ConsW(P10,AtAtom(m(39.1),tramB)) == Set(WAtAtom(wop5,m(39.1),tramB)))
-    assert(ConsH(P10,WAtAtom(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
+    val P10 = StdProgram(Set[StdRule](r2g))
+    assert(ConsW(P10,AtAtom(m(39.1),tramB)) == Set(WAt(wop5,m(39.1),tramB)))
+    assert(ConsH(P10,WAt(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
     assert(ConsH(P10,on) == Set(AtAtom(m(44.1),expTrM)))
     assert(ConsAt(P10,AtAtom(m(44.1),expTrM)) == Set(expTrM))
 
     val mMap = new collection.mutable.HashMap[ExtendedAtom,Label]()
-    mMap(WAtAtom(wop5,m(39.1),tramB))=Label(in, (m(39.1),m(44.1)))
+    mMap(WAt(wop5,m(39.1),tramB))=Label(in, (m(39.1),m(44.1)))
     mMap(on)=Label(in,(m(39.7),m(40.7)))
-    for (x <- ExtendedAtoms(P10)) {
-      if (!mMap.contains(x)) {
-        mMap(x)=Label(unknown)
-      }
-    }
     val L=Labels(mMap)
 
-    assert(fVal(L,R2g))
-    assert(SuppP(P10,L,AtAtom(m(44.1),expTrM)) == Set(WAtAtom(wop5,m(39.1),tramB), on))
-    assert(ACons(P10,L,WAtAtom(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
+    assert(fVal(L,r2g))
+    //TODO
+//    assert(SuppP(P10,L,AtAtom(m(44.1),expTrM)) == Set(WAt(wop5,m(39.1),tramB), on))
+//    assert(ACons(P10,L,WAt(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
   }
 
 }

@@ -63,7 +63,7 @@ class ExamplesAAAI15 extends FunSuite {
     val m = C("m")
     //
     val wp5 = tw.toOp(0,5,1)
-    val fm = WopFm(wp5,Diam(exp(a3,m)))
+    val fm = WindowFormula(wp5,Diam(exp(a3,m)))
     //
     assert(mm/ss/42 ||- fm)
     //

@@ -11,9 +11,9 @@ object ConsAt {
 
   def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = {
     x match {
-      case y@AtAtom(t,a) => {
-        if (P.rules.flatMap(r=> r.B + r.h).contains(y)) {
-          return Set(a)
+      case y:AtAtom => {
+        if (P.rules.flatMap(r => r.B + r.h).contains(y)) {
+          return Set(y.a)
         } else {
           return Set()
         }

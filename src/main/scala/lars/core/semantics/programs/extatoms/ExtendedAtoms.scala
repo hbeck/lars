@@ -39,25 +39,25 @@ object ExtendedAtoms {
         //convert to match uniformly below
         val wfx = wfn.fix(x)
         val wop = new WindowOperatorFixedParams(wfx, ch)
-        apply(WopFm(wop, fm), nested)
+        apply(WindowFormula(wop, fm), nested)
       }
-      case WopFm(wop, fm1) => {
+      case WindowFormula(wop, fm1) => {
         fm1 match {
           case Diam(fm2) =>
             if (fm2.isInstanceOf[Atom]) {
-              apply(WDiamAtom(wop, fm2.asInstanceOf[Atom]), nested)
+              apply(WDiam(wop, fm2.asInstanceOf[Atom]), nested)
             } else {
               apply(fm2, nested)
             }
           case Box(fm2) =>
             if (fm2.isInstanceOf[Atom]) {
-              apply(WBoxAtom(wop, fm2.asInstanceOf[Atom]), nested)
+              apply(WBox(wop, fm2.asInstanceOf[Atom]), nested)
             } else {
               apply(fm2, nested)
             }
           case At(u, fm2) =>
             if (fm2.isInstanceOf[Atom]) {
-              apply(WAtAtom(wop, u, fm2.asInstanceOf[Atom]), nested)
+              apply(WAt(wop, u, fm2.asInstanceOf[Atom]), nested)
             } else {
               apply(fm2, nested)
             }

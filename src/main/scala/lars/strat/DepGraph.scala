@@ -97,19 +97,19 @@ object DepGraph {
     var mset = mutable.HashSet[DepEdge]()
     for (x <- xs) {
       x match { //consider only 'relevant' ones
-        case AtAtom(u, a) => {
-          mset += DepEdge(AtAtom(u,a),a,eql)
-          mset += DepEdge(a,AtAtom(u,a),eql)
+        case y:AtAtom => {
+          mset += DepEdge(AtAtom(y.t,y.a),y.a,eql)
+          mset += DepEdge(y.a,AtAtom(y.t,y.a),eql)
         }
         //TODO unify following three cases
-        case WDiamAtom(wop, a) => {
-          mset += DepEdge(WDiamAtom(wop,a),a,grt)
+        case y:WDiam => {
+          mset += DepEdge(WDiam(y.wop,y.a),y.a,grt)
         }
-        case WBoxAtom(wop, a) => {
-          mset += DepEdge(WBoxAtom(wop,a),a,grt)
+        case y:WBox => {
+          mset += DepEdge(WBox(y.wop,y.a),y.a,grt)
         }
-        case WAtAtom(wop, u, a) => {
-          mset += DepEdge(WAtAtom(wop,u,a),a,grt)
+        case y:WAt => {
+          mset += DepEdge(WAt(y.wop,y.t,y.a),y.a,grt)
         }
         case x => if (!x.isInstanceOf[Atom]) { assert(false) } //atoms are only to-Nodes
       }
