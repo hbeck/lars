@@ -3,7 +3,7 @@ package lars.strat
 import lars.core.MapUtils
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.strat.alg.{ComponentGraph, Stratify}
+import lars.strat.alg.{PartitionedGraph, Stratify}
 
 /**
  * Stream Stratification
@@ -23,7 +23,7 @@ object Stratification {
   
   def apply(P: StdProgram): Option[Stratification] = Stratify(P)
 
-  def apply(cg:ComponentGraph) : Stratification = {
+  def apply(cg:PartitionedGraph) : Stratification = {
     val nodesInStratum = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
     for (i <- 0 to cg.maxStratum()) {
       nodesInStratum += i -> Set[ExtendedAtom]()

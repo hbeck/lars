@@ -5,7 +5,7 @@ import lars.core.semantics.formulas._
 /**
  * Created by hb on 7/14/15.
  */
-class WBox(override val w: WindowOperatorFixedParams, val a: Atom) extends WindowAtom(w,Box(a)) /* Wop(w,Box(a)) */ with ExtendedAtom {
+class WBox(override val w: WindowOperatorFixedParams, val a: Atom) extends WindowAtom(w,Box(a)) with ExtendedAtom {
   override def toString = w + "☐" + a
   override def atom = a
 }

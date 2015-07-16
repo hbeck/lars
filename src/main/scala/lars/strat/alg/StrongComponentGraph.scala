@@ -8,9 +8,11 @@ import scala.math.{abs,max}
 
 
 /**
+ * every node is a strongly connected component of the original dependency graph
+ *
  * Created by hb on 7/10/15.
  */
-class ComponentGraph(val nodes:collection.immutable.Set[DepGraph]) {
+class StrongComponentGraph(override val nodes:collection.immutable.Set[DepGraph]) extends PartitionedGraph(nodes) {
 
   val adjList:Map[DepGraph,Set[DepGraph]] = new HashMap[DepGraph,Set[DepGraph]]
   for (n <- nodes) {
@@ -93,10 +95,10 @@ class ComponentGraph(val nodes:collection.immutable.Set[DepGraph]) {
     }
   }
 
-  def maxStratum() = graph2stratum.values.reduce(max)
+  override def maxStratum() = graph2stratum.values.reduce(max)
 }
 
-object ComponentGraph {
+object StrongComponentGraph {
 
   // connect two components fromC and toC with an arc (in this direction),
   // if there is an edge (from,to) in g, where
@@ -112,8 +114,8 @@ object ComponentGraph {
   //       create edge (fromC,toC)
   //
   // result: DAG, not necessarily (weakly) connected
-  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]) : ComponentGraph = {
-    val cg = new ComponentGraph(sccs.values.toSet)
+  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]) : StrongComponentGraph = {
+    val cg = new StrongComponentGraph(sccs.values.toSet)
     for (e <- depGraph.edges) {
       val fromC = sccs(e.from)
       val toC = sccs(e.to)
@@ -121,7 +123,7 @@ object ComponentGraph {
         cg.add(fromC,toC)
       }
     }
-    cg.assignStratumNumbers()
+    cg.assignStratumNumbers() //TODO replace by BottomUpNumber(cg); currently BuggyNumbering
     cg
   }
 

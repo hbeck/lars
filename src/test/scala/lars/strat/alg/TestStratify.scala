@@ -49,7 +49,7 @@ class TestStratify extends FunSuite {
     }
   }
 
-  val cg = ComponentGraph(depGraph,sccs)
+  val cg = StrongComponentGraph(depGraph,sccs)
 
   test("component graph") {
     assert(cg.hasEdge(c_x1x2,c_y1))

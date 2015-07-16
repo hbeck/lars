@@ -37,7 +37,7 @@ object Stratify {
     // edges between fromC and toC, if {from,to}C is are different components
     // of the nodes from/to with a dependency in {>=,>};
     // for every component of the DAG, assign stratum index
-    val cg = ComponentGraph(depGraph,sccs)
+    val cg = StrongComponentGraph(depGraph,sccs) //TODO instead StratumGraph which is "minimal"
 
     Option(Stratification(cg))
   }
