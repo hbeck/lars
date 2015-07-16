@@ -2,7 +2,7 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.strat.DepGraph
-import lars.util.graph.{Add, HasEdge}
+import lars.util.graph.{InOutGraph, Add, HasEdge}
 
 
 /**
@@ -10,7 +10,7 @@ import lars.util.graph.{Add, HasEdge}
  *
  * Created by hb on 7/10/15.
  */
-class StrongComponentGraph(override val nodes:Set[DepGraph], override val adjList:Map[DepGraph,Set[DepGraph]]) extends PartitionedGraph(nodes,adjList)
+class StrongComponentGraph(override val adjList:Map[DepGraph,Set[DepGraph]]) extends InOutGraph[DepGraph](adjList)
 
 object StrongComponentGraph {
 
@@ -41,7 +41,7 @@ object StrongComponentGraph {
         adjList = Add(adjList,fromC,toC)
       }
     }
-    new StrongComponentGraph(nodes,adjList)
+    new StrongComponentGraph(adjList)
   }
 
 }

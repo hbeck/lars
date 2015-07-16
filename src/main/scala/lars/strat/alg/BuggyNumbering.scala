@@ -1,6 +1,7 @@
 package lars.strat.alg
 
 import lars.strat.DepGraph
+import lars.util.graph.InOutGraph
 
 import scala.collection.immutable.HashMap
 
@@ -9,7 +10,7 @@ import scala.collection.immutable.HashMap
  * 
  * Created by hb on 7/16/15.
  */
-object BuggyNumbering extends StrataNumbering {
+object BuggyNumbering {
   
   //   select random node, give it index 0
   //   walk the component BFS in all directions with increasing/decreasing numbers:
@@ -18,7 +19,7 @@ object BuggyNumbering extends StrataNumbering {
   //   - index i-1 for neighbors m where e(n,m)
   //
   // normalize every component s.t. lowest index in every component is 0
-  override def apply(g: PartitionedGraph): Map[DepGraph,Int] = {
+  def apply(g: InOutGraph[DepGraph]): Map[DepGraph,Int] = {
 
     var graph2stratum:Map[DepGraph,Int] = new HashMap[DepGraph,Int]
 
