@@ -29,7 +29,11 @@ object StrongComponentGraph {
   //
   // result: DAG, not necessarily (weakly) connected
   def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]): StrongComponentGraph = {
+    val nodes: Set[DepGraph] = sccs.values.toSet
     var adjList = Map[DepGraph,Set[DepGraph]]()
+    for (n <- nodes) {
+      adjList = adjList + (n -> Set())
+    }
     for (e <- depGraph.edges) {
       val fromC = sccs(e.from)
       val toC = sccs(e.to)
@@ -37,7 +41,7 @@ object StrongComponentGraph {
         adjList = Add(adjList,fromC,toC)
       }
     }
-    new StrongComponentGraph(sccs.values.toSet,adjList)
+    new StrongComponentGraph(nodes,adjList)
   }
 
 }
