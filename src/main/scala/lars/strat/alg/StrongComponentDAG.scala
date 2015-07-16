@@ -10,9 +10,9 @@ import lars.util.graph.{InOutGraph, Add, HasEdge}
  *
  * Created by hb on 7/10/15.
  */
-case class StrongComponentGraph(override val adjList:Map[DepGraph,Set[DepGraph]]) extends InOutGraph[DepGraph](adjList)
+case class StrongComponentDAG(override val adjList:Map[DepGraph,Set[DepGraph]]) extends InOutGraph[DepGraph](adjList)
 
-object StrongComponentGraph {
+object StrongComponentDAG {
 
   // connect two components fromC and toC with an arc (in this direction),
   // if there is an edge (from,to) in g, where
@@ -28,7 +28,7 @@ object StrongComponentGraph {
   //       create edge (fromC,toC)
   //
   // result: DAG, not necessarily (weakly) connected
-  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]): StrongComponentGraph = {
+  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]): StrongComponentDAG = {
     val nodes: Set[DepGraph] = sccs.values.toSet
     var adjList = Map[DepGraph,Set[DepGraph]]()
     for (n <- nodes) {
@@ -41,7 +41,7 @@ object StrongComponentGraph {
         adjList = Add(adjList,fromC,toC)
       }
     }
-    new StrongComponentGraph(adjList)
+    new StrongComponentDAG(adjList)
   }
 
 }

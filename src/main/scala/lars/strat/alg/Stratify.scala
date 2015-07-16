@@ -34,13 +34,10 @@ object Stratify {
       }
     }
 
-    // else, view resulting component graph, consisting of the SCCs as nodes
-    // edges between fromC and toC, if {from,to}C is are different components
-    // of the nodes from/to with a dependency in {>=,>};
-    // for every component of the DAG, assign stratum index
-    val cg = StrongComponentGraph(depGraph,sccs) //TODO instead StratumGraph which is "minimal"
+    val scg = StrongComponentDAG(depGraph,sccs)
+    // TODO use instead a StratumAG
 
-    val subgraphNr: Map[DepGraph,Int] = BottomUpNumbering(cg)
+    val subgraphNr: Map[DepGraph,Int] = BottomUpNumbering(scg)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 
