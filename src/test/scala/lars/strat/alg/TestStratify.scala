@@ -123,6 +123,20 @@ class TestStratify extends FunSuite {
     assert(s(0) == Set(h,i,j))
   }
 
+  test("bottom up numbering handling geq cycle") {
+    object a1 extends Atom
+    object a2 extends Atom
+    val nodes = Set[ExtendedAtom](a1,a2,b,c,d,f)
+    val depGraph = g(nodes, e(f,b,grt), e(f,d,grt), e(d,c,grt), e(c,b,grt), e(b,a1,grt), e(d,a2,grt))
+    val s: Stratification = Stratify(depGraph).get
+    assert(s(a1)==0)
+    assert(s(a2)==0)
+    assert(s(b)==1)
+    assert(s(c)==2)
+    assert(s(d)==3)
+    assert(s(f)==4)
+  }
+
   test("no stratification") {
     val cycleG = g(Set(x,y),e(x,y,grt),e(y,x,grt))
     val s: Option[Stratification] = Stratify(cycleG)
