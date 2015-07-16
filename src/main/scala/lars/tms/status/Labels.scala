@@ -8,7 +8,7 @@ import lars.tms.status.Status.unknown
 /**
  * Created by hb on 7/14/15.
  */
-case class Labels(val labelOf: collection.mutable.Map[ExtendedAtom,Label]) {
+case class Labels(private val labelOf: collection.mutable.Map[ExtendedAtom,Label]=collection.mutable.Map[ExtendedAtom,Label]()) {
 
   def label(x:ExtendedAtom): Label = labelOf.getOrElse(x,Label(unknown))
 
@@ -16,4 +16,12 @@ case class Labels(val labelOf: collection.mutable.Map[ExtendedAtom,Label]) {
 
   def intervals(x: ExtendedAtom): collection.mutable.Set[ClosedIntInterval] = label(x).intervals
 
+  def update(x: ExtendedAtom, l:Label): Unit = {
+    labelOf(x)=l
+  }
+
+  //add convenience method like updateStatus etc whatever needed
+
 }
+
+

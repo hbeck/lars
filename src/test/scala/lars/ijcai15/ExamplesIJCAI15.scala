@@ -403,7 +403,7 @@ class ExamplesIJCAI15 extends FunSuite {
     val L=Labels(mMap)
 
     assert(fVal(L,r2g))
-    //TODO
+    //TODO these things will only be available after the AnswerUpdate:
 //    assert(SuppP(P10,L,AtAtom(m(44.1),expTrM)) == Set(WAt(wop5,m(39.1),tramB), on))
 //    assert(ACons(P10,L,WAt(wop5,m(39.1),tramB)) == Set(AtAtom(m(44.1),expTrM)))
   }
