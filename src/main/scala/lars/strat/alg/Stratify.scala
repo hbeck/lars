@@ -39,7 +39,15 @@ object Stratify {
     // for every component of the DAG, assign stratum index
     val cg = StrongComponentGraph(depGraph,sccs) //TODO instead StratumGraph which is "minimal"
 
-    Option(Stratification(cg))
+    val subgraphNr: Map[DepGraph,Int] = BuggyNumbering(cg)
+
+    val nrToAtoms: Map[Int, Set[ExtendedAtom]] = graph2atomNumbering(subgraphNr)
+
+    Option(Stratification(nrToAtoms))
+  }
+  
+  def graph2atomNumbering(subgraphNr:Map[DepGraph,Int]): Map[Int, Set[ExtendedAtom]] = {
+    subgraphNr.toSeq.map(_.swap).map( pair => (pair._1, pair._2.nodes) ).toMap
   }
 
 }

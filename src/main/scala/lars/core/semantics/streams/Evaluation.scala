@@ -1,6 +1,6 @@
 package lars.core.semantics.streams
 
-import lars.core.MapUtils.merge
+import lars.util.map.Merge
 import lars.core.semantics.formulas.Atom
 
 import scala.collection.immutable.HashMap
@@ -33,7 +33,7 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
   }
   def != (other: Evaluation) : Boolean = { !(this == other) }
 
-  def ++ (other:Evaluation) = Evaluation(merge(mapping,other.mapping))
+  def ++ (other:Evaluation) = Evaluation(Merge(mapping,other.mapping))
 
   override def equals(that:Any) = {
     that match {

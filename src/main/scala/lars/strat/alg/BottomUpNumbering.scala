@@ -1,11 +1,14 @@
 package lars.strat.alg
 
+import lars.strat.DepGraph
+
 /**
  * Created by hb on 7/16/15.
  */
-object BottomUpNumbering extends StrataNumbering[StratumGraph] { //maybe more generic?
+object BottomUpNumbering extends StrataNumbering { //maybe more generic?
 
-  override def apply(v1: StratumGraph): Unit = { // StratumGraph
-    //TODO bottom up evaluation starting with 0
+  override def apply(g: PartitionedGraph): Map[DepGraph, Int] = {
+    //TODO
+    Map[DepGraph,Int]()
   }
 }

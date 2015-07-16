@@ -1,7 +1,7 @@
 package lars.core.semantics.streams
 
-import lars.core.MapUtils
 import lars.core.semantics.formulas.Atom
+import lars.util.map.Merge
 
 import scala.collection.immutable.HashMap
 
@@ -24,7 +24,7 @@ case class StreamBuilder(val map:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]()
   }
   
   def ++(sb: StreamBuilder): StreamBuilder = {
-    val merged: Map[Int, Set[Atom]] = MapUtils.merge(this.map,sb.map)
+    val merged: Map[Int, Set[Atom]] = Merge(this.map,sb.map)
     StreamBuilder(merged)
   }
   

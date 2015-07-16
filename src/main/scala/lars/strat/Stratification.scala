@@ -1,9 +1,9 @@
 package lars.strat
 
-import lars.core.MapUtils
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.strat.alg.{PartitionedGraph, Stratify}
+import lars.strat.alg.Stratify
+import lars.util.map.ReverseFromSet
 
 /**
  * Stream Stratification
@@ -13,7 +13,7 @@ case class Stratification(map: Map[Int,Set[ExtendedAtom]]) { //"other" way as de
 
   val maxStratum = map.keySet.reduce(math.max)
 
-  private val stratumNr: Map[ExtendedAtom,Int] = MapUtils.reverse(map)
+  private val stratumNr: Map[ExtendedAtom,Int] = ReverseFromSet(map)
 
   def apply(i:Int): Set[ExtendedAtom] = map(i)
   def apply(x:ExtendedAtom): Int =  stratumNr(x)
@@ -22,21 +22,6 @@ case class Stratification(map: Map[Int,Set[ExtendedAtom]]) { //"other" way as de
 object Stratification {
   
   def apply(P: StdProgram): Option[Stratification] = Stratify(P)
-
-  def apply(cg:PartitionedGraph) : Stratification = {
-    val nodesInStratum = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
-    for (i <- 0 to cg.maxStratum()) {
-      nodesInStratum += i -> Set[ExtendedAtom]()
-    }
-    val graphStratum = cg.graph2stratum
-    val graphs = graphStratum.keys
-    for (g <- graphs) {
-      val stratum = graphStratum(g)
-      nodesInStratum(stratum) ++= g.nodes //! immutable
-    }
-
-    Stratification(nodesInStratum.toMap)
-  }
   
   def isStratification(strat: Map[ExtendedAtom,Int], P: StdProgram): Boolean = {
     val G = DepGraph(P)

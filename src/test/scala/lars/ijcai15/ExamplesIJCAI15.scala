@@ -1,6 +1,5 @@
 package lars.ijcai15
 
-import lars.core.MapUtils
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs._
 import lars.core.semantics.programs.extatoms.{AtAtom, ExtendedAtoms, WAt, WDiam}
@@ -15,6 +14,7 @@ import lars.tms.cons.{ConsAt, ConsH, ConsW}
 import lars.tms.status.Status.in
 import lars.tms.status.rule.fVal
 import lars.tms.status.{Label, Labels}
+import lars.util.map.Merge
 import org.scalatest.FunSuite
 
 /**
@@ -90,8 +90,8 @@ class ExamplesIJCAI15 extends FunSuite {
 
   test("ex6 general program") {
     val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
-    val mI1 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
-    val mI2 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
+    val mI1 = Merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
+    val mI2 = Merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
     //
     val I1 = Dp ++ S(T,Evaluation(mI1))
     val I2 = Dp ++ S(T,Evaluation(mI2))
@@ -162,8 +162,8 @@ class ExamplesIJCAI15 extends FunSuite {
 
   test("ex6 std program") {
     val common = Map[Int,Set[Atom]](m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM), t -> Set(on))
-    val mI1 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
-    val mI2 = MapUtils.merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
+    val mI1 = Merge(Map[Int,Set[Atom]](t -> Set(takeTrM)), common)
+    val mI2 = Merge(Map[Int,Set[Atom]](t -> Set(takeBusM)), common)
     //
     val I1 = Dp ++ S(T,Evaluation(mI1))
     val I2 = Dp ++ S(T,Evaluation(mI2))

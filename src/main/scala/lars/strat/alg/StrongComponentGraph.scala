@@ -2,9 +2,7 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.strat.DepGraph
-
-import scala.collection.mutable.{HashMap, Map, Set}
-import scala.math.{abs,max}
+import lars.util.graph.{Add, HasEdge}
 
 
 /**
@@ -12,91 +10,7 @@ import scala.math.{abs,max}
  *
  * Created by hb on 7/10/15.
  */
-class StrongComponentGraph(override val nodes:collection.immutable.Set[DepGraph]) extends PartitionedGraph(nodes) {
-
-  val adjList:Map[DepGraph,Set[DepGraph]] = new HashMap[DepGraph,Set[DepGraph]]
-  for (n <- nodes) {
-    adjList += (n -> Set[DepGraph]())
-  }
-
-  //
-
-  def hasEdge(n:DepGraph, m:DepGraph) : Boolean = {
-    adjList(n).contains(m)
-  }
-
-  private def add(from:DepGraph,to:DepGraph): Unit = {
-    adjList(from) += to
-  }
-
-  val graph2stratum:Map[DepGraph,Int] = new HashMap[DepGraph,Int]
-  //   select random node, give it index 0
-  //   walk the component BFS in all directions with increasing/decreasing numbers:
-  //   given the current node n has index i, assign
-  //   - index i+1 for neighbors m where e(m,n), and
-  //   - index i-1 for neighbors m where e(n,m)
-  //
-  // normalize every component s.t. lowest index in every component is 0
-  private def assignStratumNumbers() : Unit = {
-
-    //initialize ds:
-    val out:Map[DepGraph,Set[DepGraph]] = new HashMap[DepGraph,Set[DepGraph]] //new copy of adjList
-    val in:Map[DepGraph,Set[DepGraph]] = new HashMap[DepGraph,Set[DepGraph]]
-
-    for (n <- nodes) {
-      in += (n -> Set[DepGraph]())
-      out += (n -> Set[DepGraph]())
-    }
-    for (from <- nodes) {
-      val outgoing = adjList(from)
-      out(from) ++= outgoing
-      for (to <- outgoing) {
-        in(to) += from
-      }
-    }
-
-    //alg:
-    val remNodes = Set[DepGraph]()
-    remNodes ++= nodes
-    var currMinStratum = 0
-    var currVisitedNodes = Set[DepGraph]()
-    def walk(node: DepGraph, stratum: Int) : Unit = {
-      if (remNodes.contains(node)) {
-        if (stratum < currMinStratum) currMinStratum = stratum
-        graph2stratum += node -> stratum
-        remNodes -= node
-        currVisitedNodes += node
-        for (to <- out(node)) {
-          walk(to, stratum - 1)
-        }
-        for (from <- in(node)) {
-          walk(from, stratum + 1)
-        }
-      }
-    }
-
-    while (!remNodes.isEmpty) {
-      currMinStratum = 0
-      currVisitedNodes = Set[DepGraph]()
-      val startNode = remNodes.head
-      walk(startNode, 0)
-      //normalize
-      if (currMinStratum < 0) {
-        addToStratumIdx(currVisitedNodes,abs(currMinStratum))
-      }
-    }
-
-  }
-
-  private def addToStratumIdx(nodes: Set[DepGraph], k:Int) : Unit = {
-    for (n <- nodes) {
-      val i = graph2stratum(n)
-      graph2stratum.update(n,i+k)
-    }
-  }
-
-  override def maxStratum() = graph2stratum.values.reduce(max)
-}
+class StrongComponentGraph(override val nodes:Set[DepGraph], override val adjList:Map[DepGraph,Set[DepGraph]]) extends PartitionedGraph(nodes,adjList)
 
 object StrongComponentGraph {
 
@@ -114,18 +28,16 @@ object StrongComponentGraph {
   //       create edge (fromC,toC)
   //
   // result: DAG, not necessarily (weakly) connected
-  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]) : StrongComponentGraph = {
-    val cg = new StrongComponentGraph(sccs.values.toSet)
+  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]): StrongComponentGraph = {
+    var adjList = Map[DepGraph,Set[DepGraph]]()
     for (e <- depGraph.edges) {
       val fromC = sccs(e.from)
       val toC = sccs(e.to)
-      if (fromC != toC && !cg.hasEdge(fromC,toC)) {
-        cg.add(fromC,toC)
+      if (fromC != toC && !HasEdge(adjList,fromC,toC)) {
+        adjList = Add(adjList,fromC,toC)
       }
     }
-    cg.assignStratumNumbers() //TODO replace by BottomUpNumber(cg); currently BuggyNumbering
-    cg
+    new StrongComponentGraph(sccs.values.toSet,adjList)
   }
-
 
 }

@@ -11,11 +11,27 @@ import lars.strat.DepGraph
  *
  * Created by hb on 7/16/15.
  */
-abstract class PartitionedGraph(val nodes:collection.immutable.Set[DepGraph]) {
+abstract class PartitionedGraph(val nodes:collection.immutable.Set[DepGraph], val adjList:Map[DepGraph,Set[DepGraph]]) {
 
-  //TODO this should not be necessarity at this level
-  def graph2stratum:Map[DepGraph,Int]
+  private val out = adjList
+  private var in: Map[DepGraph, Set[DepGraph]] = Map[DepGraph, Set[DepGraph]]()
 
-  def maxStratum() = graph2stratum.values.reduce(math.max)
+  for (n <- nodes) {
+    in += (n -> Set[DepGraph]())
+  }
+  for (from <- nodes) {
+    val toNodes: Set[DepGraph] = out(from)
+    for (to <- toNodes) {
+      in = in.updated(to,in(to)+from)
+    }
+  }
+
+  def incoming(e: DepGraph) = in(e)
+
+  def outgoing(e: DepGraph) = out(e)
+
+  def hasEdge(n:DepGraph, m:DepGraph) : Boolean = {
+    in(n).contains(m)
+  }
 
 }

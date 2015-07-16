@@ -8,9 +8,8 @@ import lars.strat.DepGraph
  *
  * Created by hb on 7/16/15.
  */
-class StratumGraph(override val nodes:Set[DepGraph]) extends PartitionedGraph(nodes) {
+class StratumGraph(override val nodes:Set[DepGraph], override val adjList:Map[DepGraph,Set[DepGraph]]) extends PartitionedGraph(nodes,adjList) {
 
-  override def graph2stratum: Map[DepGraph, Int] = Map[DepGraph,Int]()
 }
 
 object StratumGraph {
