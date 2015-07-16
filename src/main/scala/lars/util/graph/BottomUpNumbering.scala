@@ -31,7 +31,7 @@ object BottomUpNumbering {
   }
 
   private def maxChildNr[V](node: V, g: InOutGraph[V], nr:Map[V,Int]) : Option[Int] = {
-    val children = g.incoming(node)
+    val children = g.outgoing(node)
     if (children.exists( g => !nr.contains(g) )) {
       return None
     }

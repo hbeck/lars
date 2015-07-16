@@ -3,6 +3,7 @@ package lars.strat.alg
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
 import lars.strat.{DepGraph, Stratification, grt}
+import lars.util.graph.BottomUpNumbering
 
 /**
  * Created by hb on 7/10/15.
@@ -39,15 +40,24 @@ object Stratify {
     // for every component of the DAG, assign stratum index
     val cg = StrongComponentGraph(depGraph,sccs) //TODO instead StratumGraph which is "minimal"
 
-    val subgraphNr: Map[DepGraph,Int] = BuggyNumbering(cg)
+    val subgraphNr: Map[DepGraph,Int] = BottomUpNumbering(cg)
 
-    val nrToAtoms: Map[Int, Set[ExtendedAtom]] = graph2atomNumbering(subgraphNr)
+    val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 
     Option(Stratification(nrToAtoms))
   }
   
-  def graph2atomNumbering(subgraphNr:Map[DepGraph,Int]): Map[Int, Set[ExtendedAtom]] = {
-    subgraphNr.toSeq.map(_.swap).map( pair => (pair._1, pair._2.nodes) ).toMap
+  def createStratumMapping(subgraphNr:Map[DepGraph,Int]): Map[Int, Set[ExtendedAtom]] = {
+    var m = Map[Int,Set[ExtendedAtom]]()
+    for ((graph,nr) <- subgraphNr) {
+      if (m.contains(nr)) {
+        val set = m(nr) ++ graph.nodes
+        m = m.updated(nr,set)
+      } else {
+        m = m.updated(nr,graph.nodes)
+      }
+    }
+    m
   }
 
 }

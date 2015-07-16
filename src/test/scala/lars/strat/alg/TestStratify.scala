@@ -2,6 +2,7 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 import lars.strat._
+import lars.util.graph.BottomUpNumbering
 import org.scalatest.FunSuite
 
 /**
@@ -58,7 +59,7 @@ class TestStratify extends FunSuite {
     assert(cg.hasEdge(c_y1,c_z2))
     assert(cg.hasEdge(c_w,c_y2))
 
-    val idx: Map[DepGraph,Int] = BuggyNumbering(cg)
+    val idx: Map[DepGraph,Int] = BottomUpNumbering(cg)
 
     val maxStratum = idx.values.reduce(math.max)
 
@@ -70,16 +71,16 @@ class TestStratify extends FunSuite {
     assert(idx(c_y1) == 1)
     assert(idx(c_z1) == 0)
     assert(idx(c_z2) == 0)
-    assert(idx(c_y2) == 1) //rethink - should it be 0?
-    assert(idx(c_w) == 2)
+    assert(idx(c_y2) == 0)
+    assert(idx(c_w) == 1)
   }
 
-  val strat:Stratification = Stratification(Stratify.graph2atomNumbering(BuggyNumbering(cg)))
+  val strat:Stratification = Stratification(Stratify.createStratumMapping(BottomUpNumbering(cg)))
 
   test("makeStrat") {
-    assert(strat(0) == Set(z1,z2))
-    assert(strat(1) == Set(y1,y2))
-    assert(strat(2) == Set(x1,x2,w))
+    assert(strat(0) == Set(z1,z2,y2))
+    assert(strat(1) == Set(y1,w))
+    assert(strat(2) == Set(x1,x2))
     assert(strat.maxStratum == 2)
   }
 

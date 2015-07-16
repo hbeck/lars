@@ -301,6 +301,7 @@ class ExamplesIJCAI15 extends FunSuite {
   val ruleMapGen = Map[Int,GeneralRule]()+(1 -> r1g_gen)+(2 -> r2g_gen)+(3 -> r3_gen)+(4 -> r4_gen)+(5 -> r5_gen)
   val ruleMapStd = Map[Int,StdRule]()+(1 -> r1g)+(2 -> r2g)+(3 -> r3)+(4 -> r4)+(5 -> r5)
 
+  // TODO create new test with new minimal stratification (that is not using StrongComponentGraph)
   test("ex9") {
     val program = P
     val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(program,true)
@@ -321,23 +322,23 @@ class ExamplesIJCAI15 extends FunSuite {
       assert(strat(x) == 5)
     }
     // 4
-    for (x <- Set(WDiam(wopP5,expBusM),WDiam(wop3,jam),WDiam(wopP5,expTrM))) {
+    for (x <- Set(WDiam(wopP5,expBusM),WDiam(wopP5,expTrM))) {
       assert(strat(x) == 4)
     }
     // 3
-    for (x <- Set(AtAtom(m(37.2)+m(3),expBusM), expBusM, AtAtom(m(39.1)+m(5),expTrM), expTrM, jam)) {
+    for (x <- Set(AtAtom(m(37.2)+m(3),expBusM), expBusM, AtAtom(m(39.1)+m(5),expTrM), expTrM)) {
       assert(strat(x) == 3)
     }
     // 2
-    for (x <- Set(on,WAt(wop3,m(37.2),busG),WAt(wop5,m(39.1),tramB))) {
+    for (x <- Set(on)) {
       assert(strat(x) == 2)
     }
     // 1
-    for (x <- Set(AtAtom(m(37.2),busG),busG,WDiam(wop1,request),AtAtom(m(39.1),tramB), tramB)) {
+    for (x <- Set(WDiam(wop1,request),WAt(wop5,m(39.1),tramB),WAt(wop3,m(37.2),busG),WDiam(wop3,jam))) {
       assert(strat(x) == 1)
     }
     // 0
-    for (x <- Set(request)) {
+    for (x <- Set(request,AtAtom(m(37.2),busG),busG,jam,AtAtom(m(39.1),tramB), tramB)) {
       assert(strat(x) == 0)
     }
 

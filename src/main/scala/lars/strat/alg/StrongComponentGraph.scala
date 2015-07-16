@@ -10,7 +10,7 @@ import lars.util.graph.{InOutGraph, Add, HasEdge}
  *
  * Created by hb on 7/10/15.
  */
-class StrongComponentGraph(override val adjList:Map[DepGraph,Set[DepGraph]]) extends InOutGraph[DepGraph](adjList)
+case class StrongComponentGraph(override val adjList:Map[DepGraph,Set[DepGraph]]) extends InOutGraph[DepGraph](adjList)
 
 object StrongComponentGraph {
 

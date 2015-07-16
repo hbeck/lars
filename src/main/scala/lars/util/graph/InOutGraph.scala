@@ -11,12 +11,13 @@ class InOutGraph[V](val adjList:Map[V,Set[V]]) extends Graph {
   private var in: Map[V, Set[V]] = Map[V, Set[V]]()
 
   for (n <- nodes) {
-    in += (n -> Set[V]())
+    in = in + (n -> Set[V]())
   }
   for (from <- nodes) {
     val toNodes: Set[V] = out(from)
     for (to <- toNodes) {
-      in = in.updated(to,in(to)+from)
+      val set = in.getOrElse(to,Set()) + from
+      in = in.updated(to,set)
     }
   }
 
@@ -25,9 +26,9 @@ class InOutGraph[V](val adjList:Map[V,Set[V]]) extends Graph {
   def outgoing(e: V) = out(e)
 
   def hasEdge(n:V, m:V) : Boolean = {
-    in(n).contains(m)
+    out(n).contains(m)
   }
 
-  def isLeaf(n: V) = incoming(n).isEmpty
+  def isLeaf(n: V) = outgoing(n).isEmpty
 
 }

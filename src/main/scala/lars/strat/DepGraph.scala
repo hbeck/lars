@@ -26,18 +26,6 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
 
   def neighbours(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
 
-//  def nodes(): Set[ExtendedAtom] = {
-//    @tailrec
-//    def nodes(xs:Set[DepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
-//      if (xs.isEmpty) {
-//        return result
-//      }
-//      val e = xs.head
-//      nodes(xs.tail, result ++ Set(e.from,e.to))
-//    }
-//    nodes(edges,Set[ExtendedAtom]())
-//  }
-
   //subgraph induced by given nodes
   def subGraph(nodes: Set[ExtendedAtom]): DepGraph = {
     val s = collection.mutable.Set[DepEdge]()
@@ -82,8 +70,6 @@ object DepGraph {
       return result
     }
     val rule = rules.head
-//    val alpha = ExtendedAtoms(rule.head, false).head
-//    val betas: Set[ExtendedAtom] = ExtendedAtoms(rule.body, false)
 
     var curr = mutable.HashSet[DepEdge]()
     for (beta <- rule.B) {
