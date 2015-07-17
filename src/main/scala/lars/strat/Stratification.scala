@@ -25,7 +25,7 @@ object Stratification {
   
   def isStratification(strat: Map[ExtendedAtom,Int], P: StdProgram): Boolean = {
     val G = DepGraph(P)
-    for (e <- G.edges) {
+    for (e <- G.depEdges) {
       e.dep match {
         case `geq` => if (strat(e.from) < strat(e.to)) return false
         case `grt` => if (strat(e.from) <= strat(e.to)) return false

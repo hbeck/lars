@@ -1,6 +1,7 @@
 package lars.strat.alg
 
 import lars.strat._
+import lars.util.graph.SCCs
 import org.scalatest.FunSuite
 
 /**

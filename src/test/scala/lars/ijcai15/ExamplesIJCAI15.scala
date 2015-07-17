@@ -251,13 +251,13 @@ class ExamplesIJCAI15 extends FunSuite {
     //    for (e <- actualSDG.edges) {
     //      println(e)
     //    }
-    for (e <- actualSDG.edges) {
-      assert(expectedSDG.edges contains e)
+    for (e <- actualSDG.depEdges) {
+      assert(expectedSDG.depEdges contains e)
     }
-    for (e <- expectedSDG.edges) {
-      assert(actualSDG.edges contains e)
+    for (e <- expectedSDG.depEdges) {
+      assert(actualSDG.depEdges contains e)
     }
-    assert(actualSDG.edges == expectedSDG.edges)
+    assert(actualSDG.depEdges == expectedSDG.depEdges)
     assert(actualSDG == expectedSDG)
   }
 

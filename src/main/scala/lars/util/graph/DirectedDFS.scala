@@ -1,4 +1,4 @@
-package lars.strat.alg
+package lars.util.graph
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.strat.DepGraph
@@ -19,7 +19,7 @@ case class DirectedDFS(G: DepGraph, s: ExtendedAtom) {
   def dfs(G: DepGraph, v: ExtendedAtom) : Unit = {
     count += 1
     marked(v)=true
-    for (w <- G.neighbours(v)) {
+    for (w <- G.outgoing(v)) {
       if (!marked(w)) dfs(G,w)
     }
   }

@@ -2,8 +2,8 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.strat.{DepGraph, Stratification, grt}
-import lars.util.graph.BottomUpNumbering
+import lars.strat.{grt, DepGraph, Stratification}
+import lars.util.graph.{SCCs, Condensation, BottomUpNumbering}
 
 /**
  * Created by hb on 7/10/15.
@@ -27,14 +27,14 @@ object Stratify {
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
     for (g <- sccs.values) {
-      for (e <- g.edges) {
+      for (e <- g.depEdges) {
         if (e.dep == grt) {
           return None
         }
       }
     }
 
-    val scg = StrongComponentDAG(depGraph,sccs)
+    val scg:Condensation[DepGraph] = Condensation(depGraph,sccs)
     // TODO use instead a StratumAG
 
     val subgraphNr: Map[DepGraph,Int] = BottomUpNumbering(scg)

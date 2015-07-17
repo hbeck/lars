@@ -2,6 +2,7 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.strat.DepGraph
+import lars.util.graph.DirectedDFS
 
 /**
  * Created by hb on 7/11/15.

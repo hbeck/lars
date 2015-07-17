@@ -3,6 +3,7 @@ package lars.strat
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
+import lars.util.graph.{AdjList, Graph}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -11,30 +12,30 @@ import scala.collection.mutable
  * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added explicitly for unconnected ones
+case class DepGraph(V:Set[ExtendedAtom], depEdges:Set[DepEdge]) extends Graph[ExtendedAtom] with AdjList[ExtendedAtom] { //nodes added explicitly for unconnected ones
 
   val adjList: Map[ExtendedAtom,Set[ExtendedAtom]] = {
     val mMap = new collection.mutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]()
-    for (n <- nodes) {
+    for (n <- V) {
       mMap += n -> Set[ExtendedAtom]()
     }
-    for (edge@DepEdge(from, to, dep) <- edges) {
+    for (edge@DepEdge(from, to, dep) <- depEdges) {
       mMap.update(from, mMap(from) + to)
     }
     mMap.toMap
   }
 
-  def neighbours(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
+  def outgoing(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
 
   //subgraph induced by given nodes
-  def subGraph(nodes: Set[ExtendedAtom]): DepGraph = {
+  def subGraph(V: Set[ExtendedAtom]): DepGraph = {
     val s = collection.mutable.Set[DepEdge]()
-    for (edge <- edges) {
-      if (nodes.contains(edge.from) && nodes.contains(edge.to)) {
+    for (edge <- depEdges) {
+      if (V.contains(edge.from) && V.contains(edge.to)) {
         s += edge
       }
     }
-    DepGraph(nodes,s.toSet)
+    DepGraph(V,s.toSet)
   }
 
   //remaining graph when removing the given nodes
@@ -51,14 +52,14 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
   }
 
   def ==(other: DepGraph): Boolean = {
-    this.nodes == other.nodes && this.edges == other.edges
+    this.nodes == other.nodes && this.depEdges == other.depEdges
   }
 }
 
 object DepGraph {
 
   def apply(P: StdProgram): DepGraph = {
-    val nodes = ExtendedAtoms(P,true) //TODO true okay?
+    val nodes = ExtendedAtoms(P,true)
     val hba = headBodyArcs(P.rules,Set[DepEdge]())
     val na = nestingArcs(P)
     DepGraph(nodes, hba ++ na)

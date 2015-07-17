@@ -2,7 +2,7 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 import lars.strat._
-import lars.util.graph.BottomUpNumbering
+import lars.util.graph.{SCCs, Condensation, BottomUpNumbering}
 import org.scalatest.FunSuite
 
 /**
@@ -50,16 +50,16 @@ class TestStratify extends FunSuite {
     }
   }
 
-  val cg = StrongComponentDAG(depGraph,sccs)
+  val con = Condensation(depGraph,sccs)
 
   test("component graph") {
-    assert(cg.hasEdge(c_x1x2,c_y1))
-    assert(cg.hasEdge(c_x1x2,c_y2))
-    assert(cg.hasEdge(c_y1,c_z1))
-    assert(cg.hasEdge(c_y1,c_z2))
-    assert(cg.hasEdge(c_w,c_y2))
+    assert(con.hasEdge(c_x1x2,c_y1))
+    assert(con.hasEdge(c_x1x2,c_y2))
+    assert(con.hasEdge(c_y1,c_z1))
+    assert(con.hasEdge(c_y1,c_z2))
+    assert(con.hasEdge(c_w,c_y2))
 
-    val idx: Map[DepGraph,Int] = BottomUpNumbering(cg)
+    val idx: Map[DepGraph,Int] = BottomUpNumbering(con)
 
     val maxStratum = idx.values.reduce(math.max)
 
@@ -75,7 +75,7 @@ class TestStratify extends FunSuite {
     assert(idx(c_w) == 1)
   }
 
-  val strat:Stratification = Stratification(Stratify.createStratumMapping(BottomUpNumbering(cg)))
+  val strat:Stratification = Stratification(Stratify.createStratumMapping(BottomUpNumbering(con)))
 
   test("makeStrat") {
     assert(strat(0) == Set(z1,z2,y2))
