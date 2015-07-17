@@ -1,10 +1,10 @@
-package lars.strat.alg
+package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.graph.alg.{SCCs, BottomUpNumbering}
+import lars.graph.DiGraph
+import lars.graph.alg.{BottomUpNumbering, SCCs}
 import lars.graph.quotient.Condensation
-import lars.strat.{grt, DepGraph, Stratification}
 
 /**
  * Created by hb on 7/10/15.
@@ -23,29 +23,31 @@ object Stratify {
   def apply(depGraph: DepGraph) : Option[Stratification] = {
 
     // determine strongly connected components (SCCs)
-    val sccs: Map[ExtendedAtom,DepGraph] = SCCs(depGraph)
+    val sccs: Map[ExtendedAtom,DiGraph[ExtendedAtom]] = SCCs[ExtendedAtom](depGraph)
 
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
     for (g <- sccs.values) {
-      for (e <- g.depEdges) {
-        if (e.dep == grt) {
+      val depGraph = g.asInstanceOf[DepGraph]
+      for ((from,to) <- depGraph.edges) {
+        if (depGraph.label(from,to) == grt) {
           return None
         }
       }
     }
 
-    val scg:Condensation[DepGraph] = Condensation(depGraph,sccs)
-    // TODO use instead a StratumAG
+    // TODO use instead a QuotientGraph with a relaxed partitioning criterion
+    // that includes after the strongly connected components those arcs reachable with geq
+    val cnd: Condensation[DiGraph[ExtendedAtom]] = Condensation(depGraph,sccs)
 
-    val subgraphNr: Map[DepGraph,Int] = BottomUpNumbering(scg)
+    val subgraphNr: Map[DiGraph[ExtendedAtom], Int] = BottomUpNumbering(cnd)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 
     Option(Stratification(nrToAtoms))
   }
   
-  def createStratumMapping(subgraphNr:Map[DepGraph,Int]): Map[Int, Set[ExtendedAtom]] = {
+  def createStratumMapping(subgraphNr:Map[DiGraph[ExtendedAtom],Int]): Map[Int, Set[ExtendedAtom]] = {
     var m = Map[Int,Set[ExtendedAtom]]()
     for ((graph,nr) <- subgraphNr) {
       if (m.contains(nr)) {

@@ -7,7 +7,7 @@ import lars.graph.traits.Incoming
  *
  * Created by hb on 7/16/15.
  */
-class InOutGraph[V](override val adjList:Map[V,Set[V]]) extends BasicGraphImpl[V](adjList) with Incoming[V] {
+class InOutGraph[V](override val adjList:Map[V,Set[V]]) extends DiGraph[V](adjList) with Incoming[V] {
 
   private var in: Map[V, Set[V]] = Map[V, Set[V]]()
 

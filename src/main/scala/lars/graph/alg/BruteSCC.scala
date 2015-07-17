@@ -1,27 +1,25 @@
 package lars.graph.alg
 
-import lars.core.semantics.formulas.ExtendedAtom
-import lars.strat.DepGraph
-import lars.strat.alg.TransitiveClosure
+import lars.graph.{DiGraph, TransitiveClosure}
 
 /**
  * Created by hb on 7/11/15.
  * see http://algs4.cs.princeton.edu/42directed/BruteSCC.java.html
  */
-case class BruteSCC(G: DepGraph) {
+case class BruteSCC[V](g: DiGraph[V]) {
 
-  val compId = new collection.mutable.HashMap[ExtendedAtom,Int]()
-  val node = new collection.mutable.HashMap[Int,ExtendedAtom]()
+  val compId = new collection.mutable.HashMap[V,Int]()
+  val node = new collection.mutable.HashMap[Int,V]()
 
   private var i = -1
-  for (v <- G.nodes) {
+  for (v <- g.nodes) {
     i += 1
     compId(v)=i
     node(i)=v //(no need to keep in sync with compId later)
   }
   val N = i
    
-  val tc = TransitiveClosure(G)
+  val tc = TransitiveClosure[V](g)
   
   for (v <- 0 to N) {
     for (w <- 0 to (v-1)) {
@@ -41,7 +39,7 @@ case class BruteSCC(G: DepGraph) {
 
   val count = c
 
-  def stronglyConnected(v: ExtendedAtom, w: ExtendedAtom): Boolean = {
+  def stronglyConnected(v: V, w: V): Boolean = {
     compId(v) == compId(w)
   }
 

@@ -1,7 +1,7 @@
 package lars.graph.quotient
 
-import lars.graph.util.{HasEdge, Add}
-import lars.graph.{Graph, InOutGraph}
+import lars.graph.util.{Add, HasEdge}
+import lars.graph.{DiGraph, Graph}
 
 /**
  * the condensation of a strongly connected graph is the quotient graph where
@@ -9,7 +9,7 @@ import lars.graph.{Graph, InOutGraph}
  *
  * Created by hb on 7/10/15.
  */
-case class Condensation[V](override val adjList:Map[V,Set[V]]) extends InOutGraph[V](adjList)
+case class Condensation[V](override val adjList:Map[V,Set[V]]) extends DiGraph[V](adjList)
 
 object Condensation {
 

@@ -2,7 +2,6 @@ package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.strat.alg.Stratify
 import lars.util.map.ReverseFromSet
 
 /**
@@ -17,19 +16,20 @@ case class Stratification(map: Map[Int,Set[ExtendedAtom]]) { //"other" way as de
 
   def apply(i:Int): Set[ExtendedAtom] = map(i)
   def apply(x:ExtendedAtom): Int =  stratumNr(x)
+
 }
 
 object Stratification {
   
   def apply(P: StdProgram): Option[Stratification] = Stratify(P)
   
-  def isStratification(strat: Map[ExtendedAtom,Int], P: StdProgram): Boolean = {
+  def isStratification(strat: Map[ExtendedAtom,Int], P: StdProgram): Boolean = {    
     val G = DepGraph(P)
-    for (e <- G.depEdges) {
-      e.dep match {
-        case `geq` => if (strat(e.from) < strat(e.to)) return false
-        case `grt` => if (strat(e.from) <= strat(e.to)) return false
-        case `eql` => if (strat(e.from) != strat(e.to)) return false
+    for ((from,to) <- G.edges) {
+      G.label(from,to) match {
+        case `geq` => if (strat(from) < strat(to)) return false
+        case `grt` => if (strat(from) <= strat(to)) return false
+        case `eql` => if (strat(from) != strat(to)) return false
       }
     }
     return true

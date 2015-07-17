@@ -9,7 +9,6 @@ import lars.core.semantics.streams.{Evaluation, S, Timeline}
 import lars.core.semantics.structure.IsAnswerStream
 import lars.core.windowfn.time.{TimeWindow, TimeWindowFixedParams, TimeWindowParameters}
 import lars.strat._
-import lars.strat.alg.Stratify
 import lars.tms.cons.{ConsAt, ConsH, ConsW}
 import lars.tms.status.Status.in
 import lars.tms.status.rule.fVal
@@ -237,9 +236,9 @@ class ExamplesIJCAI15 extends FunSuite {
     val actualEAtoms: Set[ExtendedAtom] = ExtendedAtoms(Pp,true)
     assert(actualEAtoms == expectedEAtoms)
     //
-    def e(from:ExtendedAtom, to:ExtendedAtom, d:Dep) = DepEdge(from, to, d)
+    def e(from:ExtendedAtom, to:ExtendedAtom, d:Dependency) = DepEdge(from, to, d)
     val nodes = ExtendedAtoms(Pp,true)
-    val expectedSDG = DepGraph(nodes,Set[DepEdge](
+    val expectedDepGraph = DepGraph(nodes,Set[DepEdge](
       e(AtAtom(t,x),WAt(w3,t,y),geq),
       e(WAt(w3,t,y),y,grt),
       e(AtAtom(t,x),x,eql),
@@ -247,18 +246,18 @@ class ExamplesIJCAI15 extends FunSuite {
       e(AtAtom(t,y),y,eql),
       e(y,AtAtom(t,y),eql)
     ))
-    val actualSDG = DepGraph(Pp)
-    //    for (e <- actualSDG.edges) {
+    val actualDepGraph = DepGraph(Pp)
+    //    for (e <- actualDepGraph.edges) {
     //      println(e)
     //    }
-    for (e <- actualSDG.depEdges) {
-      assert(expectedSDG.depEdges contains e)
+    for ((x,y) <- actualDepGraph.edges) {
+      assert(expectedDepGraph.edges contains (x,y))
     }
-    for (e <- expectedSDG.depEdges) {
-      assert(actualSDG.depEdges contains e)
+    for ((x,y) <- expectedDepGraph.edges) {
+      assert(actualDepGraph.edges contains (x,y))
     }
-    assert(actualSDG.depEdges == expectedSDG.depEdges)
-    assert(actualSDG == expectedSDG)
+    assert(actualDepGraph.edges == expectedDepGraph.edges)
+    assert(actualDepGraph == expectedDepGraph)
   }
 
   test("ex8") {

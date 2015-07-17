@@ -1,6 +1,7 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
+import lars.graph.DiGraph
 import lars.graph.alg.{SCCs, BottomUpNumbering}
 import lars.graph.quotient.Condensation
 import lars.strat._
@@ -32,7 +33,7 @@ class TestStratify extends FunSuite {
 
   val depGraph = DepGraph(nodes,edges)
 
-  val sccs: Map[ExtendedAtom,DepGraph] = SCCs(depGraph)
+  val sccs: Map[ExtendedAtom,DiGraph[ExtendedAtom]] = SCCs(depGraph)
 
   val c_x1x2 = sccs(x1)
   val c_y1 = sccs(y1)
@@ -60,7 +61,7 @@ class TestStratify extends FunSuite {
     assert(con.hasEdge(c_y1,c_z2))
     assert(con.hasEdge(c_w,c_y2))
 
-    val idx: Map[DepGraph,Int] = BottomUpNumbering(con)
+    val idx: Map[DiGraph[ExtendedAtom],Int] = BottomUpNumbering(con)
 
     val maxStratum = idx.values.reduce(math.max)
 

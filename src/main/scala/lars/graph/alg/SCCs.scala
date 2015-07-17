@@ -1,7 +1,8 @@
 package lars.graph.alg
 
-import lars.core.semantics.formulas.ExtendedAtom
-import lars.strat.DepGraph
+import lars.graph.DiGraph
+
+import scala.collection.immutable.HashMap
 
 /**
  * strongly connected components
@@ -9,15 +10,15 @@ import lars.strat.DepGraph
  * Created by hb on 7/10/15.
  *
  */
-object SCCs extends (DepGraph => Map[ExtendedAtom,DepGraph]) {
+object SCCs {
 
-  override def apply(G: DepGraph): Map[ExtendedAtom, DepGraph] = {
-    val comps = BruteSCC(G)
-    val componentM = new collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
+  def apply[V](g: DiGraph[V]): Map[V, DiGraph[V]] = {
+    val comps = BruteSCC[V](g)
+    val componentM = new collection.mutable.HashMap[Int,Set[V]]()
     for (id <- comps.compId.values) {
-      componentM(id)=Set[ExtendedAtom]()
+      componentM(id)=Set[V]()
     }
-    for (n <- G.nodes) {
+    for (n <- g.nodes) {
       val id = comps.compId(n)
       val set = componentM(id) + n
       componentM(id)=set
@@ -25,16 +26,14 @@ object SCCs extends (DepGraph => Map[ExtendedAtom,DepGraph]) {
     // rest of stratify alg was written before,
     // thus some further mappings. in principle,
     // we could already use the component mapping
-    val components: Iterable[DepGraph] = componentM.values.map(G.subGraph)
-    val mMap = new collection.mutable.HashMap[ExtendedAtom,DepGraph]()
+    val components: Iterable[DiGraph[V]] = componentM.values.map(g.subgraph)
+    var map = HashMap[V,DiGraph[V]]()
     for (component <- components) {
       for (n <- component.nodes) {
-        mMap(n)=component
+        map = map.updated(n,component)
       }
     }
-    mMap.toMap
+    map
   }
-
-
 
 }

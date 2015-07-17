@@ -1,13 +1,13 @@
 package lars.graph.alg
 
-import lars.graph.traits.BasicGraph
+import lars.graph.DiGraph
 
 /**
  * Created by hb on 7/16/15.
  */
 object BottomUpNumbering {
 
-  def apply[V, G <: BasicGraph[V]](g: G, min:Int=0): Map[V, Int] = {
+  def apply[V](g: DiGraph[V], min:Int=0): Map[V, Int] = {
 
     var nr = Map[V,Int]()
 
@@ -32,7 +32,7 @@ object BottomUpNumbering {
     nr
   }
 
-  private def maxChildNr[V,G <: BasicGraph[V]](node: V, g: G, nr:Map[V,Int]) : Option[Int] = {
+  private def maxChildNr[V,G <: DiGraph[V]](node: V, g: G, nr:Map[V,Int]) : Option[Int] = {
     val children = g.outgoing(node)
     if (children.exists( g => !nr.contains(g) )) {
       return None

@@ -1,24 +1,16 @@
 package lars.graph.quotient
 
-import lars.core.semantics.formulas.ExtendedAtom
-import lars.graph.InOutGraph
-import lars.strat.DepGraph
+import lars.graph.{DiGraph, Graph}
 
 /**
  * https://en.wikipedia.org/wiki/Quotient_graph
  *
  * Created by hb on 7/16/15.
  */
-case class QuotientGraph(override val adjList:Map[DepGraph,Set[DepGraph]]) extends InOutGraph[DepGraph](adjList)
+case class QuotientGraph[V](override val adjList:Map[V,Set[V]]) extends DiGraph[V](adjList)
 
 object QuotientGraph {
 
-  def apply(depGraph:DepGraph, sccs: collection.immutable.Map[ExtendedAtom,DepGraph]): QuotientGraph = {
-    var nodes = Set[DepGraph]()
-    var adjList = Map[DepGraph,Set[DepGraph]]()
-
-    //TODO
-
-    new QuotientGraph(adjList)
+  def apply[V,G <: Graph[V]](g: G, sccs: collection.immutable.Map[V,G]): Unit = { //TODO QuotientGraph = {
   }
 }
