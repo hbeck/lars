@@ -1,8 +1,9 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
+import lars.graph.alg.{SCCs, BottomUpNumbering}
+import lars.graph.quotient.Condensation
 import lars.strat._
-import lars.util.graph.{SCCs, Condensation, BottomUpNumbering}
 import org.scalatest.FunSuite
 
 /**

@@ -2,8 +2,9 @@ package lars.strat.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
+import lars.graph.alg.{SCCs, BottomUpNumbering}
+import lars.graph.quotient.Condensation
 import lars.strat.{grt, DepGraph, Stratification}
-import lars.util.graph.{SCCs, Condensation, BottomUpNumbering}
 
 /**
  * Created by hb on 7/10/15.

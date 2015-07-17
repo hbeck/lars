@@ -1,9 +1,10 @@
-package lars.util.graph
+package lars.graph.traits
 
 /**
  * Created by hb on 7/17/15.
  */
 trait AdjList[V] {
+
   def adjList:Map[V,Set[V]]
 
   def nodes:Set[V] = adjList.keySet

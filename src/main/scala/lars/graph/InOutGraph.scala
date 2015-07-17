@@ -1,11 +1,13 @@
-package lars.util.graph
+package lars.graph
+
+import lars.graph.traits.Incoming
 
 /**
  * graph based on adjacency list for both incoming and outgoing directions
  *
  * Created by hb on 7/16/15.
  */
-class InOutGraph[V](override val adjList:Map[V,Set[V]]) extends SimpleGraph[V](adjList) {
+class InOutGraph[V](override val adjList:Map[V,Set[V]]) extends BasicGraphImpl[V](adjList) with Incoming[V] {
 
   private var in: Map[V, Set[V]] = Map[V, Set[V]]()
 

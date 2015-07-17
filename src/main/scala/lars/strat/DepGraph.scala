@@ -3,7 +3,8 @@ package lars.strat
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
-import lars.util.graph.{AdjList, Graph}
+import lars.graph.Graph
+import lars.graph.traits.AdjList
 
 import scala.annotation.tailrec
 import scala.collection.mutable

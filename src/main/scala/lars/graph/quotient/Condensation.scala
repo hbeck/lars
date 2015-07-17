@@ -1,5 +1,7 @@
-package lars.util.graph
+package lars.graph.quotient
 
+import lars.graph.util.{HasEdge, Add}
+import lars.graph.{Graph, InOutGraph}
 
 /**
  * the condensation of a strongly connected graph is the quotient graph where
@@ -11,18 +13,7 @@ case class Condensation[V](override val adjList:Map[V,Set[V]]) extends InOutGrap
 
 object Condensation {
 
-  // connect two components fromC and toC with an arc (in this direction),
-  // if there is an edge (from,to) in g, where
-  // from is in SCC fromC and to is in a different SCC toC  //
-  // alg:
-  //   for all edges (from,to) in g:
-  //     get SCCs fromC, toC
-  //     if fromC == toC continue //dep in edge can be >= or =
-  //     if there exists already an edge between fromC, toC continue
-  //       create edge (fromC,toC)
-  //
-  // result: DAG, not necessarily (weakly) connected
-  //TODO factor out sccs by a generic function towards quotient
+ //TODO factor out sccs by a generic function towards quotient
   def apply[V,G <: Graph[V]](g: G, sccs: collection.immutable.Map[V,G]): Condensation[G] = {
     val nodes: Set[G] = sccs.values.toSet
     var adjList = Map[G,Set[G]]()

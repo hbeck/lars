@@ -1,4 +1,4 @@
-package lars.util.graph
+package lars.graph
 
 /**
  * Graph with node of type V

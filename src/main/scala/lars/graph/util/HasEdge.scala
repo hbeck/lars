@@ -1,4 +1,4 @@
-package lars.util.graph
+package lars.graph.util
 
 /**
  * Created by hb on 7/16/15.

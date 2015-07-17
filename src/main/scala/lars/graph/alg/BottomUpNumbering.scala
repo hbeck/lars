@@ -1,15 +1,17 @@
-package lars.util.graph
+package lars.graph.alg
+
+import lars.graph.traits.BasicGraph
 
 /**
  * Created by hb on 7/16/15.
  */
 object BottomUpNumbering {
 
-  def apply[V](g: InOutGraph[V], min:Int=0): Map[V, Int] = {
+  def apply[V, G <: BasicGraph[V]](g: G, min:Int=0): Map[V, Int] = {
 
     var nr = Map[V,Int]()
 
-    //may be done more efficiently by preordering nodes accordingly instead of naive queuing
+    //may be done more efficiently by pre-ordering nodes accordingly instead of naive queuing
     var queue = collection.mutable.Queue[V]()
     queue ++= g.nodes
 
@@ -30,7 +32,7 @@ object BottomUpNumbering {
     nr
   }
 
-  private def maxChildNr[V](node: V, g: InOutGraph[V], nr:Map[V,Int]) : Option[Int] = {
+  private def maxChildNr[V,G <: BasicGraph[V]](node: V, g: G, nr:Map[V,Int]) : Option[Int] = {
     val children = g.outgoing(node)
     if (children.exists( g => !nr.contains(g) )) {
       return None

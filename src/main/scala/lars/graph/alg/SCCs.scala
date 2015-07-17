@@ -1,4 +1,4 @@
-package lars.util.graph
+package lars.graph.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.strat.DepGraph
