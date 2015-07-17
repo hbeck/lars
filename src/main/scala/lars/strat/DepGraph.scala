@@ -4,6 +4,7 @@ import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.graph.{DiGraph, LabeledDiGraph}
+import lars.core.semantics.programs.extatoms.AtAtom
 
 import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
@@ -13,7 +14,6 @@ import scala.collection.mutable
  * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-//TODO multiple labels per edge possible!
 case class DepGraph(override val adjList: Map[ExtendedAtom,Set[ExtendedAtom]],
                     override val label: (ExtendedAtom,ExtendedAtom) => Dependency)
 
@@ -86,9 +86,27 @@ object DepGraph {
 
     val curr = mutable.HashSet[DepEdge]()
     for (beta <- rule.B) {
-      curr += DepEdge(rule.h,beta,geq)
+      val dep = determineHeadBodyDependency(rule.h,beta)
+      curr += DepEdge(rule.h,beta,dep)
     }
     headBodyArcsImpl(rules.tail, edges ++ curr.toSet)
+  }
+
+  /*
+   * normally, the head-body dependency is grt (>=), but for a rule "@_t a <- a, ..."
+   * we have to make sure that eql (=) is used.
+  */
+  def determineHeadBodyDependency(h: ExtendedAtom, b: ExtendedAtom) : Dependency = {
+    h match {
+      case x:AtAtom => {
+        if (b.isInstanceOf[Atom] && b.asInstanceOf[Atom] == x.atom) {
+          return eql
+        } else {
+          return geq
+        }
+      }
+      case _ => geq
+    }
   }
 
   private def nestingArcs(P: StdProgram): Set[DepEdge] = {
