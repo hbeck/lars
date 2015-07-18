@@ -28,7 +28,13 @@ object Stratify {
       return None
     }
 
-    //TODO use different quotient graph
+    /*
+    TODO
+    further step demanded, where the condensation is 'minimalized' by edges with dependency geq (>=)
+    however, a naive local expansion of blocks is not possible, this may lead to cycles with remaining grt (>)
+    in general. intuitively, we want to add two blocks A and B whenever there is no path connecting the two with
+    and edge labeled with > (in the original graph)
+    */
     val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(condensation)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
