@@ -1,8 +1,7 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
-import lars.graph.DiGraph
-import lars.graph.alg.{SCCs, BottomUpNumbering}
+import lars.graph.alg.{BottomUpNumbering, SCCFn}
 import lars.graph.quotient.Condensation
 import lars.strat._
 import org.scalatest.FunSuite
@@ -33,35 +32,35 @@ class TestStratify extends FunSuite {
 
   val depGraph = DepGraph(nodes,edges)
 
-  val sccs: Map[ExtendedAtom,DiGraph[ExtendedAtom]] = SCCs(depGraph)
+  val sccs: Map[ExtendedAtom,Set[ExtendedAtom]] = SCCFn[ExtendedAtom]()(depGraph)
 
-  val c_x1x2 = sccs(x1)
-  val c_y1 = sccs(y1)
-  val c_y2 = sccs(y2)
-  val c_z1 = sccs(z1)
-  val c_z2 = sccs(z2)
-  val c_w = sccs(w)
+  val set_x1x2 = sccs(x1)
+  val set_y1 = sccs(y1)
+  val set_y2 = sccs(y2)
+  val set_z1 = sccs(z1)
+  val set_z2 = sccs(z2)
+  val set_w = sccs(w)
 
   test("SCC") {
     assert(sccs.keySet.size == 7)
     val g_x1x2 = g(Set(x1,x2),x1_x2,x2_x1)
-    assert(c_x1x2 == g_x1x2)
-    assert(sccs(x2) == g_x1x2)
+    assert(set_x1x2 == g_x1x2.nodes)
+    assert(sccs(x2) == g_x1x2.nodes)
     for (n <- Set(y1,y2,z1,z2,w)) {
-      assert(sccs(n) == g(Set(n)))
+      assert(sccs(n) == Set(n))
     }
   }
 
-  val con = Condensation(depGraph,sccs)
+  val con = Condensation(depGraph)
 
   test("component graph") {
-    assert(con.hasEdge(c_x1x2,c_y1))
-    assert(con.hasEdge(c_x1x2,c_y2))
-    assert(con.hasEdge(c_y1,c_z1))
-    assert(con.hasEdge(c_y1,c_z2))
-    assert(con.hasEdge(c_w,c_y2))
+    assert(con.hasEdge(set_x1x2,set_y1))
+    assert(con.hasEdge(set_x1x2,set_y2))
+    assert(con.hasEdge(set_y1,set_z1))
+    assert(con.hasEdge(set_y1,set_z2))
+    assert(con.hasEdge(set_w,set_y2))
 
-    val idx: Map[DiGraph[ExtendedAtom],Int] = BottomUpNumbering(con)
+    val idx: Map[Set[ExtendedAtom],Int] = BottomUpNumbering(con)
 
     val maxStratum = idx.values.reduce(math.max)
 
@@ -69,12 +68,12 @@ class TestStratify extends FunSuite {
 
     //val stratumToAtoms: Map[Int, Set[ExtendedAtom]] = idx.toSeq.map(_.swap).map( pair => (pair._1, pair._2.nodes) ).toMap
 
-    assert(idx(c_x1x2) == 2)
-    assert(idx(c_y1) == 1)
-    assert(idx(c_z1) == 0)
-    assert(idx(c_z2) == 0)
-    assert(idx(c_y2) == 0)
-    assert(idx(c_w) == 1)
+    assert(idx(set_x1x2) == 2)
+    assert(idx(set_y1) == 1)
+    assert(idx(set_z1) == 0)
+    assert(idx(set_z2) == 0)
+    assert(idx(set_y2) == 0)
+    assert(idx(set_w) == 1)
   }
 
   val strat:Stratification = Stratification(Stratify.createStratumMapping(BottomUpNumbering(con)))

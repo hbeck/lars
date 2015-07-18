@@ -1,6 +1,7 @@
 package lars.strat.alg
 
-import lars.graph.alg.SCCs
+import lars.core.semantics.formulas.ExtendedAtom
+import lars.graph.alg.SCCFn
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -10,35 +11,36 @@ import org.scalatest.FunSuite
 class TestSCCs extends FunSuite {
 
   //see package object for atoms and graphs
+  val fn  = SCCFn[ExtendedAtom]()
 
   test("test x y z") {
-    assert(SCCs(g_x)(x) == g_x)
+    assert(fn(g_x)(x) == g_x.nodes)
     //
-    val dep_xy_2 = SCCs(g_xy_1)
-    assert(dep_xy_2(x) == g(Set(x)))
-    assert(dep_xy_2(y) == g(Set(y)))
+    val dep_xy_2 = fn(g_xy_1)
+    assert(dep_xy_2(x) == Set(x))
+    assert(dep_xy_2(y) == Set(y))
     //
-    val dep_xy_3 = SCCs(g_xy_2)
-    assert(dep_xy_3(x) == g_xy_2)
+    val dep_xy_3 = fn(g_xy_2)
+    assert(dep_xy_3(x) == g_xy_2.nodes)
     assert(dep_xy_3(y) == dep_xy_3(x))
     //
     //
-    assert(SCCs(g_xz)(x) == g(Set(x)))
-    assert(SCCs(g_xz)(z) == g(Set(z)))
+    assert(fn(g_xz)(x) == Set(x))
+    assert(fn(g_xz)(z) == Set(z))
     //
-    val dep_xyz_2 = SCCs(g_xyz_1)
-    assert(dep_xyz_2(x) == g(Set(x)))
-    assert(dep_xyz_2(y) == g(Set(y)))
-    assert(dep_xyz_2(z) == g(Set(z)))
+    val dep_xyz_2 = fn(g_xyz_1)
+    assert(dep_xyz_2(x) == Set(x))
+    assert(dep_xyz_2(y) == Set(y))
+    assert(dep_xyz_2(z) == Set(z))
     //
-    val dep_xyz_3 = SCCs(g_xyz_2)
-    assert(dep_xyz_3(x) == g_xy_2)
-    assert(dep_xyz_3(y) == g_xy_2)
-    assert(dep_xyz_3(z) == g(Set(z)))
+    val dep_xyz_3 = fn(g_xyz_2)
+    assert(dep_xyz_3(x) == g_xy_2.nodes)
+    assert(dep_xyz_3(y) == g_xy_2.nodes)
+    assert(dep_xyz_3(z) == Set(z))
   }
 
   test("test 2") {
-    val depG = SCCs(g1)
+    val depG = fn(g1)
 
     val comp_a = depG(a)
     val comp_b = depG(b)
@@ -50,12 +52,12 @@ class TestSCCs extends FunSuite {
     assert(comp_b == comp_c)
     assert(comp_d == comp_f)
 
-    assert(comp_a == g(Set(a,b,c),e(a,b,geq),e(b,c,geq),e(c,a,geq)))
-    assert(comp_d == g(Set(d,f),e(d,f,eql),e(f,d,eql)))
+    assert(comp_a == g(Set(a,b,c),e(a,b,geq),e(b,c,geq),e(c,a,geq)).nodes)
+    assert(comp_d == g(Set(d,f),e(d,f,eql),e(f,d,eql)).nodes)
   }
 
   test("test 3") {
-    val depG = SCCs(g2)
+    val depG = fn(g2)
 
     val comp_a = depG(a)
     val comp_b = depG(b)
@@ -80,10 +82,10 @@ class TestSCCs extends FunSuite {
     //
     assert(comp_h != comp_i)
 
-    assert(comp_a == g(Set(a,b,c),e(a,b,geq),e(b,c,geq),e(c,a,geq)))
-    assert(comp_d == g(Set(d,f),e(d,f,eql),e(f,d,eql)))
-    assert(comp_h == g(Set(h)))
-    assert(comp_i == g(Set(i,j),e(i,j,geq),e(j,i,geq)))
+    assert(comp_a == g(Set(a,b,c),e(a,b,geq),e(b,c,geq),e(c,a,geq)).nodes)
+    assert(comp_d == g(Set(d,f),e(d,f,eql),e(f,d,eql)).nodes)
+    assert(comp_h == g(Set(h)).nodes)
+    assert(comp_i == g(Set(i,j),e(i,j,geq),e(j,i,geq)).nodes)
   }
 
 }

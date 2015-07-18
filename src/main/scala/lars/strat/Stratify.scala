@@ -2,15 +2,13 @@ package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.graph.DiGraph
-import lars.graph.alg.{BottomUpNumbering, SCCs}
-import lars.graph.quotient.Condensation
+import lars.graph.alg.BottomUpNumbering
+import lars.graph.quotient.{Condensation, QuotientGraph}
 
 /**
  * Created by hb on 7/10/15.
  *
- * note: we can have different stratifications and study the impact on performance later
- */
+  */
 object Stratify {
 
   /**
@@ -22,39 +20,40 @@ object Stratify {
 
   def apply(depGraph: DepGraph) : Option[Stratification] = {
 
-    // determine strongly connected components (SCCs)
-    val sccs: Map[ExtendedAtom,DiGraph[ExtendedAtom]] = SCCs[ExtendedAtom](depGraph)
+    val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
 
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
-    for (g <- sccs.values) {
-      val depGraph = g.asInstanceOf[DepGraph]
-      for ((from,to) <- depGraph.edges) {
-        if (depGraph.label(from,to) == grt) {
-          return None
-        }
-      }
+    if (hasCycleWithGrt(depGraph, condensation)) {
+      return None
     }
 
-    // TODO use instead a QuotientGraph with a relaxed partitioning criterion
-    // that includes after the strongly connected components those arcs reachable with geq
-    val cnd: Condensation[DiGraph[ExtendedAtom]] = Condensation(depGraph,sccs)
-
-    val subgraphNr: Map[DiGraph[ExtendedAtom], Int] = BottomUpNumbering(cnd)
+    //TODO use different quotient graph
+    val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(condensation)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 
     Option(Stratification(nrToAtoms))
   }
+
+  def hasCycleWithGrt(depGraph: DepGraph, condensation: QuotientGraph[ExtendedAtom]): Boolean = {
+    for (scc <- condensation.nodes) {
+      val dg = depGraph.subgraph(scc)
+      if (dg.edges.exists{ e => dg.label(e._1,e._2) == grt }) {
+        return true
+      }
+    }
+    return false
+  }
   
-  def createStratumMapping(subgraphNr:Map[DiGraph[ExtendedAtom],Int]): Map[Int, Set[ExtendedAtom]] = {
+  def createStratumMapping(subgraphNr:Map[Set[ExtendedAtom],Int]): Map[Int, Set[ExtendedAtom]] = {
     var m = Map[Int,Set[ExtendedAtom]]()
-    for ((graph,nr) <- subgraphNr) {
+    for ((nodes,nr) <- subgraphNr) {
       if (m.contains(nr)) {
-        val set = m(nr) ++ graph.nodes
+        val set = m(nr) ++ nodes
         m = m.updated(nr,set)
       } else {
-        m = m.updated(nr,graph.nodes)
+        m = m.updated(nr,nodes)
       }
     }
     m
