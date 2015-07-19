@@ -24,7 +24,7 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
 
   def == (other: Evaluation) : Boolean = {
     if (this.size != other.size) return false
-    for (t <- mapping.keys) {
+    for (t <- this.mapping.keys) {
       val m0 = this.mapping.get(t)
       val m1 = other.mapping.getOrElse(t,Set())
       if (m0 == m1) return false

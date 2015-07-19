@@ -160,9 +160,9 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 }
 
 object S {
-  def apply(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
+  def apply(T:Timeline, tsAtoms: (Int,Atom)*): S = {
 
-    S(T,Evaluation.fromTimestampedAtoms(tsAtoms))
+    S(T,Evaluation.fromTimestampedAtoms(tsAtoms.toSet))
   }
 }
 

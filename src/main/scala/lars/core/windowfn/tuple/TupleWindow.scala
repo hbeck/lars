@@ -19,15 +19,23 @@ object TupleWindow extends WindowFunction[TupleWindowParameters] {
     //tuple time bound
     val tlSet = Set(tMin) ++ (tMin to t).filter(tp => (s | Timeline(tp, t)).size >= l)
     val tl = tlSet.reduce(math.max)
-    val tuSet = Set(tMax) ++ (t to tMax).filter(tp => (s | Timeline(t, tp)).size >= u) //bug in reactknow paper, says (t+1 to tMax)!
+    val tuSet = Set(tMax) ++ (t+1 to tMax).filter(tp => (s | Timeline(t+1, tp)).size >= u) //bug in reactknow paper, says (t+1 to tMax)!
     val tu = tuSet.reduce(math.min)
 
 
 
-    val Tl = Timeline(tl, t)
-    val Tu = Timeline(math.min(t + 1, tu), tu)
 
-    val Tp = Timeline(tl, tu)
+    val Tl = Timeline(tl, t)
+    val Tu = Timeline(math.min(t+1, tu), tu) // in the paper it says Timeline(t+1, tu)
+
+    /*check for special cases l==0 and u==0 -> different timeline needed*/
+    var Tp = Timeline(tl, tu)
+
+    if (l == 0) {
+      Tp = Timeline(t + 1, tu)
+    } else if (u == 0) {
+      Tp = Timeline(tl, tu-1)
+    }
 
     val mMap = new collection.mutable.HashMap[Int, Set[Atom]]()
 
@@ -35,8 +43,9 @@ object TupleWindow extends WindowFunction[TupleWindowParameters] {
 
     var lAlready = 0
     var uAlready = 0
-    for (tp <- tl + 1 to tu) { //former boundaries: tl+1 to tu-1
-      mMap(tp) = v(tp)
+    for (tp <- tl+1 to tu-1) { //former boundaries: tl+1 to tu-1
+      /*if (v(tp).nonEmpty) */mMap(tp) = v(tp)
+
       if (tp <= t) {
         lAlready += v(tp).size
       } else {
@@ -45,7 +54,7 @@ object TupleWindow extends WindowFunction[TupleWindowParameters] {
     }
     if (l > 0) {
       if ((s | Tl).size <= l) {
-        mMap(tl) = v(tl)
+      if(v(tl).nonEmpty)  mMap(tl) = v(tl)
       } else {
         //>l
         val diff = l - lAlready
