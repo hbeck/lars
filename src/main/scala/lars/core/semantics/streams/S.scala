@@ -4,8 +4,10 @@ import lars.core.semantics.formulas.Atom
 import lars.core.semantics.programs.Program
 import lars.core.semantics.structure.M
 
+
 import scala.collection.mutable.HashMap
 import scala.collection.immutable.Map
+
 
 /**
  * Created by hb on 5/26/15.
@@ -13,6 +15,21 @@ import scala.collection.immutable.Map
 case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
   def apply(t:Int) = v(t)
+
+  def partition(idx: Atom => Int): Map[Int, S] = {
+    var m = new collection.mutable.HashMap[Int, S]
+
+    for ((t,as) <- v.mapping) {
+      for (a <- as) {
+        if (m.contains(idx(a))) {
+          m(idx(a)) + (t->a)
+        } else {
+          m += (idx(a) -> (m(idx(a)) + (t -> a)))
+        }
+      }
+    }
+      m.toMap
+  }
 
   def <= (other:S) = {
     (this.T <= other.T) && (this.v <= other.v)
@@ -37,7 +54,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     val atom = tsAtom._2
     var newAtoms : Set[Atom] = null
     if (v.mapping.contains(t)) {
-      newAtoms = (v.mapping(t)) + atom
+      newAtoms = v.mapping(t) + atom
     } else {
       newAtoms = Set[Atom](atom)
     }
