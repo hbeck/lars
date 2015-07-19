@@ -1,12 +1,11 @@
 package lars.core.semantics.streams
 
 import lars.core.semantics.formulas.Atom
-import lars.core.semantics.programs.Program
 import lars.core.semantics.structure.M
 
 
-import scala.collection.mutable.HashMap
 import scala.collection.immutable.Map
+import scala.collection.mutable.HashMap
 
 
 /**
@@ -47,8 +46,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
   def != (other: S) : Boolean = !(this == other)
 
-  //TODO limitation of fp approach? mutable: insert into set a single atom,
-  //vs copying (at least iterating) the whole thing
+  //TODO make clean
   def + (tsAtom: (Int,Atom)) : S = {
     val t = tsAtom._1
     val atom = tsAtom._2
@@ -129,14 +127,6 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
   def toStructure() = M(T,v,Set[Atom]())
   def toStructure(B:Set[Atom]) = M(T,v,B)
 
-  def isAnswerStream(P:Program, D:S, t:Int, B:Set[Atom]=Set()) : Boolean = {
-
-    //TODO assert this is a superstream of D with fresh atoms
-    //
-    val M = this.toStructure(B)
-    val R = P.reduct(M,t)
-    M.isMinimalModel(R,t,D)
-  }
 
   //
   def substreams(): Iterator[S] = {
@@ -157,7 +147,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     var substreams = Set[S]()
     for (subset <- timestampedAtoms.subsets()) {
       if (!proper || subset != timestampedAtoms) {
-        substreams += S(T, Evaluation.from(subset)) //TODO apply, see Evaluation object
+        substreams += S(T, Evaluation.fromTimestampedAtoms(subset))
       }
     }
     substreams.iterator //TODO proper (lazy) iterator
@@ -171,10 +161,8 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
 object S {
   def apply(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
-    S(T,Evaluation.from(tsAtoms)) //TODO apply, see Evaluation object
-  }
-  def apply(T:Timeline, tsAtoms: (Int,Atom)*): S = {
-    S(T,Evaluation.from(tsAtoms.toSet)) //TODO apply, see Evaluation object
+
+    S(T,Evaluation.fromTimestampedAtoms(tsAtoms))
   }
 }
 

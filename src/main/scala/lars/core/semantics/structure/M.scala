@@ -1,7 +1,7 @@
 package lars.core.semantics.structure
 
 import lars.core.semantics.formulas.Atom
-import lars.core.semantics.programs.Program
+import lars.core.semantics.programs.{Rule, Program}
 import lars.core.semantics.streams.{Evaluation, S, Timeline}
 
 /**
@@ -13,7 +13,7 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
   def /(stream: S) = MS(this, stream)
   def /(t: Int) = Mt(this,t)
 
-  def isModel(P: Program, t: Int): Boolean = {
+  def isModel[R <: Rule](P: Program[R], t: Int): Boolean = {
     this/t |= P
   }
 
@@ -22,13 +22,13 @@ case class M(T: Timeline, v: Evaluation, B: Set[Atom]) {
   }
 
   //wrt data stream D
-  def isMinimalModel(P: Program, t: Int, D: S): Boolean = {
+  def isMinimalModel[R <: Rule](P: Program[R], t: Int, D: S): Boolean = {
 
     if (!isModel(P,t)) return false
 
     //naive implementation, for the moment: try if any subset
     //of the intentional part + D is a model
-    var intentionalPart = S(T,v) -- D
+    val intentionalPart = S(T,v) -- D
 
     //iterate over substreams of intentional part, add it to D, and see if it is a model
     //in case one is found, this is not a minimal model

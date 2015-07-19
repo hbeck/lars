@@ -1,6 +1,6 @@
 package lars.core.semantics.streams
 
-import lars.core.MapUtils.merge
+import lars.util.map.Merge
 import lars.core.semantics.formulas.Atom
 
 import scala.collection.immutable.HashMap
@@ -33,7 +33,7 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
   }
   def != (other: Evaluation) : Boolean = { !(this == other) }
 
-  def ++ (other:Evaluation) = Evaluation(merge(mapping,other.mapping))
+  def ++ (other:Evaluation) = Evaluation(Merge(mapping,other.mapping))
 
   override def equals(that:Any) = {
     that match {
@@ -59,13 +59,13 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
 }
 
 object Evaluation {
-  def from(tsAtoms: Set[(Int,Atom)]): Evaluation = { //TODO rename to apply
+  def fromTimestampedAtoms(tsAtoms: Set[(Int,Atom)]): Evaluation = {
     var m: HashMap[Int,Set[Atom]] = HashMap()
     for (tsAtom <- tsAtoms) {
       val k = tsAtom._1
       val atom = tsAtom._2
       if (m contains k) {
-        val ats = m(k) + atom
+        val ats = (m apply k) + atom
         m += (k -> ats)
       } else {
         m += k -> Set[Atom](atom)

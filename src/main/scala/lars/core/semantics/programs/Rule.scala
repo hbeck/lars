@@ -3,20 +3,14 @@ package lars.core.semantics.programs
 import lars.core.semantics.formulas.Formula
 
 /**
- * Created by hb on 6/23/15.
+ * Created by hb on 7/14/15.
  */
-case class Rule(head:Formula, body:Formula) {
+abstract class Rule {
+
+  def head: Formula
+
+  def body: Formula
 
   def asFormula = body implies head
 
-  override def equals(that: Any) = {
-    that match {
-      case Rule(h,b) => head == h && body == b
-      case _ => false
-    }
-  }
-
-  override def toString = {
-    head + " ← " + body
-  }
 }

@@ -7,8 +7,9 @@ import lars.core.semantics.formulas.{Atom, ExtendedAtom}
  */
 package object alg {
 
-  def e(from:ExtendedAtom, to:ExtendedAtom, dep: Dep) = DepEdge(from,to,dep)
+  def e(from:ExtendedAtom, to:ExtendedAtom, dep: Dependency) = DepEdge(from,to,dep)
   def g(s:Set[ExtendedAtom], e:DepEdge*): DepGraph = DepGraph(s,e.toSet)
+  def gs(s:Set[ExtendedAtom], edges: Set[DepEdge]): DepGraph = DepGraph(s,edges)
 
   //
 
@@ -31,10 +32,11 @@ package object alg {
   val g_xyz_1 = g(Set(x,y,z),e(x,y,geq))
   val g_xyz_2 = g(Set(x,y,z),e(x,y,geq),e(y,x,geq))
 
-  val g1 = g(Set(a,b,c,d,f),e(a,b,geq),e(b,c,geq),e(c,a,geq),e(d,f,eql),e(f,d,eql))
+  val g1_edges = Set(e(a,b,geq),e(b,c,geq),e(c,a,geq),e(d,f,eql),e(f,d,eql))
+  val g1 = gs(Set(a,b,c,d,f),g1_edges)
 
   val g2 = DepGraph(
     g1.nodes ++ Set(h,i,j),
-    g1.edges ++ Set(e(a,h,grt),e(c,i,grt),e(f,j,grt),e(i,j,geq),e(j,i,geq)))
+    g1_edges ++ Set(e(a,h,grt),e(c,i,grt),e(f,j,grt),e(i,j,geq),e(j,i,geq)))
 
 }

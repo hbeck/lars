@@ -1,57 +1,35 @@
 package lars.strat
 
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.{Rule, Program}
+import lars.core.semantics.programs.extatoms._
+import lars.core.semantics.programs.standard.{StdProgram, StdRule}
+import lars.graph.{DiGraph, LabeledDiGraph}
+import lars.core.semantics.programs.extatoms.AtAtom
 
 import scala.annotation.tailrec
+import scala.collection.immutable.HashMap
 import scala.collection.mutable
 
 /**
  * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added explicitly for unconnected ones
+case class DepGraph(override val adjList: Map[ExtendedAtom,Set[ExtendedAtom]],
+                    override val label: (ExtendedAtom,ExtendedAtom) => Dependency)
 
-  val adjList: Map[ExtendedAtom,Set[ExtendedAtom]] = {
-    val mMap = new collection.mutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]()
-    for (n <- nodes) {
-      mMap += n -> Set[ExtendedAtom]()
-    }
-    for (edge@DepEdge(from, to, dep) <- edges) {
-      mMap.update(from, mMap(from) + to)
-    }
-    mMap.toMap
-  }
+  extends LabeledDiGraph[ExtendedAtom,Dependency](adjList,label) {
 
-  def neighbours(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
+  override def outgoing(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
 
-//  def nodes(): Set[ExtendedAtom] = {
-//    @tailrec
-//    def nodes(xs:Set[DepEdge], result: Set[ExtendedAtom]): Set[ExtendedAtom] = {
-//      if (xs.isEmpty) {
-//        return result
-//      }
-//      val e = xs.head
-//      nodes(xs.tail, result ++ Set(e.from,e.to))
-//    }
-//    nodes(edges,Set[ExtendedAtom]())
-//  }
-
-  //subgraph induced by given nodes
-  def subGraph(nodes: Set[ExtendedAtom]): DepGraph = {
-    val s = collection.mutable.Set[DepEdge]()
-    for (edge <- edges) {
-      if (nodes.contains(edge.from) && nodes.contains(edge.to)) {
-        s += edge
-      }
-    }
-    DepGraph(nodes,s.toSet)
+  override def subgraph(vertices: Set[ExtendedAtom]): DepGraph = {
+    val digraph: DiGraph[ExtendedAtom] = super.subgraph(vertices)
+    DepGraph(digraph.adjList, label) //reduce label "keys"?
   }
 
   //remaining graph when removing the given nodes
   def -- (nodes: Set[ExtendedAtom]) : DepGraph = {
     val newNodes = this.nodes -- nodes
-    subGraph(newNodes)
+    subgraph(newNodes)
   }
 
   override def equals(other:Any) : Boolean = {
@@ -61,54 +39,87 @@ case class DepGraph(nodes:Set[ExtendedAtom], edges:Set[DepEdge]) { //nodes added
     }
   }
 
-  def ==(other: DepGraph): Boolean = {
-    this.nodes == other.nodes && this.edges == other.edges
-  }
 }
 
 object DepGraph {
 
-  def apply(P: Program): DepGraph = {
-    val nodes = ExtendedAtoms(P,true) //TODO true okay?
-    val hba = headBodyArcs(P.rules,Set[DepEdge]())
+  def apply(P: StdProgram): DepGraph = {
+    val nodes = ExtendedAtoms(P,true)
+    val hba = headBodyArcs(P)
     val na = nestingArcs(P)
-    DepGraph(nodes, hba ++ na)
+    val depEdges: Set[DepEdge] = hba ++ na
+    apply(nodes,depEdges)
+  }
+
+  def apply(nodes: Set[ExtendedAtom], depEdges: Set[DepEdge]): DepGraph = {
+    val adjList = createAdjList(nodes,depEdges)
+    //abstract away dependencies into label function (as map):
+    var m = Map[(ExtendedAtom,ExtendedAtom),Dependency]()
+    for (e@DepEdge(from,to,dep) <- depEdges) {
+      m = m + ((from,to) -> dep)
+    }
+    val label = { (x:ExtendedAtom,y:ExtendedAtom) => m((x,y)) }
+    DepGraph(adjList,label)
+  }
+
+  def createAdjList(vertices: Set[ExtendedAtom], edges:Set[DepEdge]): Map[ExtendedAtom,Set[ExtendedAtom]] = {
+    var m = HashMap[ExtendedAtom,Set[ExtendedAtom]]()
+    for (n <- vertices) {
+      m = m + (n -> Set[ExtendedAtom]())
+    }
+    for (e@DepEdge(from,to,dep) <- edges) {
+      m = m.updated(from, m(from)+to)
+    }
+    m
+  }
+  
+  private def headBodyArcs(P: StdProgram): Set[DepEdge] = {
+    headBodyArcsImpl(P.rules, Set[DepEdge]())
   }
 
   @tailrec
-  private def headBodyArcs(rules: Set[Rule], result: Set[DepEdge]) : Set[DepEdge] = {
+  private def headBodyArcsImpl(rules: Set[StdRule], edges: Set[DepEdge]) : Set[DepEdge] = {
     if (rules.isEmpty) {
-      return result
+      return edges
     }
     val rule = rules.head
-    val alpha = ExtendedAtoms(rule.head, false).head
-    val betas: Set[ExtendedAtom] = ExtendedAtoms(rule.body, false)
 
-    var curr = mutable.HashSet[DepEdge]()
-    for (beta <- betas) {
-      curr += DepEdge(alpha,beta,geq)
+    val curr = mutable.HashSet[DepEdge]()
+    for (beta <- rule.B) {
+      val dep = determineHeadBodyDependency(rule.h,beta)
+      curr += DepEdge(rule.h,beta,dep)
     }
-    headBodyArcs(rules.tail, result ++ curr.toSet)
+    headBodyArcsImpl(rules.tail, edges ++ curr.toSet)
   }
 
-  private def nestingArcs(P: Program): Set[DepEdge] = {
-    val eats = ExtendedAtoms(P,true)
+  /*
+   * normally, the head-body dependency is grt (>=), but for a rule "@_t a <- a, ..."
+   * we have to make sure that eql (=) is used.
+  */
+  def determineHeadBodyDependency(h: ExtendedAtom, b: ExtendedAtom) : Dependency = {
+    h match {
+      case x:AtAtom => {
+        if (b.isInstanceOf[Atom] && b.asInstanceOf[Atom] == x.atom) {
+          return eql
+        } else {
+          return geq
+        }
+      }
+      case _ => geq
+    }
+  }
+
+  private def nestingArcs(P: StdProgram): Set[DepEdge] = {
+    val xs = ExtendedAtoms(P,true)
     var mset = mutable.HashSet[DepEdge]()
-    for (ea <- eats) {
-      ea match { //consider only 'relevant' once - see TODO marks concerning dual ontology
-        case AtAtom(u, a) => {
-          mset += DepEdge(AtAtom(u,a),a,eql)
-          mset += DepEdge(a,AtAtom(u,a),eql)
+    for (x <- xs) {
+      x match { //consider only 'relevant' ones
+        case y:AtAtom => {
+          mset += DepEdge(AtAtom(y.t,y.a),y.a,eql)
+          mset += DepEdge(y.a,AtAtom(y.t,y.a),eql)
         }
-        //TODO unify following three cases
-        case WDiamAtom(wop, da) => {
-          mset += DepEdge(WDiamAtom(wop,da),da.a,grt)
-        }
-        case WBoxAtom(wop, ba) => {
-          mset += DepEdge(WBoxAtom(wop,ba),ba.a,grt)
-        }
-        case WAtAtom(wop, aa) => {
-          mset += DepEdge(WAtAtom(wop,aa),aa.a,grt)
+        case y:WindowAtom => {
+          mset += DepEdge(y,y.atom,grt)
         }
         case x => if (!x.isInstanceOf[Atom]) { assert(false) } //atoms are only to-Nodes
       }
