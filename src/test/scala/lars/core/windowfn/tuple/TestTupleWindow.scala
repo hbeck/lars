@@ -25,10 +25,10 @@ class TestTupleWindow extends FunSuite {
   val s8 = s7 + (1->x) + (5->x)
   val s6 = s8 + (1->y) + (5->y) - (3->y)
 
-  val stream = Map[Int,S](
+ /* val stream = Map[Int,S](
     1 -> s1, 2 -> s2, 3 -> s3, 4 -> s4,
     5 -> s5, 6 -> s6, 7 -> s7, 8 -> s8
-  )
+  )*/
 
   test("test (1,0)") {
     val w = TupleWindow.fix(1)

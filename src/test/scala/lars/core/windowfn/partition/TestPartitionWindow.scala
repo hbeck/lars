@@ -1,51 +1,47 @@
 package lars.core.windowfn.partition
 
-import lars.core.semantics.formulas.Atom
+import lars.core.semantics.formulas.{Term, Atom}
 import lars.core.semantics.streams.{S, Timeline}
-import lars.core.windowfn.tuple.TupleWindow
+import lars.core.windowfn.tuple.{TupleWindowParameters, TupleWindowFixedParams}
 import org.scalatest.FunSuite
 
-import scala.collection.immutable.Map
 
 /**
-  * Created by hb on 7/14/15.
+  * Created by et on 7/15/15.
   */
 class TestPartitionWindow extends FunSuite {
 
-   object x extends Atom
-   object y extends Atom
+  case class tram(vehicleId:Term, station: Term) extends Atom
+  case class exp(vehicleId:Term, station: Term) extends Atom
 
-/*   val T = Timeline(0,5)
-   val s1 = S(T)
-   val s2 = s1 + (3->x)
-   val s3 = s1 + (2->x)
-   val s4 = s1 + (4->x)
-   val s5 = s2 + (1->x) + (5->x)
-   val s7 = s2 ++ s3 + (3->y)
-   val s8 = s7 + (1->x) + (4->x) + (5->x)
-   val s6 = s8 + (1->y) + (5->y) - (3->y)
 
-   val stream = Map[Int,S](
-     1 -> s1, 2 -> s2, 3 -> s3, 4 -> s4,
-     5 -> s5, 6 -> s6, 7 -> s7, 8 -> s8
-   )
+  /*Test from AAAI extended 2015*/
+  def idx(a: Atom): Int = a match {
+    case tram(vehicleId, station) => vehicleId.toString.charAt(2).toInt     //TODO better way to convert vehicleID into Integer
+    case exp(vehicleId, station) => vehicleId.toString.charAt(2).toInt + 2  //NOTE: numbers are interpreted as capital letters
+    case _ => 0
+  }
 
-   test("test (1,0)") {
-     val w = TupleWindow.fix(1)
+  def n(i: Int): TupleWindowFixedParams = i match {
+    case 0 => TupleWindowFixedParams(TupleWindowParameters(0,0))
+    case _ => TupleWindowFixedParams(TupleWindowParameters(1,0))
+  }
 
- //    assert(w(s1,3) == (s1|Timeline(0,3)))
-     assert(w(s2,3) == (s2|Timeline(3,3)))
-     assert(w(s3,3) == (s3|Timeline(2,3)))
-     assert(w(s4,3) == (s4|Timeline(0,3)))
-     assert(w(s5,3) == (s5|Timeline(3,3)))
-     assert(w(s6,3) == (s6|Timeline(3,3)))
+  val tr1 = tram("1","b")
+  val tr11 = tram("1","m")
+  val tr2 = tram("2", "h")
+  val tr22 = tram("2", "m")
+  val b1 = exp("3","b")
+  val b11 = exp("3","s")
+  val b2 = exp("4","m")
 
-     val s7_x = S(Timeline(3,3),3->x)
-     val s7_y = S(Timeline(3,3),3->y)
 
-     assert(w(s7,3) == s7_x || w(s7,3) == s7_y)
+  val T = Timeline(0,50)
+  val s = S(T) + (36->tr1) + (36->b1) + (40->tr2) + (40->b11) + (43->tr22) + (44->tr11) + (45->b2)
 
-     assert(w(s8,3) == s7_x || w(s8,3) == s7_y)
-   }*/
+test("test exp12") {
+  val w = PartitionWindow.fix(idx, n)
 
+  assert(w(s,45) == (S(T) + (40->b11) + (43->tr22) + (44->tr11) + (45->b2)))
+}
  }

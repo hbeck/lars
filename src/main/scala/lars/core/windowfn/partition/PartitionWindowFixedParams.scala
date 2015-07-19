@@ -8,5 +8,5 @@ import lars.core.windowfn.WindowFunctionFixedParams
  */
 case class PartitionWindowFixedParams(x: PartitionWindowParameters) extends WindowFunctionFixedParams {
   def apply(s: S, t: Int): S = PartitionWindow(s,t,x)
-  override def toString = x.toString
+  //override def toString = x.toString
 }

@@ -11,9 +11,9 @@ import lars.core.windowfn.tuple.TupleWindowFixedParams
 case class PartitionWindowParameters(idx: Atom => Int, n: Int => TupleWindowFixedParams) extends WindowParameters {
 
 }
-/*
 
-object PartitionWindowParameters {
+
+/*object PartitionWindowParameters {
   def from(as: Set[Atom], xs: Seq[Int]) : PartitionWindowParameters = {
     /*val a = as
     val l = xs.head

@@ -15,21 +15,6 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
   def apply(t:Int) = v(t)
 
-  def partition(idx: Atom => Int): Map[Int, S] = {
-    var m = new collection.mutable.HashMap[Int, S]
-
-    for ((t,as) <- v.mapping) {
-      for (a <- as) {
-        if (m.contains(idx(a))) {
-          m(idx(a)) + (t->a)
-        } else {
-          m += (idx(a) -> (m(idx(a)) + (t -> a)))
-        }
-      }
-    }
-      m.toMap
-  }
-
   def <= (other:S) = {
     (this.T <= other.T) && (this.v <= other.v)
   }
@@ -57,7 +42,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
       newAtoms = Set[Atom](atom)
     }
     var m:HashMap[Int,Set[Atom]] = HashMap()
-    for (k <- (v.mapping.keySet + t)) {
+    for (k <- v.mapping.keySet + t) {
       if (k == t) {
         m += (k -> newAtoms)
       } else {
@@ -72,12 +57,12 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     if (!(v.mapping contains t)) return this
     //
     val atom = tsAtom._2
-    val currAtoms = (v.mapping(t))
+    val currAtoms = v.mapping(t)
     if (!(currAtoms contains atom)) return this
     //
     val newAtoms = currAtoms - atom
     var m:HashMap[Int,Set[Atom]] = HashMap()
-    for (k <- (v.mapping.keySet)) {
+    for (k <- v.mapping.keySet) {
       if (k == t) {
         m += (k -> newAtoms)
       } else {
@@ -124,7 +109,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     }
   }
 
-  def toStructure() = M(T,v,Set[Atom]())
+  def toStructure = M(T,v,Set[Atom]())
   def toStructure(B:Set[Atom]) = M(T,v,B)
 
 
