@@ -35,7 +35,7 @@ object PartitionWindow extends WindowFunction[PartitionWindowParameters] {
     for ((t,as) <- s.v.mapping) {
       for (a <- as) {
         if (m.contains(idx(a))) {
-         m(idx(a)) =  m(idx(a)) + (t->a)
+         m(idx(a)) +=  (t->a)
         } else {
 
           m += (idx(a) -> (S(s.T) + (t->a)))
