@@ -3,17 +3,23 @@ package lars.core.semantics.streams
 import lars.core.semantics.formulas.Atom
 import lars.core.semantics.structure.M
 
+
 import scala.collection.immutable.Map
 import scala.collection.mutable.HashMap
+
 
 /**
  * Created by hb on 5/26/15.
  */
 case class S(T: Timeline, v: Evaluation=Evaluation()) {
 
+  def apply(t:Int) = v(t)
+
   def <= (other:S) = {
     (this.T <= other.T) && (this.v <= other.v)
   }
+
+  def nonZeroSize = v.nonZeroSize
 
   def size = v.size
 
@@ -30,17 +36,17 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     val t = tsAtom._1
     val atom = tsAtom._2
     var newAtoms : Set[Atom] = null
-    if (v.mapping contains t) {
-      newAtoms = (v.mapping apply t) + atom
+    if (v.mapping.contains(t)) {
+      newAtoms = v.mapping(t) + atom
     } else {
       newAtoms = Set[Atom](atom)
     }
     var m:HashMap[Int,Set[Atom]] = HashMap()
-    for (k <- (v.mapping.keySet + t)) {
+    for (k <- v.mapping.keySet + t) {
       if (k == t) {
         m += (k -> newAtoms)
       } else {
-        m += (k -> v.mapping.apply(k))
+        m += (k -> v.mapping(k))
       }
     }
     S(T,Evaluation(m.toMap))
@@ -51,16 +57,16 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     if (!(v.mapping contains t)) return this
     //
     val atom = tsAtom._2
-    val currAtoms = (v.mapping apply t)
+    val currAtoms = v.mapping(t)
     if (!(currAtoms contains atom)) return this
     //
     val newAtoms = currAtoms - atom
     var m:HashMap[Int,Set[Atom]] = HashMap()
-    for (k <- (v.mapping.keySet)) {
+    for (k <- v.mapping.keySet) {
       if (k == t) {
         m += (k -> newAtoms)
       } else {
-        m += (k -> v.mapping.apply(k))
+        m += (k -> v.mapping(k))
       }
     }
     S(T,Evaluation(m.toMap))
@@ -73,7 +79,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     //better: i) map builder ii) work directly on Evaluation object
     var m = new HashMap[Int,Set[Atom]]()
     for (k <- v.mapping.keys) {
-      val thisV:Set[Atom] = this.v.mapping.apply(k)
+      val thisV:Set[Atom] = this.v.mapping(k)
       val otherV:Set[Atom] = other.v.mapping.getOrElse(k, Set[Atom]().empty)
       val diffV:Set[Atom] = thisV -- otherV
       m += k -> diffV
@@ -85,7 +91,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
   def getTimestampedAtoms():Set[(Int,Atom)] = {
     var s:Set[(Int,Atom)] = Set()
     for (t <- v.mapping.keys) {
-      for (atom <- v.mapping.apply(t)) {
+      for (atom <- v.mapping(t)) {
         s += ((t,atom))
       }
     }
@@ -103,7 +109,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
     }
   }
 
-  def toStructure() = M(T,v,Set[Atom]())
+  def toStructure = M(T,v,Set[Atom]())
   def toStructure(B:Set[Atom]) = M(T,v,B)
 
 
@@ -139,8 +145,9 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
 }
 
 object S {
-  def apply(T:Timeline, tsAtoms: Set[(Int,Atom)]): S = {
-    S(T,Evaluation.fromTimestampedAtoms(tsAtoms))
+  def apply(T:Timeline, tsAtoms: (Int,Atom)*): S = {
+
+    S(T,Evaluation.fromTimestampedAtoms(tsAtoms.toSet))
   }
 }
 

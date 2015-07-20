@@ -23,11 +23,11 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
   }
 
   def == (other: Evaluation) : Boolean = {
-    if (this.mapping.size != other.mapping.size) return false
-    for (k <- mapping.keys) {
-      val m0 = this.mapping.apply(k)
-      val m1 = other.mapping.getOrElse(k,Set())
-      if (!m0.equals(m1)) return false
+    if (this.size != other.size) return false
+    for (t <- this.mapping.keys) {
+      val m0 = this.mapping.get(t)
+      val m1 = other.mapping.getOrElse(t,Set())
+      if (m0 == m1) return false
     }
     true
   }
@@ -42,7 +42,10 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
     }
   }
 
-  def size : Int = Math.max(1,mapping.values.flatten.size)
+  def size = mapping.values.flatten.size
+
+  //note: paper defines size one for empty stream
+  def nonZeroSize: Int = Math.max(1,mapping.values.flatten.size)
 
   override def toString = {
     val sb = new StringBuilder()

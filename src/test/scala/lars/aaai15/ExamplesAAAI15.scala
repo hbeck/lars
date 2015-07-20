@@ -68,7 +68,7 @@ class ExamplesAAAI15 extends FunSuite {
     assert(mm/ss/42 ||- fm)
     //
     val s1 = tw(ss, 42, (0, 5, 1))
-    assert(s1.T == (Timeline(42, 47)))
+    assert(s1.T == Timeline(42, 47))
     assert(s1.v == vInt)
     assert(mm/s1/43 ||- exp(a3,m))
     //

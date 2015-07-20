@@ -27,9 +27,9 @@ case class TimeWindowParameters(l:Int, u:Int=0, d:Int=1) extends WindowParameter
 object TimeWindowParameters {
 
   def from(xs: Seq[Int]) : TimeWindowParameters = {
-    val l = xs apply 0
-    val u = if (xs.length >= 2) xs apply 1 else 0
-    val d = if (xs.length == 3) xs apply 2 else 1
+    val l = xs(0)
+    val u = if (xs.length >= 2) xs(1) else 0
+    val d = if (xs.length == 3) xs(2) else 1
     TimeWindowParameters(l,u,d)
   }
 

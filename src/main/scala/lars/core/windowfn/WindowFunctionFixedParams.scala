@@ -7,4 +7,9 @@ import lars.core.semantics.streams.S
  *
  * Created by hb on 5/26/15.
  */
-abstract class WindowFunctionFixedParams extends ((S, Int) => S)
+abstract class WindowFunctionFixedParams extends ((S, Int) => S) {
+
+  //TODO generic creation of window with fixed parameters
+  //def apply(s:S,t:Int):S = { create specific }
+
+}
