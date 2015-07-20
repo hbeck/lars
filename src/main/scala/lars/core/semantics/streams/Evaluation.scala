@@ -31,6 +31,7 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
     }
     true
   }
+
   def != (other: Evaluation) : Boolean = { !(this == other) }
 
   def ++ (other:Evaluation) = Evaluation(Merge(mapping,other.mapping))
