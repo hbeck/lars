@@ -353,7 +353,12 @@ class ExamplesIJCAI15 extends FunSuite {
 
     //example for property 1:
     val ias: Set[S] = IAS(program,Dp,t)
-    //println(ias)
+
+//    println("\nAS: ")
+//    println(AS(program,Dp,t))
+//    println("\nias: ")
+//    println(ias)
+
     assert(AS(program,Dp,t) == ias)
 
     val performanceTest = false
