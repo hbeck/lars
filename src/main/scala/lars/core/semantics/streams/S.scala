@@ -110,7 +110,7 @@ case class S(T: Timeline, v: Evaluation=Evaluation()) {
   }
 
   def toStructure = M(T,v,Set[Atom]())
-  def toStructure(B:Set[Atom]) = M(T,v,B)
+  def toStructure(B:Set[Atom]=Set[Atom]()) = M(T,v,B)
 
 
   //

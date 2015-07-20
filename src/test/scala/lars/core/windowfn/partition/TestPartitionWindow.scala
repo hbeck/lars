@@ -41,7 +41,7 @@ class TestPartitionWindow extends FunSuite {
 
   test("test exp12") {
     val w = PartitionWindow.fix(idx, n)
-
+    println(w(s,45))
     assert(w(s,45) == (S(T) + (40->b11) + (43->tr22) + (44->tr11) + (45->b2)))
   }
 }
