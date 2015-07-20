@@ -18,11 +18,11 @@ object PartitionWindow extends WindowFunction[PartitionWindowParameters] {
     var result = S(s.T)
 
     for ((i,su) <- subS) {
-
       result = result ++ TupleWindow(su,t,TupleWindowParameters(x.n(i).x.l, x.n(i).x.u))
     }
-    for((k,v) <- result.v.mapping){
-      if(v.isEmpty){
+
+    for ((k,v) <- result.v.mapping) {
+      if (v.isEmpty) {
         result = S(s.T,Evaluation(result.v.mapping - k))
       }
     }
@@ -35,8 +35,9 @@ object PartitionWindow extends WindowFunction[PartitionWindowParameters] {
     for ((t,as) <- s.v.mapping) {
       for (a <- as) {
         if (m.contains(idx(a))) {
-          m(idx(a)) + (t->a)
+         m(idx(a)) =  m(idx(a)) + (t->a)
         } else {
+
           m += (idx(a) -> (S(s.T) + (t->a)))
         }
       }
