@@ -22,9 +22,6 @@ object TupleWindow extends WindowFunction[TupleWindowParameters] {
     val tuSet = Set(tMax) ++ (t+1 to tMax).filter(tp => (s | Timeline(t+1, tp)).size >= u) //bug in reactknow paper, says (t+1 to tMax)!
     val tu = tuSet.reduce(math.min)
 
-
-
-
     val Tl = Timeline(tl, t)
     val Tu = Timeline(math.min(t+1, tu), tu) // in the paper it says Timeline(t+1, tu)
 

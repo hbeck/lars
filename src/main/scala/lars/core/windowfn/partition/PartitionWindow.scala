@@ -17,14 +17,14 @@ object PartitionWindow extends WindowFunction[PartitionWindowParameters] {
     val subS = partition(x.idx,s)
     var result = S(s.T)
 
-    for((i,su) <- subS){
+    for ((i,su) <- subS) {
       result = result ++ TupleWindow(su,t,TupleWindowParameters(x.n(i).x.l, x.n(i).x.u))
     }
     result
   }
 
   def partition(idx: Atom => Int, s:S): Map[Int, S] = {
-    var m = new collection.mutable.HashMap[Int, S]
+    val m = new collection.mutable.HashMap[Int, S]
 
     for ((t,as) <- s.v.mapping) {
       for (a <- as) {
