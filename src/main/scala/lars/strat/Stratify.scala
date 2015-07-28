@@ -2,6 +2,7 @@ package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
+import lars.graph.DiGraph
 import lars.graph.alg.BottomUpNumbering
 import lars.graph.quotient.{Condensation, QuotientGraph}
 
@@ -22,6 +23,8 @@ object Stratify {
 
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
 
+
+
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
     if (hasCycleWithGrt(depGraph, condensation)) {
@@ -35,6 +38,8 @@ object Stratify {
     in general. intuitively, we want to add two blocks A and B whenever there is no path connecting the two with
     and edge labeled with > (in the original graph)
     */
+    //val stratG = StratumGraph(condensation)
+
     val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(condensation)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
@@ -49,7 +54,7 @@ object Stratify {
         return true
       }
     }
-    return false
+    false
   }
   
   def createStratumMapping(subgraphNr:Map[Set[ExtendedAtom],Int]): Map[Int, Set[ExtendedAtom]] = {

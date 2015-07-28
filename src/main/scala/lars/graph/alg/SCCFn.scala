@@ -31,5 +31,4 @@ case class SCCFn[V]() extends (DiGraph[V] => Map[V,Set[V]]) {
     }
     map
   }
-
 }

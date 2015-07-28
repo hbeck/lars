@@ -22,4 +22,6 @@ case class DirectedDFS[V](g: DiGraph[V], s: V) {
       if (!marked(w)) dfs(g,w)
     }
   }
+
+
 }

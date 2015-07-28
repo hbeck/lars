@@ -12,7 +12,7 @@ import lars.graph.alg.SCCFn
 object Condensation {
 
   def apply[V](g: DiGraph[V]): QuotientGraph[V] = {
-    QuotientGraph(g,SCCFn[V]())
+   QuotientGraph(g,SCCFn[V]())
   }
 
 }
