@@ -11,20 +11,27 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
 
   var greater = false
 
+  /*Currently a set is created for each node and filled.
+  * Need to either create only as much sets as need, or reduce the number of sets, in such a way,
+  * that only the largest subsets remain, don't overlap and don't have any grt <-> geq cycles (or contain grt edges)*/
   def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
+   // println(g.adjList)
 
     var r = new collection.mutable.HashMap[ExtendedAtom, Set[ExtendedAtom]]()
     var min = false
     // var s:Set[ExtendedAtom] = Set(g.nodes.head)
     for (v <- g.nodes) {
-      r += (v -> Set())
+      r += (v -> Set(v))
       for (w <- g.adjList(v)) {
-        if (!initDfs(g, v, w)) {
+        while (!initDfs(g, v, w) && !r(v).contains(w)) {
           //  s += w
+       //   r += (v -> Set(v))
           r(v) += w
+          println(r)
         }
       }
     }
+
     r.toMap
   }
 
@@ -41,16 +48,19 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
       for (n <- g.nodes) {
         marked(n) = false
       }
-      dfs(g, v1, v2, marked)
+      val ret = dfs(g, v1, v2, marked)
+/*      println("from: " + v1 + " to: "+ v2)
+      println(greater)*/
+      ret
     }
 
-    /* @return returns true, if there is a ">" dependency on the path from v1 to v2, false otherwise */
+    /* @return true, if there is a ">" dependency on the path from v1 to v2, false otherwise */
     def dfs(g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): Boolean = {
       marked(v1) = true
       for (w <- g.outgoing(v1)) {
-        if (isGrt(g, v1, w)) greater = true
-        if (w == v2) return greater
-        if (!marked(w)) dfs(g, w, v2, marked)
+        if (isGrt(g, v1, w))  greater = true
+        if (w == v2)          return greater
+        if (!marked(w))       dfs(g, w, v2, marked)
       }
       false
     }

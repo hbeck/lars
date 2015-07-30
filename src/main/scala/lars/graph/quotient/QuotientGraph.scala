@@ -62,7 +62,7 @@ object QuotientGraph {
         adjList = Add(adjList,A,B)
       }
     }
-    //    println(adjList)
+       println(QuotientGraph(adjList))
     new QuotientGraph(adjList)
   }
 

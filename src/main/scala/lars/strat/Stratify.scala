@@ -23,7 +23,7 @@ object Stratify {
 
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
 
-
+    val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
 
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
@@ -40,7 +40,7 @@ object Stratify {
     */
     //val stratG = StratumGraph(condensation)
 
-    val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(condensation)
+    val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(stratumG)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 
