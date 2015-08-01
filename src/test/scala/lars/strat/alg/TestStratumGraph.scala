@@ -22,18 +22,52 @@ class TestStratumGraph extends FunSuite {
   val b_d = e(b,d,geq)
   val d_c = e(d,c,grt)
 
-  val nodes = Set[ExtendedAtom](a,b,c,d)
-  val edges = Set[DepEdge](a_c,b_a,b_d,d_c)
+//  val nodes = Set[ExtendedAtom](a,b,c,d)
+  val nodes = Set[ExtendedAtom](a,b,d,c) //testthingy
+//  val nodes = Set[ExtendedAtom](a,b,d,c)
+//  val nodes = Set[ExtendedAtom](a,d,b,c)
+//  val nodes = Set[ExtendedAtom](d,a,b,c)
+//  val nodes = Set[ExtendedAtom](d,a,c,b)
+//  val nodes = Set[ExtendedAtom](d,c,a,b)
+//  val nodes = Set[ExtendedAtom](c,d,a,b)
+//  val nodes = Set[ExtendedAtom](c,d,b,a)
+//  val nodes = Set[ExtendedAtom](c,b,d,a)
+//  val nodes = Set[ExtendedAtom](b,c,d,a)
+//  val nodes = Set[ExtendedAtom](b,c,a,d)
+//  val nodes = Set[ExtendedAtom](b,a,c,d)
+//  val nodes = Set[ExtendedAtom](d,c,b,a)
+//  val nodes = Set[ExtendedAtom](d,c,a,b)
+//  val nodes = Set[ExtendedAtom](d,a,c,b)
+//  val nodes = Set[ExtendedAtom](a,d,c,b)
+//  val nodes = Set[ExtendedAtom](a,d,b,c)
+//  val nodes = Set[ExtendedAtom](a,b,d,c)
+//  val nodes = Set[ExtendedAtom](a,c,b,d)
+//  val nodes = Set[ExtendedAtom](c,a,b,d)
+//  val nodes = Set[ExtendedAtom](c,a,d,b)
+//  val nodes = Set[ExtendedAtom](d,b,c,a)
+//  val nodes = Set[ExtendedAtom](d,b,a,c) //testthingy
+//  val nodes = Set[ExtendedAtom](d,a,b,c)
 
-  val depGraph = DepGraph(nodes,edges)
+    val edges = Set[DepEdge](a_c,b_a,b_d,d_c)
 
-  val stratg: Map[ExtendedAtom,Set[ExtendedAtom]] = DepPartition()(depGraph)
+    val depGraph = DepGraph(nodes,edges)
 
-  val set_abd = stratg(a)
-  val set_d = stratg(d)
+    val stratg: Map[ExtendedAtom,Set[ExtendedAtom]] = DepPartition()(depGraph)
 
+/*  val set_abd = stratg(b)
+  val set_c = stratg(c)
+
+  val set_ac = stratg(a)
+  val set_bd = stratg(d)*/
+
+//  assert((set_abd && set_c) || (set_ac && set_bd))
 /*  println(set_abd)
-  println(set_d)*/
+  println(set_c)
+
+  println("---")
+
+  println(set_ac)
+  println(set_bd)*/
 
 
   /*test("SCC") {
@@ -42,7 +76,7 @@ class TestStratumGraph extends FunSuite {
     assert(set_x1x2 == g_x1x2.nodes)
     assert(sccs(x2) == g_x1x2.nodes)
     for (n <- Set(y1,y2,z1,z2,w)) {
-      assert(sccs(n) == Set(n))
+      assert(sccs(n) == Set[ExtendedAtom](n))
     }
   }
 
@@ -74,49 +108,49 @@ class TestStratumGraph extends FunSuite {
   val strat:Stratification = Stratification(Stratify.createStratumMapping(BottomUpNumbering(con)))
 
   test("makeStrat") {
-    assert(strat(0) == Set(z1,z2,y2))
-    assert(strat(1) == Set(y1,w))
-    assert(strat(2) == Set(x1,x2))
+    assert(strat(0) == Set[ExtendedAtom](z1,z2,y2))
+    assert(strat(1) == Set[ExtendedAtom](y1,w))
+    assert(strat(2) == Set[ExtendedAtom](x1,x2))
     assert(strat.maxStratum == 2)
   }
 
   test("TestSCC objects stratified x y z") {
     var s: Stratification = Stratify(g_x).get
     assert(s.maxStratum == 0)
-    assert(s(0) == Set(x))
+    assert(s(0) == Set[ExtendedAtom](x))
     //
     s = Stratify(g_xy_1).get
     assert(s.maxStratum == 1)
-    assert(s(0) == Set(y))
-    assert(s(1) == Set(x))
+    assert(s(0) == Set[ExtendedAtom](y))
+    assert(s(1) == Set[ExtendedAtom](x))
     //
     s = Stratify(g_xy_2).get
     assert(s.maxStratum == 0)
-    assert(s(0) == Set(x,y))
+    assert(s(0) == Set[ExtendedAtom](x,y))
     //
     //
     s = Stratify(g_xz).get
     assert(s.maxStratum == 0)
-    assert(s(0) == Set(x,z))
+    assert(s(0) == Set[ExtendedAtom](x,z))
     //
     s = Stratify(g_xyz_1).get
     assert(s.maxStratum == 1)
-    assert(s(0) == Set(y,z))
-    assert(s(1) == Set(x))
+    assert(s(0) == Set[ExtendedAtom](y,z))
+    assert(s(1) == Set[ExtendedAtom](x))
     //
     s = Stratify(g_xyz_2).get
     assert(s.maxStratum == 0)
-    assert(s(0) == Set(x,y,z))
+    assert(s(0) == Set[ExtendedAtom](x,y,z))
     //
     //
     s = Stratify(g1).get
     assert(s.maxStratum == 0)
-    assert(s(0) == Set(a,b,c,d,f))
+    assert(s(0) == Set[ExtendedAtom](a,b,c,d,f))
     //
     s = Stratify(g2).get
     assert(s.maxStratum == 1)
-    assert(s(1) == Set(a,b,c,d,f))
-    assert(s(0) == Set(h,i,j))
+    assert(s(1) == Set[ExtendedAtom](a,b,c,d,f))
+    assert(s(0) == Set[ExtendedAtom](h,i,j))
   }
 
   test("bottom up numbering handling geq cycle") {

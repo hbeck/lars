@@ -4,64 +4,137 @@ import lars.core.semantics.formulas.ExtendedAtom
 import lars.graph.{LabeledDiGraph, DiGraph}
 import lars.strat.{Dependency, grt, DepGraph}
 
+import scala.collection.mutable
+
 /**
  * Created by et on 26.07.15.
  */
 case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]]) {
 
-  var greater = false
+  var r = new mutable.HashMap[Int, Set[ExtendedAtom]]()
+  var greater= -1
 
-  /*Currently a set is created for each node and filled.
-  * Need to either create only as much sets as need, or reduce the number of sets, in such a way,
-  * that only the largest subsets remain, don't overlap and don't have any grt <-> geq cycles (or contain grt edges)*/
+
+  def sat(g: DepGraph, node: ExtendedAtom): Boolean = {
+  if(g.outgoing(node).size == 1 && isGrt(g,node,g.outgoing(node).head)) return false
+    true
+  }
+
   def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
-   // println(g.adjList)
+    val nodes = g.nodes
+    val adjList = g.adjList
 
-    var r = new collection.mutable.HashMap[ExtendedAtom, Set[ExtendedAtom]]()
-    var min = false
-    // var s:Set[ExtendedAtom] = Set(g.nodes.head)
-    for (v <- g.nodes) {
-      r += (v -> Set(v))
-      for (w <- g.adjList(v)) {
-        while (!initDfs(g, v, w) && !r(v).contains(w)) {
-          //  s += w
-       //   r += (v -> Set(v))
-          r(v) += w
-          println(r)
+    r += (0->Set())
+      for (node <- nodes) {
+        if (inSub(node) == -1) {
+          if (g.outgoing(node).nonEmpty && sat(g,node)) {
+            addNodes(node, g)
         }
       }
     }
 
-    r.toMap
+    var result = new collection.immutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]
+
+    for (node <- g.nodes) {
+      for ((key, value) <- r) {
+        if (value.contains(node)) {
+          result += (node -> value)
+        }
+      }
+    }
+    println(result)
+
+    result
   }
 
-    def isGrt(g: DepGraph, from: ExtendedAtom, to: ExtendedAtom): Boolean = {
-      g.label(from, to) match {
-        case `grt` => true
-        case _ => false
+
+  def isNeighbour(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom): Set[ExtendedAtom] = {
+    for(v <- value){
+      println("v: " + v + " ,node: " + node)
+      if(g.outgoing(v).contains(node)) return value
+    }
+  null
+  }
+
+  def eval(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom) : Int = {
+    if(value == null) return 1
+    for(v <- value) {
+      if(dfs(g, v, node) == 1) return 1
+    }
+    -1
+  }
+
+  def addNeigh(g: DepGraph, node: ExtendedAtom) = {
+    for(n <- g.adjList(node)) {
+      if (inSub(n) == -1) addNodes(n, g)
+    }
+  }
+
+  def addNodes(node: ExtendedAtom, g: DepGraph) : Unit = {
+    println(r)
+    var b:ExtendedAtom = null
+    var grtP = -1
+    for((key,value) <- r){
+      grtP = eval(g, isNeighbour(g, value, node), node)
+
+      if(grtP == -1){
+        r(key) += node
+        addNeigh(g,node)
+        return
       }
     }
+    r += (r.size->Set(node))
+    addNeigh(g,node)
+  }
 
-    def initDfs(g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom): Boolean = {
-      greater = false
-      val marked = new collection.mutable.HashMap[ExtendedAtom, Boolean]()
-      for (n <- g.nodes) {
-        marked(n) = false
+  def inSub(node: ExtendedAtom) : Int = {
+    for ((key,value) <- r) {
+      if (value.contains(node)) {
+        return key
       }
-      val ret = dfs(g, v1, v2, marked)
-/*      println("from: " + v1 + " to: "+ v2)
-      println(greater)*/
-      ret
     }
+   -1
+  }
 
-    /* @return true, if there is a ">" dependency on the path from v1 to v2, false otherwise */
-    def dfs(g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): Boolean = {
-      marked(v1) = true
+  def isGrt(g: DepGraph, from: ExtendedAtom, to: ExtendedAtom): Boolean = {
+    g.label(from, to) match {
+      case `grt` => true
+      case _ => false
+    }
+  }
+
+
+  /*@return see check(g,v1,v2,marked)*/
+  def dfs(g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom): Int = {
+    greater = -1
+    val marked = new collection.mutable.HashMap[ExtendedAtom, Boolean]()
+    for (n <- g.nodes) {
+      marked(n) = false
+    }
+    check(-1,g, v1, v2, v1, marked)
+    greater
+  }
+
+  def markedCopy(marked: mutable.HashMap[ExtendedAtom, Boolean]): mutable.HashMap[ExtendedAtom, Boolean] = {
+    val result = new mutable.HashMap[ExtendedAtom,Boolean]()
+    for((key,value)<-marked){
+      result += (key -> value)
+    }
+    result
+  }
+
+  /* @return true, if there is a ">" dependency on the path from v1 to v2, false otherwise */
+  def check(grt: Int, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): Unit = {
+    var i = grt
+    marked(last) = true
+//    if(g.outgoing(v1).nonEmpty) {
       for (w <- g.outgoing(v1)) {
-        if (isGrt(g, v1, w))  greater = true
-        if (w == v2)          return greater
-        if (!marked(w))       dfs(g, w, v2, marked)
+        if (!marked(w)) {
+          if (isGrt(g, v1, w)) i = 1
+          if (w == v2)  greater = i
+          val tmp = check(i,g, w, v2, v1, markedCopy(marked))
+        }
       }
-      false
-    }
+//    }
+  }
 }
