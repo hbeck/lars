@@ -13,22 +13,14 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
 
   var r = new mutable.HashMap[Int, Set[ExtendedAtom]]()
   var greater= -1
+  var keyCnt = -1
 
-
-  def sat(g: DepGraph, node: ExtendedAtom): Boolean = {
-  if(g.outgoing(node).size == 1 && isGrt(g,node,g.outgoing(node).head)) return false
-    true
-  }
 
   def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
-    val nodes = g.nodes
-    val adjList = g.adjList
-
-    r += (0->Set())
-      for (node <- nodes) {
-        if (inSub(node) == -1) {
-          if (g.outgoing(node).nonEmpty && sat(g,node)) {
-            addNodes(node, g)
+    for (node <- g.nodes) {
+      if (inSub(node) == -1) {
+        if (g.outgoing(node).nonEmpty && sat(g,node)) {
+          addNodes(node, g)
         }
       }
     }
@@ -42,49 +34,59 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
         }
       }
     }
-    println(result)
-
     result
   }
 
-
-  def isNeighbour(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom): Set[ExtendedAtom] = {
-    for(v <- value){
-      println("v: " + v + " ,node: " + node)
-      if(g.outgoing(v).contains(node)) return value
-    }
-  null
-  }
-
-  def eval(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom) : Int = {
-    if(value == null) return 1
-    for(v <- value) {
-      if(dfs(g, v, node) == 1) return 1
-    }
-    -1
-  }
-
-  def addNeigh(g: DepGraph, node: ExtendedAtom) = {
-    for(n <- g.adjList(node)) {
-      if (inSub(n) == -1) addNodes(n, g)
-    }
+  def sat(g: DepGraph, node: ExtendedAtom): Boolean = {
+    if (g.outgoing(node).size == 1 && isGrt(g,node,g.outgoing(node).head)) return false
+    true
   }
 
   def addNodes(node: ExtendedAtom, g: DepGraph) : Unit = {
-    println(r)
-    var b:ExtendedAtom = null
     var grtP = -1
-    for((key,value) <- r){
-      grtP = eval(g, isNeighbour(g, value, node), node)
-
-      if(grtP == -1){
+    for ((key,value) <- r) {
+        grtP = eval(g, isNeighbour(g, value, node), node)
+      if (grtP == -1) {
         r(key) += node
         addNeigh(g,node)
         return
       }
     }
-    r += (r.size->Set(node))
+
+    keyCnt += 1
+    r += (keyCnt->Set(node))
     addNeigh(g,node)
+  }
+
+  def isNeighbour(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom): Set[ExtendedAtom] = {
+    for (v <- value) {
+      if (g.outgoing(v).contains(node)) return value
+    }
+   null
+  }
+
+  def eval(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom) : Int = {
+    if (value == null) return 1
+    for (v <- value) {
+        if (dfs(g, v, node) == 1) return 1
+    }
+    -1
+  }
+
+  def alone(node: ExtendedAtom) : Boolean = {
+    for((key,value)<-r){
+      if(value.contains(node) && value.size == 1){
+        r.remove(key)
+        return true
+      }
+    }
+    false
+  }
+
+  def addNeigh(g: DepGraph, node: ExtendedAtom) = {
+    for (n <- g.adjList(node)) {
+      if (inSub(n) == -1 || alone(n)) addNodes(n, g)
+    }
   }
 
   def inSub(node: ExtendedAtom) : Int = {
@@ -103,7 +105,6 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
     }
   }
 
-
   /*@return see check(g,v1,v2,marked)*/
   def dfs(g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom): Int = {
     greater = -1
@@ -117,7 +118,7 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
 
   def markedCopy(marked: mutable.HashMap[ExtendedAtom, Boolean]): mutable.HashMap[ExtendedAtom, Boolean] = {
     val result = new mutable.HashMap[ExtendedAtom,Boolean]()
-    for((key,value)<-marked){
+    for ((key,value)<-marked) {
       result += (key -> value)
     }
     result
@@ -125,13 +126,16 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
 
   /* @return true, if there is a ">" dependency on the path from v1 to v2, false otherwise */
   def check(grt: Int, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): Unit = {
-    var i = grt
+
     marked(last) = true
 //    if(g.outgoing(v1).nonEmpty) {
       for (w <- g.outgoing(v1)) {
+        var i = grt
         if (!marked(w)) {
-          if (isGrt(g, v1, w)) i = 1
-          if (w == v2)  greater = i
+          if (isGrt(g, v1, w)) {
+            i = 1
+          }
+          if (w == v2) greater = i
           val tmp = check(i,g, w, v2, v1, markedCopy(marked))
         }
       }

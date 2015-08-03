@@ -43,7 +43,11 @@ object QuotientGraph {
     new QuotientGraph(adjList)*/
     makeGraph(block,nodes,G.edges)
   }
-
+/*  def apply(G: DepGraph, prtFn: (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]])): QuotientGraph[ExtendedAtom] = {
+    val block: Map[ExtendedAtom,Set[ExtendedAtom]] = prtFn(G) //Map of prtFns
+    val nodes: Set[Set[ExtendedAtom]] = G.nodes.map(block) //Set of prtFns
+    makeGraph(block,nodes,G.edges)
+  }*/
   def apply(G: DepGraph, prtFn: (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]])): QuotientGraph[ExtendedAtom] = {
     val block: Map[ExtendedAtom,Set[ExtendedAtom]] = prtFn(G) //Map of prtFns
     val nodes: Set[Set[ExtendedAtom]] = G.nodes.map(block) //Set of prtFns
@@ -62,7 +66,6 @@ object QuotientGraph {
         adjList = Add(adjList,A,B)
       }
     }
-       println(QuotientGraph(adjList))
     new QuotientGraph(adjList)
   }
 
