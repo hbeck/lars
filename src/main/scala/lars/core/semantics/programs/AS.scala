@@ -1,6 +1,6 @@
 package lars.core.semantics.programs
 
-import lars.core.semantics.programs.general.inspect.{HeadAtAtomsAfter, HeadOrdinaryAtoms, IntensionalAtoms, Map2Time}
+import lars.core.semantics.programs.general.inspect._
 import lars.core.semantics.streams.S
 import lars.core.semantics.structure.IsAnswerStream
 
@@ -14,15 +14,23 @@ object AS {
     val AInt = IntensionalAtoms(P)
     val atomsInHead = HeadOrdinaryAtoms(P)
     val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t))
+    val temporallyQuantifiedInHead = TemporallyQuantifiedInHead(P)
     //1) create maximal extension
     var I = S(D.T)
     for (a <- AInt) {
-      if (atomsInHead.contains(a)) { //place only now
-        I = I + (t -> a)
+      if (temporallyQuantifiedInHead.contains(a)) { //place everywhere
+        //TODO restrict to window instead of the entire timeline D.T
+         for (u <- D.T.lower to D.T.upper) {
+           I = I + (u -> a)
+         }
       } else {
-        //place only at given times
-        for (u <- atAtomsInHead(a)) {
-          I = I + (u -> a)
+        if (atomsInHead.contains(a)) { //place only now
+          I = I + (t -> a)
+        }
+        if (atAtomsInHead.contains(a)) { //place only at given times
+          for (u <- atAtomsInHead(a)) {
+            I = I + (u -> a)
+          }
         }
       }
     }

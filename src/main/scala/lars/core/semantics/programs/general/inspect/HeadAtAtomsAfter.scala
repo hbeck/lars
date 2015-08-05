@@ -13,7 +13,7 @@ object HeadAtAtomsAfter {
 //  }
 
    def apply[R <: Rule](P: Program[R], t:Int): Set[AtAtom] = {
-     HeadAtAtoms(P).filter( x => (x.t >= t))
+     HeadAtAtoms(P).filter( x => (x.t >= t) )
    }
 
  }
