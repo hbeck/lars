@@ -16,9 +16,4 @@ object Condensation {
   def apply[V](g: DiGraph[V]): QuotientGraph[V] = {
    QuotientGraph(g,SCCFn[V]())
   }
-
-  def apply(g: DepGraph): QuotientGraph[ExtendedAtom] = {
-    QuotientGraph(g,DepPartition())
-  }
-
 }

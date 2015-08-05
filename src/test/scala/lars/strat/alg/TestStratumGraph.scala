@@ -3,6 +3,7 @@ package lars.strat.alg
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 import lars.graph.alg.{DepPartition, BottomUpNumbering, SCCFn}
 import lars.graph.quotient.{QuotientGraph, Condensation}
+import lars.graph.DiGraph
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -67,8 +68,9 @@ class TestStratumGraph extends FunSuite {
     val edges = Set[DepEdge](a_b,a_f,a_g,b_c,c_d,d_h,d_i,d_b,h_j,i_j,f_i,f_j,g_j)
 
     val depGraph = DepGraph(nodes,edges)
+    val digraph = new DiGraph[ExtendedAtom](depGraph.adjList)
 
-    val quot = Condensation(depGraph).adjList
+    val quot = StratumGraph(depGraph).adjList
     println(quot)
 
 /*    val set_abd_c = Map(Set(c)->Set(),Set(a,b,d)->Set(Set(c)))

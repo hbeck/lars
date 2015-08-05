@@ -1,9 +1,7 @@
 package lars.graph.quotient
 
-import lars.core.semantics.formulas.ExtendedAtom
 import lars.graph.DiGraph
 import lars.graph.util.{Add, HasEdge}
-import lars.strat.DepGraph
 
 /**
  *
@@ -28,38 +26,11 @@ object QuotientGraph {
   def apply[V](G: DiGraph[V], prtFn: (DiGraph[V] => Map[V,Set[V]])): QuotientGraph[V] = {
     val block: Map[V,Set[V]] = prtFn(G) //Map of prtFns
     val nodes: Set[Set[V]] = G.nodes.map(block) //Set of prtFns
-/*    var adjList = Map[Set[V],Set[Set[V]]]() //map from elems of nodes to neighbouring blocks
-    for (n <- nodes) {
-      adjList = adjList + (n -> Set[Set[V]]())
-    }
-    for ((x,y) <- G.edges) {
-      val A = block(x)
-      val B = block(y)
-      if (A != B && !HasEdge(adjList,A,B)) {
-        adjList = Add(adjList,A,B)
-      }
-    }
-//    println(adjList)
-    new QuotientGraph(adjList)*/
-    makeGraph(block,nodes,G.edges)
-  }
-/*  def apply(G: DepGraph, prtFn: (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]])): QuotientGraph[ExtendedAtom] = {
-    val block: Map[ExtendedAtom,Set[ExtendedAtom]] = prtFn(G) //Map of prtFns
-    val nodes: Set[Set[ExtendedAtom]] = G.nodes.map(block) //Set of prtFns
-    makeGraph(block,nodes,G.edges)
-  }*/
-  def apply(G: DepGraph, prtFn: (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]])): QuotientGraph[ExtendedAtom] = {
-    val block: Map[ExtendedAtom,Set[ExtendedAtom]] = prtFn(G) //Map of prtFns
-    val nodes: Set[Set[ExtendedAtom]] = G.nodes.map(block) //Set of prtFns
-    makeGraph(block,nodes,G.edges)
-  }
-
-  def makeGraph[V](block: Map[V,Set[V]], nodes: Set[Set[V]], edges: Set[(V,V)]): QuotientGraph[V] = {
     var adjList = Map[Set[V],Set[Set[V]]]() //map from elems of nodes to neighbouring blocks
     for (n <- nodes) {
       adjList = adjList + (n -> Set[Set[V]]())
     }
-    for ((x,y) <- edges) {
+    for ((x,y) <- G.edges) {
       val A = block(x)
       val B = block(y)
       if (A != B && !HasEdge(adjList,A,B)) {
