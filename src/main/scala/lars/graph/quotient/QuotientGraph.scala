@@ -39,5 +39,4 @@ object QuotientGraph {
     }
     new QuotientGraph(adjList)
   }
-
 }

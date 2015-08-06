@@ -37,7 +37,7 @@ class TestStratumGraph extends FunSuite {
     val depGraph = DepGraph(nodes,edges)
 
 
-    val quot = Condensation(depGraph).adjList
+    val quot = StratumGraph(depGraph).adjList
 
     val set_abd_c = Map(Set(c)->Set(),Set(a,b,d)->Set(Set(c)))
     val set_ac_bd = Map(Set(a,c)->Set(), Set(b,d)->Set(Set(a,c)))
@@ -68,14 +68,35 @@ class TestStratumGraph extends FunSuite {
     val edges = Set[DepEdge](a_b,a_f,a_g,b_c,c_d,d_h,d_i,d_b,h_j,i_j,f_i,f_j,g_j)
 
     val depGraph = DepGraph(nodes,edges)
-    val digraph = new DiGraph[ExtendedAtom](depGraph.adjList)
 
     val quot = StratumGraph(depGraph).adjList
     println(quot)
+  }
 
-/*    val set_abd_c = Map(Set(c)->Set(),Set(a,b,d)->Set(Set(c)))
-    val set_ac_bd = Map(Set(a,c)->Set(), Set(b,d)->Set(Set(a,c)))
+  test("test3"){
+    object x1 extends Atom
+    object x2 extends Atom
+    object y1 extends Atom
+    object y2 extends Atom
+    object z1 extends Atom
+    object z2 extends Atom
+    object w extends Atom
 
-    assert(quot == set_abd_c || quot == set_ac_bd)*/
+    val x1_x2 = e(x1,x2,geq)
+    val x2_x1 = e(x2,x1,geq)
+    val x1_y1 = e(x1,y1,geq)
+    val y1_z1 = e(y1,z1,grt)
+    val y1_z2 = e(y1,z2,geq)
+    val x2_y2 = e(x2,y2,geq)
+    val w_y2 = e(w,y2,grt)
+
+    val nodes = Set[ExtendedAtom](x1,x2,y1,y2,z1,z2,w)
+    println(nodes)
+    val edges = Set[DepEdge](x1_x2,x2_x1,x1_y1,y1_z1,y1_z2,x2_y2,w_y2)
+
+    val depGraph = DepGraph(nodes,edges)
+
+    val quot = StratumGraph(depGraph).adjList
+    println(quot)
   }
 }

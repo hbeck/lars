@@ -32,31 +32,46 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
         }
       }
     }
-
     for (node <- g.nodes) {
       for ((key, value) <- r) {
         if (value.contains(node)) {
           result += (node -> value)
         }
       }
-
     }
     result
   }
 
+  def hasIncoming(g: DepGraph, node: ExtendedAtom) : Boolean = {
+    for(n <- g.nodes){
+      if(g.adjList(n).contains(node)) return true
+    }
+    false
+  }
+
   def sat(g: DepGraph, node: ExtendedAtom): Boolean = {
     if (g.outgoing(node).isEmpty) return false
-    if (g.outgoing(node).size == 1 && isGrt(g,node,g.outgoing(node).head)) return false
+    if (g.outgoing(node).size == 1){
+      if(!hasIncoming(g,node)) return true
+      if(isGrt(g,node,g.outgoing(node).head)) return false
+    }
     true
   }
 
   /*adds node to r*/
   def addNodes(node: ExtendedAtom, g: DepGraph) : Unit = {
     for ((key,value) <- r) {
-      if (!hasGrtPath(g, isNeighbour(g, value, node), node)) {
-        r(key) += node
-        addNeigh(g,node)
-        return
+      var n = isNeighbour(g,value,node)
+      if(n != null) {
+        if (!dfs(g, n, Set(node))) {
+          //      if (!hasGrtPath(g, isNeighbour(g, value, node), node)) {
+          println(r)
+          println("node: "+node)
+          r(key) += node
+          println(r)
+          addNeigh(g, node)
+          return
+        }
       }
     }
     keyCnt += 1
@@ -74,13 +89,13 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
   }
 
   /*checks for every vertex of value if there is a path from node to the vertex containing a `grt` edge*/
-  def hasGrtPath(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom) : Boolean = {
+/*  def hasGrtPath(g: DepGraph, value: Set[ExtendedAtom], node: ExtendedAtom) : Boolean = {
     if (value == null) return true
-    for (v <- value) {
-        if (dfs(g, v, node)) return true
-    }
+//    for (v <- value) {
+        if (dfs(g, value, Set(node))) return true
+//    }
     false
-  }
+  }*/
 
   /*checks if the set of r, which contains node, has any other elements in it
   * @return true if there are no other elements but node, false otherwise*/
@@ -107,12 +122,13 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
   }
 
 
-/*  def tryMerge(g: DepGraph, node: ExtendedAtom, n: ExtendedAtom) : Unit = {
+  def tryMerge(g: DepGraph, node: ExtendedAtom, n: ExtendedAtom) : Unit = {
     println(r)
     println("node: "+node+" n: "+n)
 
     var fromSet, toSet:Set[ExtendedAtom] = null
-    var fromKey, toKey, grtP = -1
+    var fromKey, toKey = -1
+    var grtP = false
 
     for ((key,value) <- r) {
       if (value.contains(node)) {
@@ -126,22 +142,74 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
     }
     if (fromKey == toKey) return
     println("fromK: "+fromKey+" toK: "+toKey)
-    for (from <- fromSet) {
+/*    for (from <- fromSet) {
       for (to <- toSet) {
         println("from: "+from+" to: "+to)
-        if (dfs(g,from,to) == 1 || dfs(g,to,from) == 1) {
-          grtP = 1
+        if (dfs(g,from,to) || dfs(g,to,from)) {
+          grtP = true
+        }
+      }
+    }*/
+    if (dfs(g,fromSet,toSet) || dfs(g,toSet,fromSet)) {
+      grtP = true
+    }
+    if (!grtP) merge(g,fromKey,toKey)
+  }
+
+  def merge(g:DepGraph,fromKey: Int, toKey: Int) = {
+    if(!hasGrtCycle(g,fromKey,toKey))
+      r(math.min(fromKey,toKey)) ++= r(math.max(fromKey,toKey))
+    r.remove(math.max(fromKey,toKey))
+  }
+
+
+  def hasGrtCycle(g:DepGraph,fromKey: Int, toKey: Int) : Boolean = {
+    var tmp:Set[ExtendedAtom] = r(fromKey) ++ r(toKey)
+    var tToV, tToVG, vToT, vToTG = false
+    var newR = collection.mutable.HashMap[Int,Set[ExtendedAtom]]()
+    var cnt = 0
+
+    for((key,value) <- r){
+      cnt = key
+      if(key != fromKey && key != toKey) {
+        newR += (key->value)
+      }
+    }
+    newR += (cnt+1->tmp)
+
+    /*Loop-condition-party*/
+    for((ktmp,tmp)<-newR) {
+      for (t <- tmp) {
+        for ((key, value) <- newR) {
+          if (ktmp != key /*&& key != fromKey && key != toKey*/) {
+            tToV = false
+            tToVG = false
+            vToT = false
+            vToTG = false
+            for (v <- value) {
+              if (g.hasEdge(t, v)) {
+                tToV = true
+                if (isGrt(g, t, v)) {
+                  tToVG = true
+                }
+              }
+              if (g.hasEdge(v, t)) {
+                vToT = true
+                if (isGrt(g, v, t)) {
+                  vToTG = true
+                }
+              }
+            }
+          }
+          if ((tToVG && vToT) || (vToTG && tToV)) return true
         }
       }
     }
 
-    if (grtP == -1) merge(fromKey,toKey)
+
+    false
   }
 
-  def merge(fromKey: Int, toKey: Int) = {
-    r(math.min(fromKey,toKey)) ++= r(math.max(fromKey,toKey))
-    r.remove(math.max(fromKey,toKey))
-  }*/
 
   /*checks if a node has already been added to r*/
   def inSub(node: ExtendedAtom) : Boolean = {
@@ -161,13 +229,18 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
   }
 
   /*@return 1 if there is a path with a `grt` edge along the way, -1 otherwise*/
-  def dfs(g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom): Boolean = {
+  def dfs(g: DepGraph, from: Set[ExtendedAtom], to: Set[ExtendedAtom]): Boolean = {
     greater = false
     val marked = new collection.mutable.HashMap[ExtendedAtom, Boolean]()
     for (n <- g.nodes) {
       marked(n) = false
     }
-    check(greater ,g, v1, v2, v1, marked)
+
+    for(v1 <- from){
+      for(v2 <- to){
+        if(!greater) check(greater, g, v1, v2, v1, marked)
+      }
+    }
     greater
   }
 
@@ -183,7 +256,6 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
   /*sets the greater field to 1 (default -1), if it finds an with `grt`*/
   def check(grt: Boolean, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): Unit = {
     marked(last) = true
-//    if (g.outgoing(v1).nonEmpty) {
       for (w <- g.outgoing(v1)) {
         var i = grt
         if (!marked(w)) {
@@ -192,6 +264,5 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
           val tmp = check(i,g, w, v2, v1, markedCopy(marked))
         }
       }
-//    }
   }
 }
