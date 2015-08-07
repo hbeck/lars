@@ -33,13 +33,4 @@ object TimeWindowParameters {
     TimeWindowParameters(l,u,d)
   }
 
-//  def from(xs: List[Int]) : TimeBasedWindowParameters = {
-//    val l = xs apply 0
-//    val u = if (xs.length >= 2) xs apply 1 else 0
-//    val d = if (xs.length == 3) xs apply 2 else 1
-//    TimeBasedWindowParameters(l,u,d)
-//  }
-
-  //def from(x: (Int,Int,Int)) : TimeBasedWindowParameters= TimeBasedWindowParameters(x._1,x._2,x._3)
-
 }

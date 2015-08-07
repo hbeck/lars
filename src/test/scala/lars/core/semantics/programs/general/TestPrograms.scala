@@ -4,7 +4,7 @@ import lars.core.semantics.formulas._
 import lars.core.semantics.programs.AS
 import lars.core.semantics.streams.S
 import lars.core.semantics.structure.IsAnswerStream
-import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindowParameters}
+import lars.core.windowfn.time.WTime
 import org.scalatest.FunSuite
 
 /**
@@ -106,26 +106,26 @@ class TestPrograms extends FunSuite {
 
   test("multiple models windows") {
 
-    val w1 = WindowOperatorFixedParams(TimeWindowFixedParams(TimeWindowParameters(1,0,1)))
-    val wp1 = WindowOperatorFixedParams(TimeWindowFixedParams(TimeWindowParameters(0,1,1)))
-    val w2 = WindowOperatorFixedParams(TimeWindowFixedParams(TimeWindowParameters(2,0,1)))
-    val wp2 =WindowOperatorFixedParams(TimeWindowFixedParams(TimeWindowParameters(0,2,1)))
-    
-    val r1 = GeneralRule(WindowFormula(wp1,Diam(x)),Not(WindowFormula(w2,Diam(y))))
-    val r2 = GeneralRule(WindowFormula(wp2,Diam(y)),Not(WindowFormula(w1,Diam(x))))
+    val w1  = WTime(1)
+    val wp1 = WTime(0,1)
+    val w2  = WTime(2)
+    val wp2 = WTime(0,2)
+
+    val r1 = GeneralRule(wp1(Diam(x)),Not(w2(Diam(y))))
+    val r2 = GeneralRule(wp2(Diam(y)),Not(w1(Diam(x))))
     val P = GeneralProgram(Set(r1,r2))
 
     val D = S((0,2))
 
     val as: Set[S] = AS(P,D,0)
 
-    assert(as.size == 4)
-
 //    for (a <- as) {
 //      println("\n"+a)
 //    }
 //
 //    println("\nanswer streams: "+as.size)
+
+    assert(as.size == 4)
 
   }
 

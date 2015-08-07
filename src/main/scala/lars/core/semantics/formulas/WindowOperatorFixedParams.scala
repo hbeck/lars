@@ -8,4 +8,6 @@ import lars.core.windowfn.WindowFunctionFixedParams
  */
 case class WindowOperatorFixedParams(wfn: WindowFunctionFixedParams, ch:StreamChoice=ch2) {
   override def toString = "⊞^{"+wfn+"}"
+
+  def apply(fm: Formula) = WindowFormula(this, fm)
 }
