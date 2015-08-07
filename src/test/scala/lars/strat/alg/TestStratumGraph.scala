@@ -56,24 +56,31 @@ class TestStratumGraph extends FunSuite {
     val g_j = e(g,j,geq)
 
     val nodes = Set[ExtendedAtom](a,b,c,d,f,g,h,i,j)
-    println(nodes)
+//    println(nodes)
     val edges = Set[DepEdge](a_b,a_f,a_g,b_c,c_d,d_h,d_i,d_b,h_j,i_j,f_i,f_j,g_j)
 
     val depGraph = DepGraph(nodes,edges)
 
     val quot = StratumGraph(depGraph).adjList
 
-    println("\n\nfinal:")
-    println(quot)
+//    println("\n\nfinal:")
+//    println(quot)
 
     for ((x,y) <- Seq((a,f),(d,h),(a,h))) {
-      for ((block, v) <- quot) {
+      for (block <- quot.keys) {
         if (block.contains(x)) {
           assert(!block.contains(y))
         }
         if (block.contains(y)) {
           assert(!block.contains(x))
         }
+      }
+    }
+
+    for (block <- quot.keys){
+      if (block.contains(c)) {
+        assert(block.contains(b))
+        assert(block.contains(d))
       }
     }
 
@@ -94,15 +101,23 @@ class TestStratumGraph extends FunSuite {
     val y1_z1 = e(y1,z1,grt)
     val y1_z2 = e(y1,z2,geq)
     val x2_y2 = e(x2,y2,geq)
-    val w_y2 = e(w,y2,grt)
+    val w_y2  = e(w,y2,grt)
 
     val nodes = Set[ExtendedAtom](x1,x2,y1,y2,z1,z2,w)
-    println(nodes)
+//    println(nodes)
     val edges = Set[DepEdge](x1_x2,x2_x1,x1_y1,y1_z1,y1_z2,x2_y2,w_y2)
 
     val depGraph = DepGraph(nodes,edges)
 
     val quot = StratumGraph(depGraph).adjList
-    println(quot)
+//    println(quot)
+
+    for (block <- quot.keys) {
+      if (block.contains(w) || block.contains(z1)) {
+        assert(block.size==1)
+      } else {
+        assert(block.size==5)
+      }
+    }
   }
 }

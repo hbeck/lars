@@ -65,17 +65,12 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
    * pre: node is not in a block yet
    */
   def addNodes(node: ExtendedAtom, g: DepGraph) : Unit = {
-    println("addNodes: "+node)
     //TODO replace loop by findNeighbourBlock(g,node) (returns Option[Set[ExtendedAtom]])
     for ((key,value) <- block) {
       val b = neighbourBlock(g,value,node)
-      println("\tfound block: "+b)
       if (b.isDefined) {
         if (!hasSomePathWithGrt(g, b.get, Set(node))) {
-          println(block)
-          println("\taccept node")
           block(key) += node
-          println(block)
           addNeighbours(g, node)
           return
         }
@@ -245,17 +240,12 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
    */
   def hasPathWithGrt(foundGrtBefore: Boolean, foundPathBefore: Boolean, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): (Boolean,Boolean) = {
     marked(last) = true
-    println(""+foundGrtBefore+": ("+v1+","+v2+") ["+last+"]")
     for (w <- g.outgoing(v1)) {
-      println("\tcheck marked "+w+": "+marked(w))
       if (!marked(w)) {
         val foundGreater = foundGrtBefore || isGrt(g, v1, w)
-        print("\tfoundGreater: "+foundGreater)
         if (w == v2) { //reached target
-          println(" ... and found target")
           return (foundGreater,true)
         }
-        println()
         val foundGrtPath = hasPathWithGrt(foundGreater, false, g, w, v2, v1, markedCopy(marked))
         if (foundGrtPath._2) {
           return foundGrtPath
