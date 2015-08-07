@@ -30,15 +30,6 @@ object Stratify {
 
     val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
 
-    /*
-    TODO
-    further step demanded, where the condensation is 'minimalized' by edges with dependency geq (>=)
-    however, a naive local expansion of blocks is not possible, this may lead to cycles with remaining grt (>)
-    in general. intuitively, we want to add two blocks A and B whenever there is no path connecting the two with
-    and edge labeled with > (in the original graph)
-    */
-    //val stratG = StratumGraph(condensation)
-
     val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(stratumG)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)

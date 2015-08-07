@@ -1,9 +1,7 @@
 package lars.graph.quotient
 
-import lars.core.semantics.formulas.ExtendedAtom
 import lars.graph.DiGraph
-import lars.graph.alg.{DepPartition, SCCFn}
-import lars.strat.DepGraph
+import lars.graph.alg.SCCFn
 
 /**
  * the condensation of a strongly connected graph is the quotient graph where
@@ -13,7 +11,8 @@ import lars.strat.DepGraph
  */
 object Condensation {
 
-  def apply[V](g: DiGraph[V]): QuotientGraph[V] = {
-   QuotientGraph(g,SCCFn[V]())
+  def apply[V](G: DiGraph[V]): QuotientGraph[V] = {
+   QuotientGraph(G,SCCFn[V]())
   }
+
 }

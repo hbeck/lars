@@ -1,30 +1,35 @@
 package lars.graph.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
-import lars.graph.DiGraph
-import lars.strat.{grt, DepGraph}
+import lars.strat.{DepGraph, grt}
 
 import scala.collection.mutable
 
 /**
+ * Creates the Blocks for the StratumGraph. Similar like SCCFn (for determining the strongly connected components),
+ * this function adds a block X its neighbour block Y, if there is no pair of nodes (x,y), where x in X and y in Y
+ * s.t. a path from x to y exists with an edge labelled with `grt`.
+ *
+ * (This way we get a minimal stratum graph in terms of number of strata.)
+ *
  * Created by et on 26.07.15.
  */
-case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set[ExtendedAtom]]) {
+case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]]) {
 
   var keyCnt = -1 //maximal partition Index
   var block = new mutable.HashMap[Int, Set[ExtendedAtom]]()
   //TODO inBlock map node 2 boolean
-  var partition = new mutable.HashMap[ExtendedAtom,Int]() //TODO use instead of loops (key,value) <- block etc
+  var partition = new mutable.HashMap[ExtendedAtom,Int]()
 
-  def apply(G: DiGraph[ExtendedAtom]): Map[ExtendedAtom, Set[ExtendedAtom]] = {
+  override def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
     var result = new collection.immutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]
 
-    var g:DepGraph = null
-
-    G match {
-      case a:DepGraph => g = a
-      case _          => return null
-    }
+//    var g:DepGraph = null
+//
+//    G match {
+//      case a:DepGraph => g = a
+//      case _          => return null
+//    }
 
     for (node <- g.nodes) {
       if (!inBlock(node)) {
