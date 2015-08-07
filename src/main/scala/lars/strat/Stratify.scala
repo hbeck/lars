@@ -2,6 +2,7 @@ package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
+import lars.graph.DiGraph
 import lars.graph.alg.BottomUpNumbering
 import lars.graph.quotient.{Condensation, QuotientGraph}
 
@@ -14,10 +15,12 @@ object Stratify {
   /**
    * @return a Stream Stratification (SStrat) for program P, if it has one
    */
+  @deprecated
   def apply(P: StdProgram): Option[Stratification] = {
     apply(DepGraph(P))
   }
 
+  @deprecated
   def apply(depGraph: DepGraph) : Option[Stratification] = {
 
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
@@ -31,6 +34,27 @@ object Stratify {
     val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
 
     val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(stratumG)
+
+    val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
+
+    Option(Stratification(nrToAtoms))
+  }
+
+  def apply[T <: DiGraph[ExtendedAtom]](P: StdProgram, f: (QuotientGraph[ExtendedAtom] => QuotientGraph[ExtendedAtom])): Option[Stratification] = {
+    apply(DepGraph(P),f)
+  }
+
+  def apply(depGraph: DepGraph, f: (QuotientGraph[ExtendedAtom] => QuotientGraph[ExtendedAtom])) : Option[Stratification] = {
+
+    val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
+    // if any of these components contains an edge with dependency > (greater),
+    // no stratification exists
+    if (hasCycleWithGrt(depGraph, condensation)) {
+      return None
+    }
+    val stratumGraph: QuotientGraph[ExtendedAtom] = f(condensation)
+
+    val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(stratumGraph)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 

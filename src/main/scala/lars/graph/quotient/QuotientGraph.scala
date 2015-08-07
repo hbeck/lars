@@ -23,27 +23,6 @@ object QuotientGraph {
      @param prtFn partition function that returns for a DiGraph a mapping from nodes to the block it occurs in
    * @return quotient graph induced by prtFn
    */
-//  def apply[V](G: DiGraph[V], prtFn: (DiGraph[V] => Option[Map[V,Set[V]]])): Option[QuotientGraph[V]] = {
-//    val optBlock: Option[Map[V,Set[V]]] = prtFn(G) //Map of prtFns
-//    if (optBlock.isEmpty) {
-//      return None
-//    }
-//    val block = optBlock.get
-//    val nodes: Set[Set[V]] = G.nodes.map(block) //Set of prtFns
-//    var adjList = Map[Set[V],Set[Set[V]]]() //map from elems of nodes to neighbouring blocks
-//    for (n <- nodes) {
-//      adjList = adjList + (n -> Set[Set[V]]())
-//    }
-//    for ((x,y) <- G.edges) {
-//      val A = block(x)
-//      val B = block(y)
-//      if (A != B && !HasEdge(adjList,A,B)) {
-//        adjList = Add(adjList,A,B)
-//      }
-//    }
-//    Option(new QuotientGraph(adjList))
-//  }
-
   def apply[V, T <: DiGraph[V]](G: T, prtFn: (T => Map[V,Set[V]])): QuotientGraph[V] = {
     val block: Map[V,Set[V]] = prtFn(G) //Map of prtFns
     val nodes: Set[Set[V]] = G.nodes.map(block) //Set of prtFns

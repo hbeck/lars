@@ -24,13 +24,6 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
   override def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
     var result = new collection.immutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]
 
-//    var g:DepGraph = null
-//
-//    G match {
-//      case a:DepGraph => g = a
-//      case _          => return null
-//    }
-
     for (node <- g.nodes) {
       if (!inBlock(node)) {
         if (canAddNodes(g,node)) {
@@ -56,12 +49,14 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
   }
 
   def canAddNodes(g: DepGraph, node: ExtendedAtom): Boolean = {
-    if (g.outgoing(node).isEmpty) return false
-    if (g.outgoing(node).size == 1){
-      if (!hasIncoming(g,node)) return true
-      if (isGrt(g,node,g.outgoing(node).head)) return false
+    g.outgoing(node).size match {
+      case 0 => if (hasIncoming(g,node)) return false
+      case 1 => {
+        if (!hasIncoming(g,node)) return true
+        if (isGrt(g,node,g.outgoing(node).head)) return false
+      }
+      case _ => return true
     }
-    //TODO = edges treated correctly?
     true
   }
 
