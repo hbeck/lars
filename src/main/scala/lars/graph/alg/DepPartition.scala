@@ -65,13 +65,15 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
    * pre: node is not in a block yet
    */
   def addNodes(node: ExtendedAtom, g: DepGraph) : Unit = {
+    println("addNodes: "+node)
     //TODO replace loop by findNeighbourBlock(g,node) (returns Option[Set[ExtendedAtom]])
     for ((key,value) <- block) {
       val b = neighbourBlock(g,value,node)
+      println("\tfound block: "+b)
       if (b.isDefined) {
         if (!hasSomePathWithGrt(g, b.get, Set(node))) {
           println(block)
-          println("node: "+node)
+          println("\taccept node")
           block(key) += node
           println(block)
           addNeighbours(g, node)
@@ -198,8 +200,6 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
         }
       }
     }
-
-
     false
   }
 
@@ -229,7 +229,7 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
     }
     for (v1 <- from) {
       for (v2 <- to) {
-        if (hasPathWithGrt(false, g, v1, v2, v1, marked)) {
+        if (hasPathWithGrt(false, false, g, v1, v2, v1, marked) == (true,true)) {
           return true
         }
       }
@@ -237,19 +237,32 @@ case class DepPartition() extends (DiGraph[ExtendedAtom] => Map[ExtendedAtom,Set
     false
   }
 
-  /* sets the greater field to true (default false), if it finds a path with `grt` */
-  def hasPathWithGrt(foundGrtBefore: Boolean, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): Boolean = {
+  /**
+   * sets the greater field to true (default false), if it finds a path with `grt`
+   *
+   * @return ._1: foundGrt, ._2:foundPath
+   *
+   */
+  def hasPathWithGrt(foundGrtBefore: Boolean, foundPathBefore: Boolean, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): (Boolean,Boolean) = {
     marked(last) = true
+    println(""+foundGrtBefore+": ("+v1+","+v2+") ["+last+"]")
     for (w <- g.outgoing(v1)) {
+      println("\tcheck marked "+w+": "+marked(w))
       if (!marked(w)) {
         val foundGreater = foundGrtBefore || isGrt(g, v1, w)
+        print("\tfoundGreater: "+foundGreater)
         if (w == v2) { //reached target
-          return foundGreater
+          println(" ... and found target")
+          return (foundGreater,true)
         }
-        return hasPathWithGrt(foundGreater, g, w, v2, v1, markedCopy(marked))
+        println()
+        val foundGrtPath = hasPathWithGrt(foundGreater, false, g, w, v2, v1, markedCopy(marked))
+        if (foundGrtPath._2) {
+          return foundGrtPath
+        }
       }
     }
-    false
+    (false,false)
   }
 
   /* creates a copy for every call of the check method, so all the paths get visited */

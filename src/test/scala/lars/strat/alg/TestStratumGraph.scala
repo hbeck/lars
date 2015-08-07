@@ -31,7 +31,6 @@ class TestStratumGraph extends FunSuite {
 
     val depGraph = DepGraph(nodes,edges)
 
-
     val quot = StratumGraph(depGraph).adjList
 
     val set_abd_c = Map(Set(c)->Set(),Set(a,b,d)->Set(Set(c)))
@@ -63,7 +62,21 @@ class TestStratumGraph extends FunSuite {
     val depGraph = DepGraph(nodes,edges)
 
     val quot = StratumGraph(depGraph).adjList
+
+    println("\n\nfinal:")
     println(quot)
+
+    for ((x,y) <- Seq((a,f),(d,h),(a,h))) {
+      for ((block, v) <- quot) {
+        if (block.contains(x)) {
+          assert(!block.contains(y))
+        }
+        if (block.contains(y)) {
+          assert(!block.contains(x))
+        }
+      }
+    }
+
   }
 
   test("test3"){
