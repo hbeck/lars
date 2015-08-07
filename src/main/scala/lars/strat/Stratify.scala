@@ -2,7 +2,6 @@ package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
-import lars.graph.DiGraph
 import lars.graph.alg.BottomUpNumbering
 import lars.graph.quotient.{Condensation, QuotientGraph}
 
@@ -23,13 +22,13 @@ object Stratify {
 
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
 
-    val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
-
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
     if (hasCycleWithGrt(depGraph, condensation)) {
       return None
     }
+
+    val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
 
     /*
     TODO

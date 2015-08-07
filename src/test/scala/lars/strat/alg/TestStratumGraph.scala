@@ -1,9 +1,6 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
-import lars.graph.alg.{DepPartition, BottomUpNumbering, SCCFn}
-import lars.graph.quotient.{QuotientGraph, Condensation}
-import lars.graph.DiGraph
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -21,8 +18,6 @@ class TestStratumGraph extends FunSuite {
   object h extends Atom
   object i extends Atom
   object j extends Atom
-
-
 
   test("test1"){
 
@@ -60,8 +55,6 @@ class TestStratumGraph extends FunSuite {
     val f_i = e(f,i,geq)
     val f_j = e(f,j,geq)
     val g_j = e(g,j,geq)
-
-
 
     val nodes = Set[ExtendedAtom](a,b,c,d,f,g,h,i,j)
     println(nodes)

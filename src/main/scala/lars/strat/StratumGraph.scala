@@ -9,8 +9,8 @@ import lars.graph.quotient.QuotientGraph
  */
 object StratumGraph {
 
-  /*NOTE new quotientgraph from DepGraph*/
-  def apply(g: DepGraph): QuotientGraph[ExtendedAtom]  = {
+  /*NOTE new QuotientGraph from DepGraph*/
+  def apply(g: DepGraph): QuotientGraph[ExtendedAtom] = {
     QuotientGraph(g,DepPartition())
   }
 }
