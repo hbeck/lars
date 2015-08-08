@@ -22,12 +22,13 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
   var partition = new mutable.HashMap[ExtendedAtom,Int]()
 
   override def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
+    println(g.nodes)
     var result = new collection.immutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]
 
     for (node <- g.nodes) {
       if (!inBlock(node)) {
         if (canAddNodes(g,node)) {
-          addNodes(node, g)
+          addNodes(node, g, findNeighbourBlock(g,node))
         }
       }
     }
@@ -64,22 +65,50 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
    *
    * pre: node is not in a block yet
    */
-  def addNodes(node: ExtendedAtom, g: DepGraph) : Unit = {
+  def addNodes(node: ExtendedAtom, g: DepGraph, nb: Option[(Int, Set[ExtendedAtom])]) : Unit = {
     //TODO replace loop by findNeighbourBlock(g,node) (returns Option[Set[ExtendedAtom]])
-    for ((key,value) <- block) {
-      val b = neighbourBlock(g,value,node)
-      if (b.isDefined) {
-        if (!hasSomePathWithGrt(g, b.get, Set(node))) {
-          block(key) += node
+//    for ((key,value) <- block) {
+//      val b = findNeighbourBlock(g,node) //neighbourBlock(g,value,node)
+
+      if (nb.isDefined && !hasSomePathWithGrt(g, nb.get._2, Set(node))) {
+        println("to existing")
+        addNodeToBlock(g,nb.get._1,nb.get._2,node)
+/*        if (!hasSomePathWithGrt(g, b.get._2, Set(node))) {
+          block(b.get._1) += node
           addNeighbours(g, node)
           return
-        }
+        }*/
+        return
       }
-    }    
+    println("to new")
     keyCnt += 1
-    block += (keyCnt -> Set(node))
-    addNeighbours(g,node)
+    block += (keyCnt -> Set())
+    addNodeToBlock(g,keyCnt,block(keyCnt),node)
+ //   addNeighbours(g,node)
   }
+
+  def addNodeToBlock(g: DepGraph, blockIndex: Int, blockSet: Set[ExtendedAtom], node: ExtendedAtom) : Unit = {
+    println(block)
+    println(partition)
+    println(blockSet)
+    println(node)
+    println(hasSomePathWithGrt(g,blockSet,Set(node)))
+    println("---")
+   if (inBlock(node)) return
+
+     block(blockIndex) += node
+     partition += (node -> blockIndex)
+     addNeighbours(g, node)
+  }
+
+  def findNeighbourBlock(g: DepGraph, node: ExtendedAtom) : Option[(Int,Set[ExtendedAtom])] = {
+    for ((key,value) <- block) {
+      val b = neighbourBlock(g,value,node)
+      if (b.isDefined) return Option((key,value))
+    }
+   None
+  }
+
 
   /*checks if node is a neighbour of any of the vertices in value
   * @return value, if node is a neighbour to any element of value, null otherwise*/
@@ -93,12 +122,17 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
   /*checks if the set of r, which contains node, has any other elements in it
   * @return true if there are no other elements but node, false otherwise*/
   def isAloneInBlock(node: ExtendedAtom) : Boolean = {
-    for ((key,value) <- block) {
+    if(partition.contains(node) && block(partition(node)).size == 1) {
+     block.remove(partition(node))
+     partition.remove(node)
+     return true
+    }
+/*    for ((key,value) <- block) {
       if (value.contains(node) && value.size == 1) {
         block.remove(key)
         return true
       }
-    }
+    }*/
     false
   }
 
@@ -106,7 +140,9 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
   def addNeighbours(g: DepGraph, node: ExtendedAtom) = {
     for (n <- g.adjList(node)) {
       if (!inBlock(n) || isAloneInBlock(n)) {
-        addNodes(n, g)
+//        addNodeToBlock(g,partition(node),block(partition(node)),n)
+        addNodes(n,g,Option(partition(node),block(partition(node))))
+       // addNodes(n, g)
       }/* else {
         tryMerge(g,node,n)
       }*/
@@ -201,11 +237,12 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
 
   /* checks if a node has already been added to r */
   def inBlock(node: ExtendedAtom) : Boolean = {
-    for ((key,value) <- block) {
+    if(partition.contains(node)) return true
+/*    for ((key,value) <- block) {
       if (value.contains(node)) {
         return true
       }
-    }
+    }*/
     false
   }
 
@@ -224,7 +261,7 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
     }
     for (v1 <- from) {
       for (v2 <- to) {
-        if (hasPathWithGrt(false, false, g, v1, v2, v1, marked) == (true,true)) {
+        if (hasPathWithGrt(false, g, v1, v2, v1, marked) == (true,true)) {
           return true
         }
       }
@@ -238,7 +275,7 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
    * @return ._1: foundGrt, ._2:foundPath
    *
    */
-  def hasPathWithGrt(foundGrtBefore: Boolean, foundPathBefore: Boolean, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): (Boolean,Boolean) = {
+  def hasPathWithGrt(foundGrtBefore: Boolean, g: DepGraph, v1: ExtendedAtom, v2: ExtendedAtom, last: ExtendedAtom, marked: collection.mutable.HashMap[ExtendedAtom, Boolean]): (Boolean,Boolean) = {
     marked(last) = true
     for (w <- g.outgoing(v1)) {
       if (!marked(w)) {
@@ -246,8 +283,8 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
         if (w == v2) { //reached target
           return (foundGreater,true)
         }
-        val foundGrtPath = hasPathWithGrt(foundGreater, false, g, w, v2, v1, markedCopy(marked))
-        if (foundGrtPath._2) {
+        val foundGrtPath = hasPathWithGrt(foundGreater, g, w, v2, v1, markedCopy(marked))
+        if (foundGrtPath._1 && foundGrtPath._2) {
           return foundGrtPath
         }
       }
