@@ -1,6 +1,7 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
+import lars.graph.alg.SCCFn
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -119,5 +120,32 @@ class TestStratumGraph extends FunSuite {
         assert(block.size==5)
       }
     }
+  }
+
+  test("test4"){
+    object x extends Atom
+
+    val nodes = Set[ExtendedAtom](x)
+    val edges = Set[DepEdge]()
+
+    val depGraph = DepGraph(nodes,edges)
+
+    val quot = StratumGraph(depGraph).adjList
+    println(quot)
+  }
+
+  test("test5"){
+    val a_b = e(a,b,grt)
+    val b_c = e(b,c,grt)
+    val c_d = e(c,d,geq)
+
+    val nodes = Set[ExtendedAtom](d,b,c,a)
+    val edges = Set[DepEdge](a_b,b_c,c_d)
+
+    val depGraph = DepGraph(nodes,edges)
+
+    val quot = StratumGraph(depGraph).adjList
+
+    println(quot)
   }
 }

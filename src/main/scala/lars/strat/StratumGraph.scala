@@ -10,6 +10,6 @@ import lars.graph.quotient.QuotientGraph
 object StratumGraph {
 
   def apply(g: DepGraph): QuotientGraph[ExtendedAtom] = {
-    return QuotientGraph(g,DepPartition())
+    QuotientGraph(g,DepPartition())
   }
 }
