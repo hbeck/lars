@@ -40,11 +40,11 @@ object Stratify {
     Option(Stratification(nrToAtoms))
   }
 
-  def apply[T <: DiGraph[ExtendedAtom]](P: StdProgram, f: (QuotientGraph[ExtendedAtom] => QuotientGraph[ExtendedAtom])): Option[Stratification] = {
+  def apply[T <: DiGraph[ExtendedAtom]](P: StdProgram, f: ((DepGraph, QuotientGraph[ExtendedAtom]) => QuotientGraph[ExtendedAtom])): Option[Stratification] = {
     apply(DepGraph(P),f)
   }
 
-  def apply(depGraph: DepGraph, f: (QuotientGraph[ExtendedAtom] => QuotientGraph[ExtendedAtom])) : Option[Stratification] = {
+  def apply(depGraph: DepGraph, f: ((DepGraph, QuotientGraph[ExtendedAtom]) => QuotientGraph[ExtendedAtom])) : Option[Stratification] = {
 
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
     // if any of these components contains an edge with dependency > (greater),
@@ -52,7 +52,7 @@ object Stratify {
     if (hasCycleWithGrt(depGraph, condensation)) {
       return None
     }
-    val stratumGraph: QuotientGraph[ExtendedAtom] = f(condensation)
+    val stratumGraph: QuotientGraph[ExtendedAtom] = f(depGraph, condensation)
 
     val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(stratumGraph)
 
