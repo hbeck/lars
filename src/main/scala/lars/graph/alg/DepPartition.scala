@@ -5,7 +5,6 @@ import lars.graph.DiGraph
 import lars.strat.{DepGraph, grt}
 
 import scala.collection.mutable
-import scala.collection.immutable
 
 /**
  * Creates the Blocks for the StratumGraph. Similar like SCCFn (for determining the strongly connected components),
@@ -18,12 +17,11 @@ import scala.collection.immutable
  */
 case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Map[Set[ExtendedAtom],Set[Set[ExtendedAtom]]]) {
 
-
   var keyCnt = -1 //maximal partition Index
-  var block = new mutable.HashMap[Int, Set[Set[ExtendedAtom]]]()
-  var partition = new mutable.HashMap[Set[ExtendedAtom],Int]()
+  var setOfBlocks = new mutable.HashMap[Int, Set[Set[ExtendedAtom]]]()
+  var blockIdx = new mutable.HashMap[Set[ExtendedAtom],Int]()
 
-  var grtEdges: Map[Set[ExtendedAtom],Set[ExtendedAtom]] = null
+  var grtEdges = Map[Set[ExtendedAtom],Set[ExtendedAtom]]()
 
   override def apply(dg: DiGraph[Set[ExtendedAtom]]): Map[Set[ExtendedAtom],Set[Set[ExtendedAtom]]] = {
     var result = new collection.immutable.HashMap[Set[ExtendedAtom],Set[Set[ExtendedAtom]]]
@@ -31,16 +29,15 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
     grtEdges = getGrtEdges(g,dg)
 
     for (node <- dg.nodes) {
-      if (!inBlock(node)) {
+      if (!blockRegistered(node)) {
         if (canAddNodes(g,dg,node)) {
           addNodes(dg, node, neighbourBlock(dg,node))
         }
       }
     }
-    var tmp = new mutable.HashMap[Int, Set[ExtendedAtom]]()
-    for ((key, value) <- block) {
-      for (node <- block(key)) {
-        result += (node -> block(key))
+    for ((key, value) <- setOfBlocks) {
+      for (node <- setOfBlocks(key)) {
+        result += (node -> setOfBlocks(key))
       }
     }
     result
@@ -96,21 +93,21 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
         return
       }
     keyCnt += 1
-    block += (keyCnt -> Set())
-    addNodeToBlock(dg,keyCnt,block(keyCnt),node)
+    setOfBlocks += (keyCnt -> Set())
+    addNodeToBlock(dg,keyCnt,setOfBlocks(keyCnt),node)
   }
 
   def addNodeToBlock(dg: DiGraph[Set[ExtendedAtom]], blockIndex: Int, blockSet: Set[Set[ExtendedAtom]], node: Set[ExtendedAtom]) : Unit = {
-   if (inBlock(node)) return // necessary?
+   if (blockRegistered(node)) return // necessary?
 
-     block(blockIndex) += node
-     partition += (node -> blockIndex)
+     setOfBlocks(blockIndex) += node
+     blockIdx += (node -> blockIndex)
      addNeighbours(dg, node)
   }
 
   def neighbourBlock(dg: DiGraph[Set[ExtendedAtom]], node: Set[ExtendedAtom]) : Option[(Int,Set[Set[ExtendedAtom]])] = {
 //    println("\tblock: "+block)
-    for ((key,value) <- block) {
+    for ((key,value) <- setOfBlocks) {
       for (v <- value) {
 //        println("outgoing: "+g.outgoing(v))
         if (dg.outgoing(v).contains(node)) return Option((key,value))
@@ -122,10 +119,10 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
   /* checks if the neighbours of node are already in r, and adds them if not */
   def addNeighbours(dg: DiGraph[Set[ExtendedAtom]], node: Set[ExtendedAtom]) = {
     for (n <- dg.adjList(node)) {
-      if (!inBlock(n) || isAloneInBlock(n)) {
-        addNodes(dg,n,Option(partition(node),block(partition(node))))
-      } else if (partition(node) != partition(n)) {
-        println("trying merge between "+partition(node)+" and "+partition(n))
+      if (!blockRegistered(n) || isAloneInBlock(n)) {
+        addNodes(dg,n,Option(blockIdx(node),setOfBlocks(blockIdx(node))))
+      } else if (blockIdx(node) != blockIdx(n)) {
+        println("trying merge between "+blockIdx(node)+" and "+blockIdx(n))
         tryMerge(dg,node,n)
       }
     }
@@ -134,9 +131,9 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
   /*checks if the set of block, which contains node, has any other elements in it
   * @return true if there are no other elements but node, false otherwise*/
   def isAloneInBlock(node: Set[ExtendedAtom]) : Boolean = {
-    if (partition.contains(node) && block(partition(node)).size == 1) {
-      block.remove(partition(node))
-      partition.remove(node)
+    if (blockIdx.contains(node) && setOfBlocks(blockIdx(node)).size == 1) {
+      setOfBlocks.remove(blockIdx(node))
+      blockIdx.remove(node)
       return true
     }
     false
@@ -144,31 +141,31 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
 
   def tryMerge(dg: DiGraph[Set[ExtendedAtom]], node: Set[ExtendedAtom], n: Set[ExtendedAtom]) : Unit = {
 
-    val fromSet = block(partition(node))
-    val fromKey = partition(node)
+    val fromSet = setOfBlocks(blockIdx(node))
+    val fromKey = blockIdx(node)
 
-    val toSet = block(partition(n))
-    val toKey = partition(n)
+    val toSet = setOfBlocks(blockIdx(n))
+    val toKey = blockIdx(n)
 
-    if (!hasSomePathWithGrt(dg,fromSet,toSet) && !hasSomePathWithGrt(dg,toSet,fromSet))
-      merge(dg,fromKey,toKey)
+    if (!hasSomePathWithGrt(dg,fromSet,toSet) && !hasSomePathWithGrt(dg,toSet,fromSet)) {
+      merge(dg, fromKey, toKey)
+    }
   }
 
   /* naive algorithm to check for cycles between the nodes of block */
   def merge(dg: DiGraph[Set[ExtendedAtom]], fromKey: Int, toKey: Int) : Boolean = {
     val undo = new mutable.HashMap[Int, Set[Set[ExtendedAtom]]]()
-    undo += (fromKey -> block(fromKey),toKey -> block(toKey))
+    undo += (fromKey -> setOfBlocks(fromKey),toKey -> setOfBlocks(toKey))
     val undoKey = math.min(fromKey,toKey)
 
-    block(undoKey) ++= block(math.max(fromKey,toKey))
-    for (v <- block(math.max(fromKey,toKey))) {
-      partition(v) = undoKey
+    setOfBlocks(undoKey) ++= setOfBlocks(math.max(fromKey,toKey))
+    for (v <- setOfBlocks(math.max(fromKey,toKey))) {
+      blockIdx(v) = undoKey
     }
-    block.remove(math.max(fromKey,toKey))
+    setOfBlocks.remove(math.max(fromKey,toKey))
 
-    println("heyho!")
-    for ((ktmp,tmp) <- block) {
-      for ((key, value) <- block) {
+    for ((kTmp,tmp) <- setOfBlocks) {
+      for ((key, value) <- setOfBlocks) {
         if (!hasGrtEdges(dg, tmp, value)) {
           if (hasSomePathWithGrt(dg, tmp, value) || hasSomePathWithGrt(dg, value, tmp)) return true
         }
@@ -179,11 +176,11 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
   }
 
   def undoMerge(undo: mutable.HashMap[Int, Set[Set[ExtendedAtom]]], undoKey: Int) = {
-    block.remove(undoKey)
-    block ++= undo
+    setOfBlocks.remove(undoKey)
+    setOfBlocks ++= undo
     for((key,value) <- undo){
       for(v <- value){
-        partition(v) = key
+        blockIdx(v) = key
       }
     }
   }
@@ -198,8 +195,8 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
   }
 
   /* checks if a node has already been added to block */
-  def inBlock(node: Set[ExtendedAtom]) : Boolean = {
-      if (partition.contains(node)) return true
+  def blockRegistered(node: Set[ExtendedAtom]) : Boolean = {
+      if (blockIdx.contains(node)) return true
     false
   }
 
