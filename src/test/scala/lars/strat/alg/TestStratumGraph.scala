@@ -1,9 +1,7 @@
 package lars.strat.alg
 
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
-import lars.graph.DiGraph
-import lars.graph.alg.{DepPartition, SCCFn}
-import lars.graph.quotient.{QuotientGraph, Condensation}
+import lars.graph.quotient.Condensation
 import lars.strat._
 import org.scalatest.FunSuite
 
@@ -156,6 +154,6 @@ class TestStratumGraph extends FunSuite {
     val condensation = Condensation(depGraph)
     val quot = StratumGraph(depGraph).apply(condensation).adjList
 
-        println(quot)
+    println(quot)
   }
 }
