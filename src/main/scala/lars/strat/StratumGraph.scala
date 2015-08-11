@@ -10,9 +10,9 @@ import scala.collection.immutable.HashMap
 /**
  * Created by et on 22.07.15.
  */
-case class StratumGraph(g: DepGraph) extends (QuotientGraph[ExtendedAtom] => QuotientGraph[ExtendedAtom]) {
+object  StratumGraph {
 
-  def apply(q: QuotientGraph[ExtendedAtom]): QuotientGraph[ExtendedAtom] = {
+  def apply(g: DepGraph, q: QuotientGraph[ExtendedAtom]): QuotientGraph[ExtendedAtom] = {
     val result = QuotientGraph(q,DepPartition(g))
     var adjacencyList = new HashMap[Set[ExtendedAtom],Set[Set[ExtendedAtom]]]()
 
