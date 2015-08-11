@@ -31,9 +31,9 @@ object Stratify {
       return None
     }
 
-    val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
+//    val stratumG: QuotientGraph[ExtendedAtom] = StratumGraph(depGraph)
 
-    val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(stratumG)
+    val subgraphNr: Map[Set[ExtendedAtom], Int] = BottomUpNumbering(condensation/*stratumG*/)
 
     val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
 

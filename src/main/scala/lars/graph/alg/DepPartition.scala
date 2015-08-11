@@ -16,15 +16,16 @@ import scala.collection.immutable
  *
  * Created by et on 26.07.15.
  */
-case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]]) {
+case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Map[Set[ExtendedAtom],Set[Set[ExtendedAtom]]]) {
+
 
   var keyCnt = -1 //maximal partition Index
   var block = new mutable.HashMap[Int, Set[Set[ExtendedAtom]]]()
   var partition = new mutable.HashMap[Set[ExtendedAtom],Int]()
-  var grtEdges: Map[(ExtendedAtom,Set[ExtendedAtom]),(ExtendedAtom,Set[ExtendedAtom])]
+  var grtEdges: Map[(ExtendedAtom,Set[ExtendedAtom]),(ExtendedAtom,Set[ExtendedAtom])] = null
 
-  def apply(g: DepGraph, dg: DiGraph[Set[ExtendedAtom]]): Map[ExtendedAtom, Set[ExtendedAtom]] = {
-    var result = new collection.immutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]
+  override def apply(dg: DiGraph[Set[ExtendedAtom]]): Map[Set[ExtendedAtom],Set[Set[ExtendedAtom]]] = {
+    var result = new collection.immutable.HashMap[Set[ExtendedAtom],Set[Set[ExtendedAtom]]]
 
     grtEdges = getGrtEdges(g,dg)
 
@@ -39,9 +40,9 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
     }
     var tmp = new mutable.HashMap[Int, Set[ExtendedAtom]]()
     for((key, value) <- block){
-      tmp += (key -> value.flatten)
-      for(node <- tmp(key)){
-        result += (node -> tmp(key))
+//      tmp += (key -> value.flatten)
+      for(node <- block(key)){
+        result += (node -> block(key))
       }
     }
     result
@@ -60,6 +61,7 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
             }
             result += ((node,from) -> (n,to))
           }
+          case _ => result
         }
       }
     }
@@ -124,10 +126,10 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
     for (n <- dg.adjList(node)) {
       if (!inBlock(n) || isAloneInBlock(n)) {
         addNodes(dg,n,Option(partition(node),block(partition(node))))
-      }/* else if (partition(node) != partition(n)) {
+      } else if (partition(node) != partition(n)) {
         println("trying merge between "+partition(node)+" and "+partition(n))
         tryMerge(dg,node,n)
-      }*/
+      }
     }
   }
 
@@ -167,7 +169,7 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
 
   /* naive algorithm to check for cycles between the nodes of block */
   def hasGrtCycle(dg: DiGraph[Set[ExtendedAtom]], fromKey: Int, toKey: Int) : Boolean = {
-    val tmp:Set[Set[ExtendedAtom]] = block(fromKey) ++ block(toKey)
+    val tmp:Set[Set[ExtendedAtom]] = block(fromKey) ++ block(toKey) // rethink
 
     for ((ktmp,tmp) <- block) {
       for ((key, value) <- block) {
@@ -191,24 +193,6 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
     false
   }
 
-  def hasEdges(g: DepGraph, tmp: Set[ExtendedAtom], value: Set[ExtendedAtom]): Set[(ExtendedAtom,ExtendedAtom)] = {
-    var edgeSet:Set[(ExtendedAtom,ExtendedAtom)] = Set()
-    for (t <- tmp) {
-      for (v <- value) {
-        if (g.hasEdge(t,v)) edgeSet = edgeSet ++ Set((t,v))
-        else if (g.hasEdge(v,t)) edgeSet = edgeSet ++ Set((v,t))
-      }
-    }
-    edgeSet
-  }
-
-/*  def hasGrtEdges(g: DepGraph, edges: Set[(ExtendedAtom, ExtendedAtom)]): Boolean = {
-    for ((from,to) <- edges) {
-      if (isGrt(g,from,to)) return true
-    }
-    false
-  }*/
-
   /* checks if a node has already been added to block */
   def inBlock(node: Set[ExtendedAtom]) : Boolean = {
       if (partition.contains(node)) return true
@@ -224,16 +208,6 @@ case class DepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom
       }
     }
     false
-/*      
-    for(f <- from){
-      if(grtEdges.contains(f))
-      for(t <- to){
-        g.label(f, t) match {
-          case `grt` => true
-          case _ => false
-        }
-      }
-    }*/
   }
 
   /* @return true if there is a path with a `grt` edge along the way, false otherwise */

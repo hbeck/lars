@@ -1,15 +1,28 @@
 package lars.strat
 
 import lars.core.semantics.formulas.ExtendedAtom
-import lars.graph.alg.DepPartition
+import lars.graph.DiGraph
+import lars.graph.alg.{SCCFn, DepPartition}
 import lars.graph.quotient.QuotientGraph
+
+import scala.collection.immutable.HashMap
 
 /**
  * Created by et on 22.07.15.
  */
-object StratumGraph {
+case class StratumGraph(g: DepGraph) extends (QuotientGraph[ExtendedAtom] => QuotientGraph[ExtendedAtom]) {
 
-  def apply(g: DepGraph): QuotientGraph[ExtendedAtom] = {
-    QuotientGraph(g,DepPartition())
+  def apply(q: QuotientGraph[ExtendedAtom]): QuotientGraph[ExtendedAtom] = {
+    val result = QuotientGraph(q,DepPartition(g))
+    var adjacencyList = new HashMap[Set[ExtendedAtom],Set[Set[ExtendedAtom]]]()
+
+    for ((key, value) <- result.adjList) {
+      var newV:Set[Set[ExtendedAtom]] = Set()
+      for ( e <- value) {
+        newV += e.flatten
+      }
+      adjacencyList += (key.flatten -> newV)
+    }
+    new QuotientGraph[ExtendedAtom](adjacencyList)
   }
 }
