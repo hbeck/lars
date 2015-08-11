@@ -131,7 +131,7 @@ class TestPrograms extends FunSuite {
 
   }
 
-  test("flp weirdness") {
+  test("flp") {
 
     //val f = (p -> p) -> ((q -> Falsum) -> p)
 

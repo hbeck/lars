@@ -9,9 +9,11 @@ import lars.core.windowfn.{WindowFunction, WindowParameters}
 abstract class Formula {
 
   def and(fm: Formula): Formula = And(this,fm)
+  def &(fm: Formula): Formula = And(this,fm)
   def or(fm: Formula): Formula = Or(this, fm)
+  def | (fm: Formula): Formula = Or(this, fm)
   def implies(fm: Formula): Formula = Implies(this, fm)
-  def ->(fm: Formula): Formula = Implies(this, fm)
+  def -> (fm: Formula): Formula = Implies(this, fm)
 
   def par(fm: Formula) =
     if (fm.isInstanceOf[Binary]) "(" + fm.toString + ")"

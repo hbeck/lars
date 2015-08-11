@@ -12,7 +12,7 @@ object AS {
   //naive implementation for the moment
   def apply[R <: Rule](P: Program[R], D: S, t: Int): Set[S] = {
     val AInt = IntensionalAtoms(P)
-    val atomsInHead = HeadOrdinaryAtoms(P)
+    val headOrdinaryAtoms = HeadOrdinaryAtoms(P)
     val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t))
     val temporallyQuantifiedInHead = TemporallyQuantifiedInHead(P)
     //1) create maximal extension
@@ -24,7 +24,7 @@ object AS {
            I = I + (u -> a)
          }
       } else {
-        if (atomsInHead.contains(a)) { //place only now
+        if (headOrdinaryAtoms.contains(a)) { //place only now
           I = I + (t -> a)
         }
         if (atAtomsInHead.contains(a)) { //place only at given times

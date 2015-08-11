@@ -6,7 +6,8 @@ package lars.core.semantics
 package object formulas {
 
   def not(fm: Formula) = Not(fm)
-  def box(fm: Formula) = Box(fm)
-  def diamond(fm: Formula) = Diam(fm)
+  def -(fm: Formula) = Not(fm)
+  def B(fm: Formula) = Box(fm)
+  def D(fm: Formula) = Diam(fm)
 
 }

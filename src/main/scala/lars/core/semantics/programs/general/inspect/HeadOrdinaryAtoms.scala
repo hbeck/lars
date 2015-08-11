@@ -1,6 +1,8 @@
 package lars.core.semantics.programs.general.inspect
 
 import lars.core.semantics.formulas.Atom
+import lars.core.semantics.programs.extatoms.ExtendedAtoms
+import lars.core.semantics.programs.standard.StdProgram
 import lars.core.semantics.programs.{Program, Rule}
 
 /**
@@ -16,7 +18,10 @@ object HeadOrdinaryAtoms {
 //  }
 
   def apply[R <: Rule](P: Program[R]): Set[Atom] = {
-    P.rules.map(_.head).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
+    P match {
+      case p:StdProgram => p.rules.map(_.head).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
+      case _ => P.rules.map(_.head).flatMap(ExtendedAtoms(_, true)).filter(_.isInstanceOf[Atom]).map(_.asInstanceOf[Atom])
+    }
   }
 
 }
