@@ -39,9 +39,9 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
       }
     }
     var tmp = new mutable.HashMap[Int, Set[ExtendedAtom]]()
-    for((key, value) <- block){
+    for ((key, value) <- block) {
 //      tmp += (key -> value.flatten)
-      for(node <- block(key)){
+      for (node <- block(key)) {
         result += (node -> block(key))
       }
     }
@@ -50,14 +50,14 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
   
   def getGrtEdges(g: DepGraph, dg: DiGraph[Set[ExtendedAtom]]): Map[(ExtendedAtom,Set[ExtendedAtom]),(ExtendedAtom,Set[ExtendedAtom])] = {
     var result = new mutable.HashMap[(ExtendedAtom,Set[ExtendedAtom]),(ExtendedAtom,Set[ExtendedAtom])]
-    for(node <- g.nodes){
-      for(n <- g.adjList(node)){
+    for (node <- g.nodes) {
+      for (n <- g.adjList(node)) {
         g.label(node, n) match {
           case `grt` => {
             var from, to = Set[ExtendedAtom]()
-            for(vertex <- dg.nodes){
-              if(vertex.contains(node)) from = vertex
-              else if(vertex.contains(n)) to = vertex
+            for (vertex <- dg.nodes) {
+              if (vertex.contains(node)) from = vertex
+              else if (vertex.contains(n)) to = vertex
             }
             result += ((node,from) -> (n,to))
           }
@@ -87,7 +87,7 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
     false
   }
 
-  /* adds node to r
+  /* adds node to block
    *
    * pre: node is not in a block yet
    */
@@ -156,7 +156,7 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
       merge(dg,fromKey,toKey)
   }
 
-  def merge(dg: DiGraph[Set[ExtendedAtom]],fromKey: Int, toKey: Int) = {
+/*  def merge(dg: DiGraph[Set[ExtendedAtom]],fromKey: Int, toKey: Int) = {
     if (!hasGrtCycle(dg,fromKey,toKey))
       block(math.min(fromKey,toKey)) ++= block(math.max(fromKey,toKey))
     for (v <- block(math.max(fromKey,toKey))) {
@@ -164,30 +164,69 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
     }
     block.remove(math.max(fromKey,toKey))
 
-  }
+  }*/
+
 
 
   /* naive algorithm to check for cycles between the nodes of block */
-  def hasGrtCycle(dg: DiGraph[Set[ExtendedAtom]], fromKey: Int, toKey: Int) : Boolean = {
+  def merge(dg: DiGraph[Set[ExtendedAtom]], fromKey: Int, toKey: Int) : Boolean = {
     val tmp:Set[Set[ExtendedAtom]] = block(fromKey) ++ block(toKey) // rethink
 
+/*    var newBlock = new mutable.HashMap[Int, Set[Set[ExtendedAtom]]]()
+    for((key,value) <- block){
+      if(key != fromKey && key != toKey)
+        newBlock += (key -> value)
+    }
+    newBlock += (fromKey -> tmp)*/
+
+/*    keyCnt += 1
+    block += (keyCnt -> tmp)
+    val partitionCopy = new mutable.HashMap[Set[ExtendedAtom],Int]
+    for((k,v) <- partition){
+      partitionCopy += (k -> v)
+      if(tmp.contains(k)) partition(k) = keyCnt
+    }*/
+
+
+    val undo = new mutable.HashMap[Int, Set[Set[ExtendedAtom]]]()
+    undo += (fromKey -> block(fromKey),toKey -> block(toKey))
+
+    block(math.min(fromKey,toKey)) ++= block(math.max(fromKey,toKey))
+    for (v <- block(math.max(fromKey,toKey))) {
+      partition(v) = math.min(fromKey,toKey)
+    }
+    block.remove(math.max(fromKey,toKey))
+
+
+    println("heyho!")
     for ((ktmp,tmp) <- block) {
       for ((key, value) <- block) {
-        if (ktmp != fromKey && key != toKey && ktmp != toKey && key != fromKey) {
-/*          val edges = hasEdges(dg, tmp, value)
-          if (edges.nonEmpty && !hasGrtEdges(dg, edges))*/
-          if(!hasGrtEdges(dg, tmp, value))
+//        if (ktmp != fromKey && key != toKey && ktmp != toKey && key != fromKey) {
+          if (!hasGrtEdges(dg, tmp, value)) {
             if (hasSomePathWithGrt(dg, tmp, value) || hasSomePathWithGrt(dg, value, tmp)) return true
-        }
+          }
+//        }
       }
     }
+    undoCheck(undo)
     false
   }
 
+  def undoCheck(undo: mutable.HashMap[Int, Set[Set[ExtendedAtom]]]) = {
+    block.remove(keyCnt)
+    keyCnt -= 1
+    block ++= undo
+    for((key,value) <- undo){
+      for(v <- value){
+        partition(v) = key
+      }
+    }
+  }
+
   def hasGrtEdges(dg: DiGraph[Set[ExtendedAtom]], from: Set[Set[ExtendedAtom]], to: Set[Set[ExtendedAtom]]): Boolean = {
-    for(((_,f),(_,t)) <- grtEdges){
-      if(from.contains(f)){
-        if(to.contains(t)) return true
+    for (((_,f),(_,t)) <- grtEdges) {
+      if (from.contains(f)) {
+        if (to.contains(t)) return true
       }
     }
     false
@@ -200,9 +239,9 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
   }
 
   def isGrt(/*g: DepGraph, dg: DiGraph[Set[ExtendedAtom]], */from: Set[ExtendedAtom], to: Set[ExtendedAtom]): Boolean = {
-    for(((f,_),(t,_)) <- grtEdges){
-      if(from.contains(f)){
-       if(to.contains(t)){
+    for (((f,_),(t,_)) <- grtEdges) {
+      if (from.contains(f)) {
+       if (to.contains(t)) {
          return true
        }
       }
