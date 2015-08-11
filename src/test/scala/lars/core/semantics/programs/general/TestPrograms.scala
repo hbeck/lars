@@ -2,7 +2,7 @@ package lars.core.semantics.programs.general
 
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.AS
-import lars.core.semantics.streams.S
+import lars.core.semantics.streams.{S, Timeline}
 import lars.core.semantics.structure.IsAnswerStream
 import lars.core.windowfn.time.WTime
 import org.scalatest.FunSuite
@@ -14,6 +14,8 @@ class TestPrograms extends FunSuite {
 
   object x extends Atom
   object y extends Atom
+  object p extends Atom
+  object q extends Atom
 
   test("simple") {
 
@@ -126,6 +128,37 @@ class TestPrograms extends FunSuite {
 //    println("\nanswer streams: "+as.size)
 
     assert(as.size == 4)
+
+  }
+
+  test("flp weirdness") {
+
+    //val f = (p -> p) -> ((q -> Falsum) -> p)
+
+    val b = p -> p
+    val h = (q -> Falsum) -> p
+
+    val D = S(Timeline(0,0))
+
+    val P = GeneralProgram(Set(GeneralRule(h,b)))
+
+    val as = AS(P,D,0)
+
+    assert(as.size == 2)
+
+//    println("#as: "+as.size)
+//
+//    for (a <- as) {
+//      println("\n"+a)
+//    }
+
+    assert(IsAnswerStream(D, P, D, 0) == false)
+    val Ip = S((0,0), (0,p))
+    assert(IsAnswerStream(Ip, P, D, 0))
+    val Iq = S((0,0), (0,q))
+    assert(IsAnswerStream(Iq, P, D, 0))
+    val Ipq = S((0,0), (0,p), (0,q))
+    assert(IsAnswerStream(Ipq, P, D, 0) == false)
 
   }
 
