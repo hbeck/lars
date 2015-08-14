@@ -35,6 +35,8 @@ class TestStratumGraph extends FunSuite {
 
     val quot = StratumGraph(depGraph,condensation).adjList
 
+    println("test1: "+quot)
+
     val set_abd_c = Map(Set(c)->Set(),Set(a,b,d)->Set(Set(c)))
     val set_ac_bd = Map(Set(a,c)->Set(), Set(b,d)->Set(Set(a,c)))
 
@@ -65,8 +67,7 @@ class TestStratumGraph extends FunSuite {
     val condensation = Condensation(depGraph)
     val quot = StratumGraph(depGraph,condensation).adjList
 
-//    println("\n\nfinal:")
-//    println(quot)
+    println("test2: "+quot)
 
     for ((x,y) <- Seq((a,f),(d,h),(a,h))) {
       for (block <- quot.keys) {
@@ -114,7 +115,7 @@ class TestStratumGraph extends FunSuite {
 
     val condensation = Condensation(depGraph)
     val quot = StratumGraph(depGraph,condensation).adjList
-//    println(quot)
+    println("test3: "+quot)
 
     for (block <- quot.keys) {
       if (block.contains(w) || block.contains(z1)) {
@@ -139,6 +140,7 @@ class TestStratumGraph extends FunSuite {
     val set_x = Map(Set(x)->Set())
 
     assert(quot == set_x)
+    println("test4: "+quot)
   }
 
   test("test5"){
@@ -155,6 +157,6 @@ class TestStratumGraph extends FunSuite {
     val condensation = Condensation(depGraph)
     val quot = StratumGraph(depGraph,condensation).adjList
 
-    println(quot)
+    println("test5: "+quot)
   }
 }
