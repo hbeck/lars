@@ -20,7 +20,7 @@ class TestStratumGraph extends FunSuite {
   object i extends Atom
   object j extends Atom
 
-  test("test1"){
+  test("test1") {
 
     val a_c = e(a,c,geq)
     val b_a = e(b,a,geq)
@@ -42,7 +42,7 @@ class TestStratumGraph extends FunSuite {
 
     assert(quot == set_abd_c || quot == set_ac_bd)
   }
-  test("test2"){
+  test("test2") {
 
     val a_b = e(a,b,geq)
     val a_f = e(a,f,grt)
@@ -80,7 +80,7 @@ class TestStratumGraph extends FunSuite {
       }
     }
 
-    for (block <- quot.keys){
+    for (block <- quot.keys) {
       if (block.contains(c)) {
         assert(block.contains(b))
         assert(block.contains(d))
@@ -89,7 +89,7 @@ class TestStratumGraph extends FunSuite {
 
   }
 
-  test("test3"){
+  test("test3") {
     object x1 extends Atom
     object x2 extends Atom
     object y1 extends Atom
@@ -107,7 +107,6 @@ class TestStratumGraph extends FunSuite {
     val w_y2  = e(w,y2,grt)
 
     val nodes = Set[ExtendedAtom](x1,x2,y1,y2,z1,z2,w)
-//    println(nodes)
     val edges = Set[DepEdge](x1_x2,x2_x1,x1_y1,y1_z1,y1_z2,x2_y2,w_y2)
 
     val depGraph = DepGraph(nodes,edges)
@@ -126,7 +125,7 @@ class TestStratumGraph extends FunSuite {
     }
   }
 
-  test("test4"){
+  test("test4") {
     object x extends Atom
 
     val nodes = Set[ExtendedAtom](x)
@@ -136,14 +135,14 @@ class TestStratumGraph extends FunSuite {
 
     val condensation = Condensation(depGraph)
     val quot = StratumGraph(depGraph,condensation).adjList
-    //    println(quot)
+    
     val set_x = Map(Set(x)->Set())
 
     assert(quot == set_x)
     println("test4: "+quot)
   }
 
-  test("test5"){
+  test("test5") {
     val a_b = e(a,b,grt)
     val a_c = e(a,c,grt)
     val c_d = e(c,d,geq)
@@ -158,5 +157,25 @@ class TestStratumGraph extends FunSuite {
     val quot = StratumGraph(depGraph,condensation).adjList
 
     println("test5: "+quot)
+  }
+
+  test("test6") {
+    val a_b = e(a,b,geq)
+    val b_c = e(b,c,grt)
+    val b_d = e(b,d,grt)
+    val c_f = e(c,f,geq)
+    val d_g = e(d,g,geq)
+    val f_h = e(f,h,grt)
+    val g_h = e(g,h,geq)
+
+    val nodes = Set[ExtendedAtom](d,b,c,a,f,g,h)
+    val edges = Set[DepEdge](a_b,b_c,b_d,c_f,d_g,f_h,g_h)
+
+    val depGraph = DepGraph(nodes,edges)
+
+    val condensation = Condensation(depGraph)
+    val quot = StratumGraph(depGraph,condensation).adjList
+
+    println("test6: "+quot)
   }
 }
