@@ -11,7 +11,8 @@ import lars.core.semantics.programs.Program
 case class StdProgram(override val rules:Set[StdRule]) extends Program[StdRule](rules) {
 
   def contains(x: ExtendedAtom): Boolean = {
-    rules.find( r => r.contains(x) ).isDefined
+    rules.exists(r => r.contains(x))
+/*    rules.find( r => r.contains(x) ).isDefined*/
   }
 
   override def apply(rules:Set[StdRule]): StdProgram = StdProgram(rules)

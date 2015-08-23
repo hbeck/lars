@@ -5,6 +5,7 @@ import lars.core.semantics.programs.extatoms.WindowAtom
 import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.StdProgram
 import lars.core.semantics.streams.{Timeline, S}
+import lars.core.windowfn.WindowParameters
 import lars.strat.Strata
 import lars.tms.TMS
 import lars.tms.cons.ConsStar
@@ -55,7 +56,7 @@ class AnswerUpdate(P: StdProgram) {
 
   def init() = {
     initLabels()
-    this.apply(0,S(Timeline(0,0)),0) //t'?
+    this.apply(0,S(Timeline(0,0)),0) //t'? //why use the apply method here?
   }
 
   def initLabels() = {
@@ -104,7 +105,7 @@ class AnswerUpdate(P: StdProgram) {
 
   def MakeAssignment(l: Int, t: Int): Option[Boolean] = {
     //TODO
-    return None
+    None
   }
 
   def SetOpenOrdAtomsOut(l: Int, t: Int): Unit = {

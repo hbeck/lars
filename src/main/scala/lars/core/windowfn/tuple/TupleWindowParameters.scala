@@ -24,7 +24,7 @@ case class TupleWindowParameters(l: Int, u: Int=0) extends WindowParameters {
 
 object TupleWindowParameters {
   def from(xs: Seq[Int]) : TupleWindowParameters = {
-    val l = xs(0)
+    val l = xs.head
     val u = if (xs.length == 2) xs(1) else 0
     TupleWindowParameters(l,u)
   }
