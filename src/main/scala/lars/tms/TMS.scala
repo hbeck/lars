@@ -1,8 +1,9 @@
 package lars.tms
 
-import lars.core.semantics.formulas.{Not, Formula, ExtendedAtom}
+import lars.core.semantics.formulas._
 import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 import lars.tms.status.Labels
+import lars.tms.status.rule.fVal
 
 /**
  * Created by hb on 6/25/15.
@@ -17,15 +18,10 @@ object TMS {
     var j = Set[J]()
     var nSet = Set[ExtendedAtom]()
     for(rule <- P.rules){
-      var I = Set[ExtendedAtom]()
-      var O = Set[ExtendedAtom]()
-/*      rule.body match {
-        case Not(fm:ExtendedAtom) =>
-      }*/
-      println(rule.body)
-      j += new J(Set(),Set(),rule.h)
+      if(fVal(L,rule)) {
+        j += new J(rule.Bp, rule.Bn, rule.h)
+      }
       nSet += rule.h
-      val io:Formula = rule.body
     }
     TMS(nSet,j)
   }
