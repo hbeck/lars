@@ -17,13 +17,13 @@ import lars.tms.status.{Label, Labels}
  */
 class AnswerUpdate(P: StdProgram) {
 
-  private val tms:TMS = TMS(P)
   //
   private val stratum: Map[Int, StdProgram] = Strata(P)
   private val n = stratum.keySet.reduce(math.max)
   private val L = Labels()
 
   init()
+  private val tms:TMS = TMS(P,L)
 
   def apply(t: Int, D: S, tp: Int): Result = {
     for (l <- 1 to n) {
@@ -77,6 +77,7 @@ class AnswerUpdate(P: StdProgram) {
 
   def Fired(l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     //TODO
+    // Missing stream?
     Set[(ExtendedAtom,WindowAtom,Int)]()
   }
 
