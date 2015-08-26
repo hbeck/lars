@@ -2,7 +2,7 @@ package lars.tms
 
 import lars.core.semantics.formulas.WindowOperators.{ch2, StreamChoice}
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.extatoms.WindowAtom
+import lars.core.semantics.programs.extatoms.{WAt, WBox, WindowAtom}
 import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 import lars.core.semantics.streams.{Evaluation, Timeline, S}
@@ -79,19 +79,20 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def Fired(D: S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
+    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
+
     val tlp = Timeline(tp+1,t)
-    val Dp = S(tlp,D.v|tlp) // only add the atoms from stratum l!
-    var newDp = S(tlp)
+//    val Dp = S(tlp,D.v|tlp) // only add the atoms from stratum l!
+    val Dp = TimeWindow(D,tp,TimeWindowParameters(tp+1,t,1))
+
+    val wofp = WindowOperatorFixedParams(TimeWindow.fix(TimeWindowParameters(tp+1,t,1)))
     val stdPL = stratum(l)
 
     for((time,atom) <- Dp.getTimestampedAtoms()){
-      if(stdPL.contains(atom)){
-        newDp += (time -> atom)
-      }
+      if(stdPL.contains(atom)) result = result ++ Set((atom,WAt(wofp,time,atom),time))
     }
 
-    val tw = TimeWindow(D,tp,TimeWindowParameters(tp,t,1))
-    Set[(ExtendedAtom,WindowAtom,Int)]()
+    result
   }
 
   def ExpireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int): Unit = {

@@ -30,7 +30,7 @@ case class StdRule(h:ExtendedAtom, Bp:Set[ExtendedAtom], Bn:Set[ExtendedAtom]=Se
 
   override def toString = {
     val sb = new StringBuilder()
-    var c = 0;
+    var c = 0
     for (x <- Bp) {
       c += 1
       if (c>1) {
