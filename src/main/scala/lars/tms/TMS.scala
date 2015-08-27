@@ -25,17 +25,19 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   private val stratum: Map[Int, StdProgram] = Strata(P)
   private val n = stratum.keySet.reduce(math.max)
   private val L = Labels()
+  private var previousStream:S = S(Timeline(0,0))
 
   init()
 
   def answerUpdate(t: Int, D: S, tp: Int): Result = {
+    previousStream = D
     for (l <- 1 to n) {
       var C = Set[WindowAtom]()
       for ((alpha,omega) <- Expired(l,tp,t)) {
         ExpireInput(alpha,omega,t)
         C = C + omega
       }
-      for ((alpha,omega,t1) <- Fired(D,l,tp,t)) {
+      for ((alpha,omega,t1) <- Fired(l,tp,t)) {
         FireInput(alpha,omega,t1)
         C = C + omega
       }
@@ -78,20 +80,23 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     Set[(ExtendedAtom,WindowAtom)]()
   }
 
-  def Fired(D: S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
+  def Fired(l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
 
     val tlp = Timeline(tp+1,t)
 //    val Dp = S(tlp,D.v|tlp) // only add the atoms from stratum l!
-    val Dp = TimeWindow(D,tp,TimeWindowParameters(tp+1,t,1))
+    val Dp = TimeWindow(previousStream,tp+1,TimeWindowParameters(tp+1,t,1))
 
     val wofp = WindowOperatorFixedParams(TimeWindow.fix(TimeWindowParameters(tp+1,t,1)))
     val stdPL = stratum(l)
 
-    for((time,atom) <- Dp.getTimestampedAtoms()){
-      if(stdPL.contains(atom)) result = result ++ Set((atom,WAt(wofp,time,atom),time))
+    for ((time,atom) <- Dp.getTimestampedAtoms()) {
+      if (stdPL.contains(atom)) {
+        result = result ++ Set((atom, WAt(wofp, time, atom), time))
+      } else {
+        previousStream = previousStream - (time,atom)
+      }
     }
-
     result
   }
 
@@ -119,7 +124,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def MakeAssignment(l: Int, t: Int): Option[Boolean] = {
     //TODO
-    return None
+    None
   }
 
   def SetOpenOrdAtomsOut(l: Int, t: Int): Unit = {
@@ -136,7 +141,7 @@ object TMS {
   def apply(P: StdProgram): TMS = {
     var j = Set[J]()
     var nSet = Set[ExtendedAtom]()
-    for(rule <- P.rules){
+    for (rule <- P.rules) {
         j += new J(rule.Bp, rule.Bn, rule.h)
       nSet += rule.h
     }
