@@ -14,27 +14,26 @@ import scala.collection.mutable
  * Stream Dependency Graph
  * Created by hb on 7/6/15.
  */
-case class DepGraph(override val adjList: Map[ExtendedAtom,Set[ExtendedAtom]],
-                    override val label: (ExtendedAtom,ExtendedAtom) => Dependency)
+class DepGraph[V](override val adjList: Map[V,Set[V]],
+                  override val label: (V,V) => Dependency)
+  extends LabeledDiGraph[V,Dependency](adjList,label) {
 
-  extends LabeledDiGraph[ExtendedAtom,Dependency](adjList,label) {
+  override def outgoing(n: V): Set[V] = adjList.getOrElse(n,Set())
 
-  override def outgoing(n: ExtendedAtom): Set[ExtendedAtom] = adjList.getOrElse(n,Set())
-
-  override def subgraph(vertices: Set[ExtendedAtom]): DepGraph = {
-    val digraph: DiGraph[ExtendedAtom] = super.subgraph(vertices)
-    DepGraph(digraph.adjList, label) //reduce label "keys"?
+  override def subgraph(vertices: Set[V]): DepGraph[V] = {
+    val digraph: DiGraph[V] = super.subgraph(vertices)
+    new DepGraph[V](digraph.adjList, label) //reduce label "keys"?
   }
 
   //remaining graph when removing the given nodes
-  def -- (nodes: Set[ExtendedAtom]) : DepGraph = {
+  def -- (nodes: Set[V]) : DepGraph[V] = {
     val newNodes = this.nodes -- nodes
     subgraph(newNodes)
   }
 
   override def equals(other:Any) : Boolean = {
     other match {
-      case g: DepGraph => this == g
+      case g: DepGraph[V] => this == g
       case _ => false
     }
   }
@@ -43,29 +42,29 @@ case class DepGraph(override val adjList: Map[ExtendedAtom,Set[ExtendedAtom]],
 
 object DepGraph {
 
-  def apply(P: StdProgram): DepGraph = {
-    val nodes = ExtendedAtoms(P,true)
+  def apply(P: StdProgram): DepGraph[ExtendedAtom] = {
+    val nodes: Set[ExtendedAtom] = ExtendedAtoms(P,true)
     val hba = headBodyArcs(P)
     val na = nestingArcs(P)
-    val depEdges: Set[DepEdge] = hba ++ na
+    val depEdges: Set[DepEdge[ExtendedAtom]] = hba ++ na
     apply(nodes,depEdges)
   }
 
-  def apply(nodes: Set[ExtendedAtom], depEdges: Set[DepEdge]): DepGraph = {
+  def apply[V](nodes: Set[V], depEdges: Set[DepEdge[V]]): DepGraph[V] = {
     val adjList = createAdjList(nodes,depEdges)
     //abstract away dependencies into label function (as map):
-    var m = Map[(ExtendedAtom,ExtendedAtom),Dependency]()
+    var m = Map[(V,V),Dependency]()
     for (e@DepEdge(from,to,dep) <- depEdges) {
       m = m + ((from,to) -> dep)
     }
-    val label = { (x:ExtendedAtom,y:ExtendedAtom) => m((x,y)) }
-    DepGraph(adjList,label)
+    val label = { (x:V,y:V) => m((x,y)) }
+    new DepGraph[V](adjList,label)
   }
 
-  def createAdjList(vertices: Set[ExtendedAtom], edges:Set[DepEdge]): Map[ExtendedAtom,Set[ExtendedAtom]] = {
-    var m = HashMap[ExtendedAtom,Set[ExtendedAtom]]()
+  def createAdjList[V](vertices: Set[V], edges:Set[DepEdge[V]]): Map[V,Set[V]] = {
+    var m = HashMap[V,Set[V]]()
     for (n <- vertices) {
-      m = m + (n -> Set[ExtendedAtom]())
+      m = m + (n -> Set[V]())
     }
     for (e@DepEdge(from,to,dep) <- edges) {
       m = m.updated(from, m(from)+to)
@@ -73,18 +72,18 @@ object DepGraph {
     m
   }
   
-  private def headBodyArcs(P: StdProgram): Set[DepEdge] = {
-    headBodyArcsImpl(P.rules, Set[DepEdge]())
+  private def headBodyArcs(P: StdProgram): Set[DepEdge[ExtendedAtom]] = {
+    headBodyArcsImpl(P.rules, Set[DepEdge[ExtendedAtom]]())
   }
 
   @tailrec
-  private def headBodyArcsImpl(rules: Set[StdRule], edges: Set[DepEdge]) : Set[DepEdge] = {
+  private def headBodyArcsImpl(rules: Set[StdRule], edges: Set[DepEdge[ExtendedAtom]]) : Set[DepEdge[ExtendedAtom]] = {
     if (rules.isEmpty) {
       return edges
     }
     val rule = rules.head
 
-    val curr = mutable.HashSet[DepEdge]()
+    val curr = mutable.HashSet[DepEdge[ExtendedAtom]]()
     for (beta <- rule.B) {
       val dep = determineHeadBodyDependency(rule.h,beta)
       curr += DepEdge(rule.h,beta,dep)
@@ -109,9 +108,9 @@ object DepGraph {
     }
   }
 
-  private def nestingArcs(P: StdProgram): Set[DepEdge] = {
+  private def nestingArcs(P: StdProgram): Set[DepEdge[ExtendedAtom]] = {
     val xs = ExtendedAtoms(P,true)
-    var mset = mutable.HashSet[DepEdge]()
+    var mset = mutable.HashSet[DepEdge[ExtendedAtom]]()
     for (x <- xs) {
       x match { //consider only 'relevant' ones
         case y:AtAtom => {

@@ -21,7 +21,7 @@ case class Stratification(map: Map[Int,Set[ExtendedAtom]]) { //"other" way as de
 
 object Stratification {
   
-  def apply(P: StdProgram): Option[Stratification] = Stratify(P)
+  def apply(P: StdProgram): Option[Stratification] = Stratify(P,MinStratumGraph)
   
   def isStratification(strat: Map[ExtendedAtom,Int], P: StdProgram): Boolean = {    
     val G = DepGraph(P)

@@ -1,6 +1,7 @@
 package lars.graph.alg
 
 import lars.core.semantics.formulas.ExtendedAtom
+import lars.graph.quotient.Block
 import lars.strat.{DepGraph, grt}
 
 import scala.collection.mutable
@@ -12,16 +13,22 @@ import scala.collection.mutable
  *
  * (This way we get a minimal stratum graph in terms of number of strata.)
  *
- * Created by et on 26.07.15.
+ * Created by hb on 26.07.15.
  */
-case class MinDepPartition() extends (DepGraph => Map[ExtendedAtom,Set[ExtendedAtom]]) {
+case class MinDepPartition() extends (DepGraph => Map[ExtendedAtom,Block[ExtendedAtom]]) {
+
+  override def apply(G: DepGraph): Map[ExtendedAtom, Block[ExtendedAtom]] = {
+
+  }
+
+  //
 
   var keyCnt = -1 //maximal partition Index
   var block = new mutable.HashMap[Int, Set[ExtendedAtom]]()
   //TODO inBlock map node 2 boolean
   var partition = new mutable.HashMap[ExtendedAtom,Int]()
 
-  override def apply(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
+  def applyx(g: DepGraph): Map[ExtendedAtom, Set[ExtendedAtom]] = {
     var result = new collection.immutable.HashMap[ExtendedAtom,Set[ExtendedAtom]]
 
     for (node <- g.nodes) {
