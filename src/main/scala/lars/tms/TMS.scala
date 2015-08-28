@@ -2,7 +2,7 @@ package lars.tms
 
 import lars.core.semantics.formulas.WindowOperators.{ch2, StreamChoice}
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.extatoms.{WAt, WBox, WindowAtom}
+import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 import lars.core.semantics.streams.{Evaluation, Timeline, S}
@@ -10,7 +10,7 @@ import lars.core.windowfn.WindowFunctionFixedParams
 import lars.core.windowfn.partition.{PartitionWindowParameters, PartitionWindow}
 import lars.core.windowfn.time.{TimeWindowParameters, TimeWindow}
 import lars.strat.Strata
-import lars.tms.cons.ConsStar
+import lars.tms.cons.{ConsW, ConsStar}
 import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
 import lars.tms.status.{Label, Labels}
@@ -37,7 +37,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         ExpireInput(alpha,omega,t)
         C = C + omega
       }
-      for ((alpha,omega,t1) <- Fired(l,tp,t)) {
+      for ((alpha,omega,t1) <- Fired(D,l,tp,t)) {
         FireInput(alpha,omega,t1)
         C = C + omega
       }
@@ -80,12 +80,60 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     Set[(ExtendedAtom,WindowAtom)]()
   }
 
-  def Fired(l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
+  def wAtom(consW: Set[ExtendedAtom], atom:Atom): Option[WindowAtom] = {
+    for (elem <- consW) {
+     elem match {
+       case wat:WAt =>
+       case wa:WindowAtom => return Option(wa)
+     }
+    }
+    None
+  }
+
+  def getAt(stdP: StdProgram, a: Atom): Option[WAt] = {
+
+   for(rule <- stdP.rules){
+        rule.B match {
+          case wa:WAt => if(a == wa.a) return Option(wa)
+        }
+      }
+    None
+  }
+
+  def PushNow(l: Int): (ExtendedAtom,WindowAtom) = {
+
+  }
+
+  def Push(l: Int) = {
+
+  }
+
+  //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
+  def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
 
     val tlp = Timeline(tp+1,t)
-//    val Dp = S(tlp,D.v|tlp) // only add the atoms from stratum l!
-    val Dp = TimeWindow(previousStream,tp+1,TimeWindowParameters(tp+1,t,1))
+    val Dp = S(tlp,D.v|tlp)
+
+    for ((time,atom) <- Dp.getTimestampedAtoms()) {
+    l match {
+      case 0 => Set()
+      case 1 => {
+          val wat = wAtom(ConsW(P, atom), atom)
+          if (wat.nonEmpty) {
+            result = result ++ Set((atom, wat.get, time))
+          }
+          val watStrat = getAt(stratum(l), atom)
+          if (watStrat.nonEmpty) {
+            result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
+          }
+        }
+      case _ => val pn = PushNow(l)
+        result = result ++ Set((pn._1,pn._2,time))
+        if(time <= t) Push(l)
+    }
+    }
+/*    val Dp = TimeWindow(previousStream,tp+1,TimeWindowParameters(tp+1,t,1))
 
     val wofp = WindowOperatorFixedParams(TimeWindow.fix(TimeWindowParameters(tp+1,t,1)))
     val stdPL = stratum(l)
@@ -96,7 +144,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
       } else {
         previousStream = previousStream - (time,atom)
       }
-    }
+    }*/
     result
   }
 
