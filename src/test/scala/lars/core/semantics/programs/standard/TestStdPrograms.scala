@@ -90,12 +90,12 @@ class TestStdPrograms extends FunSuite {
 
     val D = S((0, 1))
 
-    for (t <- 0 to 1) {
-      println("" + t)
-      for (as <- AS(P, D, t)) {
-        println(as)
-      }
-    }
+//    for (t <- 0 to 1) {
+//      println("" + t)
+//      for (as <- AS(P, D, t)) {
+//        println(as)
+//      }
+//    }
 
     val I0 = D + (1 -> b)
     val I1 = D + (1 -> b) + (1 -> a)
@@ -105,6 +105,66 @@ class TestStdPrograms extends FunSuite {
 
     assert(AS(P,D,0).size == 1)
     assert(AS(P,D,1).size == 1)
+
+    object a0 extends Atom
+    object b0 extends Atom
+    object a1 extends Atom
+    object b1 extends Atom
+
+    //ASP
+    val r1_0 = StdRule(a0,b0)
+    val r1_1 = StdRule(a1,b1)
+    val r_b1 = StdRule(b1,Verum)
+    val P0 = StdProgram(Set(r1_0,r_b1))
+    val P1 = StdProgram(Set(r1_1,r_b1))
+
+    val S0 = S((0,0)) //simulate asp by using a single time point
+    val A0 = S0 + (0 -> b1)
+    val A1 = S0 + (0 -> b1) + (0 -> a1)
+
+    assert(IsAnswerStream(A0,P0,S0,0))
+    assert(IsAnswerStream(A1,P1,S0,0))
+
+    assert(AS(P0,S0,0).size == 1)
+    assert(AS(P1,S0,0).size == 1)
+
+  }
+
+  test("a <- b. b@1") {
+
+    val r = StdRule(a, b)
+    val P = StdProgram(Set(r))
+
+    val D = S((0, 1),(1 -> b))
+
+//    for (t <- 0 to 1) {
+//      println("" + t)
+//      for (as <- AS(P, D, t)) {
+//        println(as)
+//      }
+//    }
+
+    val I0 = D
+    val I1 = D + (1 -> a)
+
+    assert(IsAnswerStream(I0,P,D,0))
+    assert(IsAnswerStream(I1,P,D,1))
+
+    assert(AS(P,D,0).size == 1)
+    assert(AS(P,D,1).size == 1)
+
+    //
+
+    val R = StdProgram(Set(StdRule(AtAtom(1,b))))
+    val Pp = P
+
+    val E=S((0,1))
+
+    assert(IsAnswerStream(I0,P ++ R,E,0))
+    assert(IsAnswerStream(I1,P ++ R,E,1))
+
+    assert(AS(Pp ++ R,E,0).size == 1)
+    assert(AS(Pp ++ R,E,1).size == 1)
 
   }
 
