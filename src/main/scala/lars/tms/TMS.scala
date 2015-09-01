@@ -77,13 +77,34 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
   }
 
+
+  /*
+      * resultSet:Set[Atom,WindowAtom] = Set()
+      * forall(omega) {
+      * resultSet.addToSet(a=AtomFrom(omega),omega) where
+      *                   a == exp(omega,t,Fired(l,t)) without Fired(l,t))
+      * }*/
+  def Expired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
+    var result = Set[(ExtendedAtom,WindowAtom)]()
+    val omegaSet:Set[WindowAtom] = getOmega(P)
+
+    for (omega <- omegaSet) {
+      val expSet = exp(omega,t,Fired(D,l,tp,t)).getOrElse(Set())
+      if (expSet.nonEmpty) {
+        val expTuple = (expSet.head, omega)
+        result += expTuple
+      }
+    }
+   result 
+  }
+
   def getOmega(P: StdProgram): Set[WindowAtom] = {
-    var result = Set[WindowAtom]() 
-    
-    for(elem <- P.rules.flatMap(_.B)){
-     elem match {
-       case wa:WindowAtom => result += wa
-     } 
+    var result = Set[WindowAtom]()
+
+    for (elem <- P.rules.flatMap(_.B)) {
+      elem match {
+        case wa:WindowAtom => result += wa
+      }
     }
     result
   }
@@ -94,16 +115,31 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
     for (a <- as) {
       var tmp = Set[Int]()
-      if(L.status(a) == in) {
+      if (L.status(a) == in) {
         val intervals = L.intervals(a)
-        for(interval <- intervals){
-            val tp = interval.upper
-            tmp = tmp ++ Set(tp)
+        for (interval <- intervals) {
+          val tp = interval.upper
+          tmp = tmp ++ Set(tp)
         }
       }
       result += (a -> tmp)
     }
     result.toMap
+  }
+
+  def mapInAtoms(omega: WindowAtom, fired: Set[(ExtendedAtom, WindowAtom, Int)], t: Int, atp: Map[ExtendedAtom, Set[Int]]): Option[Set[ExtendedAtom]] = {
+    var result = Set[ExtendedAtom]()
+
+    for (atom <- omega.fm.atoms()) {
+      if (!fired.contains((atom, omega, t))) {
+        for (time <- atp(atom)) {
+          if (time < t) {
+            result += atom
+          }
+        }
+      }
+    }
+    Option(result)
   }
 
   def exp(omega: WindowAtom, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): Option[Set[ExtendedAtom]] = {
@@ -117,75 +153,59 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
             var N = 0
             val lower = tw.x.l
             val upper = tw.x.u
-            if(lower == 0) {
+            if (lower == 0) {
               N = upper
             } else {
               N = lower * -1
             }
 
-            for(atom <- omega.fm.atoms()) {
-              if (!fired.contains((atom, omega, t))) {
-                for (time <- atp(atom)) {
-                  if (time < t + N) {
-                    result += atom
-                  }
-                }
-              }
-            }
+            return mapInAtoms(omega,fired,t+N,atp)
           }
-          case tuw:TupleWindowFixedParams =>
+          case tuw:TupleWindowFixedParams => //TODO
         }
         Option(result)
       }
       case wb:WBox =>
         wb.w.wfn match {
-          case tw:TimeWindowFixedParams =>
-          case tuw:TupleWindowFixedParams =>
+          case tw:TimeWindowFixedParams => {
+            return mapInAtoms(omega,fired,t,atp)
+
+            /*for (atom <- omega.fm.atoms()) {
+              if (!fired.contains((atom, omega, t))) {
+                for (time <- atp(atom)) {
+                  if (time < t) {
+                    result += atom
+                  }
+                }
+              }
+            }*/
+          }
+          case tuw:TupleWindowFixedParams => //TODO
         }
         Option(result)
     }
   }
+  
+  def Fired(l:Int, time:Int, atom:Atom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
+    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
+    l match {
+      case 0 => None
+      case 1 => {
+        val wat = wAtom(ConsW(P, atom))
+        if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
 
-  /*
-      * resultSet:Set[Atom,WindowAtom] = Set()
-      * forall(omega){
-      * resultSet.addToSet(a=AtomFrom(omega),omega) where
-      *                   a == exp(omega,t,Fired(l,t)) without Fired(l,t))
-      * }*/
-  def Expired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
-    var result = Set[(ExtendedAtom,WindowAtom)]()
-    val omegaSet:Set[WindowAtom] = getOmega(P)
-
-    for(omega <- omegaSet){
-      val expSet = exp(omega,t,Fired(D,l,tp,t)).getOrElse(Set())
-      if(expSet.nonEmpty) {
-        val expTuple = (expSet.head, omega)
-        result += expTuple
+        val watStrat = getAt(stratum(l), atom)
+        if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
+        Option(result)
+      }
+      case _ => {
+        val pn = PushNow(l)
+        val p = Push(l)
+        result = result ++ Set((pn._1,pn._2,time)) ++ Set((p._1,p._2,time))
+        Option(result)
       }
     }
-   result 
   }
-
-    def Fired(l:Int, time:Int, atom:Atom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
-      var result = Set[(ExtendedAtom,WindowAtom,Int)]()
-      l match {
-        case 0 => None
-        case 1 => {
-          val wat = wAtom(ConsW(P, atom))
-          if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
-
-          val watStrat = getAt(stratum(l), atom)
-          if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
-          Option(result)
-        }
-        case _ => {
-          val pn = PushNow(l)
-          val p = Push(l)
-          result = result ++ Set((pn._1,pn._2,time)) ++ Set((p._1,p._2,time))
-          Option(result)
-        }
-      }
-    }
 
 
   //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
@@ -213,10 +233,10 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def getAt(stdP: StdProgram, a: Atom/*, t:Int*/): Option[WAt] = {
 
-    for(rule <- stdP.rules){
+    for (rule <- stdP.rules) {
       val headAndBody = Set(rule.h) ++ rule.B
       headAndBody match {
-        case wa:WAt => if(a == wa.a /*&& t == wa.t*/) return Option(wa)
+        case wa:WAt => if (a == wa.a /*&& t == wa.t*/) return Option(wa)
       }
     }
     None
