@@ -1,5 +1,6 @@
 package lars.tms
 
+import lars.core.ClosedIntInterval
 import lars.core.semantics.formulas.WindowOperators.{ch2, StreamChoice}
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
@@ -15,7 +16,7 @@ import lars.tms.cons.{ConsW, ConsStar}
 import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
 import lars.tms.status.{Label, Labels}
-import lars.tms.status.Status.{unknown, out}
+import lars.tms.status.Status.{in, unknown, out}
 import lars.tms.status.rule.fVal
 
 /**
@@ -87,32 +88,61 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     result
   }
 
-  def exp(omega: WindowAtom, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): (ExtendedAtom, WindowAtom) = {
-    val result = (fired.head._1, fired.head._2)
+  def q(omega: WindowAtom): Map[ExtendedAtom,Set[Int]] = {
+    var result = collection.mutable.HashMap[ExtendedAtom,Set[Int]]()
+    val as = omega.fm.atoms()
+
+    for (a <- as) {
+      var tmp = Set[Int]()
+      if(L.status(a) == in) {
+        val intervals = L.intervals(a)
+        for(interval <- intervals){
+            val tp = interval.upper
+            tmp = tmp ++ Set(tp)
+        }
+      }
+      result += (a -> tmp)
+    }
+    result.toMap
+  }
+
+  def exp(omega: WindowAtom, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): Option[Set[ExtendedAtom]] = {
+    var result = Set[ExtendedAtom]()
+    val atp = q(omega)
+
     omega match {
-      case wb:WDiam => {
-        wb.w.wfn match {
+      case wd:WDiam => {
+        wd.w.wfn match {
           case tw:TimeWindowFixedParams => {
+            var N = 0
             val lower = tw.x.l
             val upper = tw.x.u
-
-            if(lower > 0){
-              omega
+            if(lower == 0) {
+              N = upper
             } else {
+              N = lower * -1
+            }
 
+            for(atom <- omega.fm.atoms()) {
+              if (!fired.contains((atom, omega, t))) {
+                for (time <- atp(atom)) {
+                  if (time < t + N) {
+                    result += atom
+                  }
+                }
+              }
             }
           }
           case tuw:TupleWindowFixedParams =>
         }
-        result
+        Option(result)
       }
-      case wd:WBox =>
-        wd.w.wfn match {
+      case wb:WBox =>
+        wb.w.wfn match {
           case tw:TimeWindowFixedParams =>
           case tuw:TupleWindowFixedParams =>
         }
-        result
-
+        Option(result)
     }
   }
 
@@ -127,7 +157,11 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val omegaSet:Set[WindowAtom] = getOmega(P)
 
     for(omega <- omegaSet){
-      result += exp(omega,t,Fired(D,l,tp,t))
+      val expSet = exp(omega,t,Fired(D,l,tp,t)).getOrElse(Set())
+      if(expSet.nonEmpty) {
+        val expTuple = (expSet.head, omega)
+        result += expTuple
+      }
     }
    result 
   }
