@@ -8,7 +8,8 @@ import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 import lars.core.semantics.streams.{Evaluation, Timeline, S}
 import lars.core.windowfn.WindowFunctionFixedParams
 import lars.core.windowfn.partition.{PartitionWindowParameters, PartitionWindow}
-import lars.core.windowfn.time.{TimeWindowParameters, TimeWindow}
+import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindowParameters, TimeWindow}
+import lars.core.windowfn.tuple.{TupleWindowFixedParams, TupleWindow}
 import lars.strat.Strata
 import lars.tms.cons.{ConsW, ConsStar}
 import lars.tms.incr.Result
@@ -75,38 +76,83 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
   }
 
-  def Expired(l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
-    //TODO
-    Set[(ExtendedAtom,WindowAtom)]()
-  }
-
-  def wAtom(consW: Set[ExtendedAtom], atom:Atom): Option[WindowAtom] = {
-    for (elem <- consW) {
+  def getOmega(P: StdProgram): Set[WindowAtom] = {
+    var result = Set[WindowAtom]() 
+    
+    for(elem <- P.rules.flatMap(_.B)){
      elem match {
-       case wat:WAt =>
-       case wa:WindowAtom => return Option(wa)
-     }
+       case wa:WindowAtom => result += wa
+     } 
     }
-    None
+    result
   }
 
-  def getAt(stdP: StdProgram, a: Atom): Option[WAt] = {
+  def exp(omega: WindowAtom, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): (ExtendedAtom, WindowAtom) = {
+    val result = (fired.head._1, fired.head._2)
+    omega match {
+      case wb:WDiam => {
+        wb.w.wfn match {
+          case tw:TimeWindowFixedParams => {
+            val lower = tw.x.l
+            val upper = tw.x.u
 
-   for(rule <- stdP.rules){
-        rule.B match {
-          case wa:WAt => if(a == wa.a) return Option(wa)
+            if(lower > 0){
+              omega
+            } else {
+
+            }
+          }
+          case tuw:TupleWindowFixedParams =>
+        }
+        result
+      }
+      case wd:WBox =>
+        wd.w.wfn match {
+          case tw:TimeWindowFixedParams =>
+          case tuw:TupleWindowFixedParams =>
+        }
+        result
+
+    }
+  }
+
+  /*
+      * resultSet:Set[Atom,WindowAtom] = Set()
+      * forall(omega){
+      * resultSet.addToSet(a=AtomFrom(omega),omega) where
+      *                   a == exp(omega,t,Fired(l,t)) without Fired(l,t))
+      * }*/
+  def Expired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
+    var result = Set[(ExtendedAtom,WindowAtom)]()
+    val omegaSet:Set[WindowAtom] = getOmega(P)
+
+    for(omega <- omegaSet){
+      result += exp(omega,t,Fired(D,l,tp,t))
+    }
+   result 
+  }
+
+    def Fired(l:Int, time:Int, atom:Atom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
+      var result = Set[(ExtendedAtom,WindowAtom,Int)]()
+      l match {
+        case 0 => None
+        case 1 => {
+          val wat = wAtom(ConsW(P, atom))
+          if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
+
+          val watStrat = getAt(stratum(l), atom)
+          if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
+          Option(result)
+        }
+        case _ => {
+          val pn = PushNow(l)
+          val p = Push(l)
+          result = result ++ Set((pn._1,pn._2,time)) ++ Set((p._1,p._2,time))
+          Option(result)
         }
       }
-    None
-  }
+    }
 
-  def PushNow(l: Int): (ExtendedAtom,WindowAtom) = {
-
-  }
-
-  def Push(l: Int) = {
-
-  }
 
   //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
   def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
@@ -116,38 +162,40 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val Dp = S(tlp,D.v|tlp)
 
     for ((time,atom) <- Dp.getTimestampedAtoms()) {
-    l match {
-      case 0 => Set()
-      case 1 => {
-          val wat = wAtom(ConsW(P, atom), atom)
-          if (wat.nonEmpty) {
-            result = result ++ Set((atom, wat.get, time))
-          }
-          val watStrat = getAt(stratum(l), atom)
-          if (watStrat.nonEmpty) {
-            result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
-          }
-        }
-      case _ => val pn = PushNow(l)
-        result = result ++ Set((pn._1,pn._2,time))
-        if(time <= t) Push(l)
+      result = result ++ Fired(l,time, atom).getOrElse(Set())
     }
-    }
-/*    val Dp = TimeWindow(previousStream,tp+1,TimeWindowParameters(tp+1,t,1))
 
-    val wofp = WindowOperatorFixedParams(TimeWindow.fix(TimeWindowParameters(tp+1,t,1)))
-    val stdPL = stratum(l)
-
-    for ((time,atom) <- Dp.getTimestampedAtoms()) {
-      if (stdPL.contains(atom)) {
-        result = result ++ Set((atom, WAt(wofp, time, atom), time))
-      } else {
-        previousStream = previousStream - (time,atom)
-      }
-    }*/
     result
   }
 
+  def wAtom(consW: Set[ExtendedAtom]): Option[WindowAtom] = {
+    for (elem <- consW) {
+      elem match {
+        case wa:WindowAtom => return Option(wa)
+      }
+    }
+    None
+  }
+
+  def getAt(stdP: StdProgram, a: Atom/*, t:Int*/): Option[WAt] = {
+
+    for(rule <- stdP.rules){
+      val headAndBody = Set(rule.h) ++ rule.B
+      headAndBody match {
+        case wa:WAt => if(a == wa.a /*&& t == wa.t*/) return Option(wa)
+      }
+    }
+    None
+  }
+
+  def PushNow(l: Int): (ExtendedAtom,WindowAtom) = {
+    //TODO
+    (null,null)
+  }
+
+  def Push(l: Int): (ExtendedAtom,WindowAtom) = {
+    //TODO
+  }
   def ExpireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int): Unit = {
     //TODO
   }
