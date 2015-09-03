@@ -202,10 +202,8 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         }
       }
       case _ => {
-        val pn = PushNow(l)
-        val p = Push(l, time)
-        result = result ++ Set((pn._1,pn._2,time)) ++ Set((p._1,p._2,time))
-        Option(result)
+//        val pn = PushNow(l)
+        Option(Push(l,time))
       }
     }
   }
@@ -241,28 +239,8 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     None
   }
 
-  def PushNow(l: Int): Set[(ExtendedAtom,WindowAtom)] = {
-    var result = Set[(ExtendedAtom,WindowAtom)]()
-    for(i <- 1 to l-1) {
-      for (atom <- updated(i)) {
-        result += ((atom,wf(atom, l).get))
-      }
-    }
-    result
-  }
-
-  /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
-  def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
-    for(a <- ConsW(stratum(l),atom)) {
-      a match {
-        case wa:WindowAtom => return Option(wa)
-      }
-    }
-   None
-  }
-
-  def Push(l: Int, t: Int): Set[(ExtendedAtom,WindowAtom)] = {
-    var result = Set[(ExtendedAtom,WindowAtom)]()
+  def Push(l: Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
+    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
     for(i <- 1 to l-1) {
       for (atom <- updated(i)) {
         atom match {
@@ -272,20 +250,44 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
             if(wa.isDefined) {
               val intervals = L.intervals(ata)
               for(interval:ClosedIntInterval <- intervals) {
-                if(ata.t >= interval.lower && ata.t <= interval.upper)
-                  if(aR(atom,wa.get,interval.lower,interval.upper) == t) result += ((ata,wa.get))}
+//                if(interval.contains(ata.t))
+                  if(aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) result += ((ata,wa.get,ata.t))
               }
+            }
           }
+          case a:Atom => val pn = PushNow(l,a); result += ((pn._1,pn._2,t))
         }
-
       }
     }
     result
   }
 
-  def aR(atom: ExtendedAtom, get: WindowAtom, lower: Int, upper: Int): Int = {
-     
-    0
+  def PushNow(l: Int, atom: Atom): (ExtendedAtom,WindowAtom) = {
+    /*    var result = Set[(ExtendedAtom,WindowAtom)]()
+        for(i <- 1 to l-1) {
+          for (atom <- updated(i)) {*/
+    /*result += */(atom,wf(atom, l).get)
+    /*      }
+        }
+        result*/
+  }
+
+  /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
+  def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
+    for(a <- ConsW(stratum(l),atom)) {
+      a match {
+        case wa:WindowAtom => return Option(wa)
+      }
+    }
+    None
+  }
+
+  /*TODO aR for tuple-based windows*/
+  def aR(atom: ExtendedAtom, wa: WindowAtom, lower: Int, upper: Int): ClosedIntInterval = wa.w.wfn match {
+    case twp:TimeWindowFixedParams => twp.x.u match {
+      case 0 => new ClosedIntInterval(lower,upper)
+      case n:Int => new ClosedIntInterval(lower-n,upper-n)
+    }
   }
 
   def ExpireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int): Unit = {
