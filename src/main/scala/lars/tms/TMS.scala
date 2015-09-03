@@ -28,6 +28,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   private val n = stratum.keySet.reduce(math.max)
   private val L = Labels()
   private var previousStream:S = S(Timeline(0,0))
+  private var updated = Map[Int,Set[ExtendedAtom]]()
 
   init()
 
@@ -35,7 +36,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     previousStream = D
     for (l <- 1 to n) {
       var C = Set[WindowAtom]()
-      for ((alpha,omega) <- Expired(l,tp,t)) {
+      for ((alpha,omega) <- Expired(D,l,tp,t)) {
         ExpireInput(alpha,omega,t)
         C = C + omega
       }
@@ -143,7 +144,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def exp(omega: WindowAtom, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): Option[Set[ExtendedAtom]] = {
-    var result = Set[ExtendedAtom]()
+    val result = Set[ExtendedAtom]()
     val atp = q(omega)
 
     omega match {
@@ -191,16 +192,18 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     l match {
       case 0 => None
       case 1 => {
-        val wat = wAtom(ConsW(P, atom))
-        if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
+        for(ea <- ConsW(P, atom)) {
+          val wat = wAtom(ea)
+          if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
 
-        val watStrat = getAt(stratum(l), atom)
-        if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
-        Option(result)
+          val watStrat = getAt(stratum(l), atom)
+          if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
+          Option(result)
+        }
       }
       case _ => {
         val pn = PushNow(l)
-        val p = Push(l)
+        val p = Push(l, time)
         result = result ++ Set((pn._1,pn._2,time)) ++ Set((p._1,p._2,time))
         Option(result)
       }
@@ -222,13 +225,9 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     result
   }
 
-  def wAtom(consW: Set[ExtendedAtom]): Option[WindowAtom] = {
-    for (elem <- consW) {
-      elem match {
-        case wa:WindowAtom => return Option(wa)
-      }
-    }
-    None
+  def wAtom(consW: ExtendedAtom): Option[WindowAtom] = consW match {
+    case wa:WindowAtom => Option(wa)
+    case _ => None
   }
 
   def getAt(stdP: StdProgram, a: Atom/*, t:Int*/): Option[WAt] = {
@@ -242,14 +241,53 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     None
   }
 
-  def PushNow(l: Int): (ExtendedAtom,WindowAtom) = {
-    //TODO
-    (null,null)
+  def PushNow(l: Int): Set[(ExtendedAtom,WindowAtom)] = {
+    var result = Set[(ExtendedAtom,WindowAtom)]()
+    for(i <- 1 to l-1) {
+      for (atom <- updated(i)) {
+        result += ((atom,wf(atom, l).get))
+      }
+    }
+    result
   }
 
-  def Push(l: Int): (ExtendedAtom,WindowAtom) = {
-    //TODO
+  /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
+  def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
+    for(a <- ConsW(stratum(l),atom)) {
+      a match {
+        case wa:WindowAtom => return Option(wa)
+      }
+    }
+   None
   }
+
+  def Push(l: Int, t: Int): Set[(ExtendedAtom,WindowAtom)] = {
+    var result = Set[(ExtendedAtom,WindowAtom)]()
+    for(i <- 1 to l-1) {
+      for (atom <- updated(i)) {
+        atom match {
+          case ata:AtAtom => {
+            var wa = wf(ata,l)
+            if(wa.isEmpty) wa = wf(atom,l)
+            if(wa.isDefined) {
+              val intervals = L.intervals(ata)
+              for(interval:ClosedIntInterval <- intervals) {
+                if(ata.t >= interval.lower && ata.t <= interval.upper)
+                  if(aR(atom,wa.get,interval.lower,interval.upper) == t) result += ((ata,wa.get))}
+              }
+          }
+        }
+
+      }
+    }
+    result
+  }
+
+  def aR(atom: ExtendedAtom, get: WindowAtom, lower: Int, upper: Int): Int = {
+     
+    0
+  }
+
   def ExpireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int): Unit = {
     //TODO
   }
