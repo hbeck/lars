@@ -90,7 +90,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val omegaSet:Set[WindowAtom] = getOmega(P)
 
     for (omega <- omegaSet) {
-      val expSet = exp(omega,t,Fired(D,l,tp,t)).getOrElse(Set())
+      val expSet = exp(omega,t,Fired(l,tp,t)).getOrElse(Set())
       if (expSet.nonEmpty) {
         val expTuple = (expSet.head, omega)
         result += expTuple
@@ -186,28 +186,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         Option(result)
     }
   }
-  
-  def Fired(l:Int, time:Int, atom:Atom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
-    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
-    l match {
-      case 0 => None
-      case 1 => {
-        for(ea <- ConsW(P, atom)) {
-          val wat = wAtom(ea)
-          if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
-
-          val watStrat = getAt(stratum(l), atom)
-          if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
-          Option(result)
-        }
-      }
-      case _ => {
-//        val pn = PushNow(l)
-        Option(Push(l,time))
-      }
-    }
-  }
-
 
   //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
   def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
@@ -221,6 +199,27 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
 
     result
+  }
+
+  /*maybe rename this method to avoid confusion*/
+  def Fired(l:Int, time:Int, atom:Atom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
+    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
+    l match {
+      case 0 => None
+      case 1 => {
+        for(ea <- ConsW(stratum(l), atom)) {
+          val wat = wAtom(ea)
+          if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
+        }
+        val watStrat = getAt(stratum(l), atom)
+        if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
+        Option(result)
+      }
+      case _ => {
+        //        val pn = PushNow(l)
+        Option(Push(l,time))
+      }
+    }
   }
 
   def wAtom(consW: ExtendedAtom): Option[WindowAtom] = consW match {
@@ -238,6 +237,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
     None
   }
+
 
   def Push(l: Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
@@ -282,7 +282,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     None
   }
 
-  /*TODO aR for tuple-based windows*/
+  /*TODO aR for tuple-based windows?*/
   def aR(atom: ExtendedAtom, wa: WindowAtom, lower: Int, upper: Int): ClosedIntInterval = wa.w.wfn match {
     case twp:TimeWindowFixedParams => twp.x.u match {
       case 0 => new ClosedIntInterval(lower,upper)
@@ -295,7 +295,40 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def FireInput(alpha: ExtendedAtom, omega: WindowAtom, t1: Int): Unit = {
-    //TODO
+    alpha match {
+      case ata:AtAtom => if(P.contains(ata)) L.update(ata,Label(in,(t1,t1)))
+    }
+     omega match {
+       case wb:WBox =>
+         wb.w.wfn match {
+           case tw:TimeWindowFixedParams =>
+           case tuw:TupleWindowFixedParams => //TODO
+         }
+       case wd:WDiam =>
+         wd.w.wfn match {
+           case tw:TimeWindowFixedParams => L.update(omega,Label(in,(t1,t1+tw.x.l)))
+           case tuw:TupleWindowFixedParams => //TODO
+         }
+
+     }
+  }
+
+  def tm(b: ExtendedAtom) = L.intervals(b)
+
+  def MinEnd(r:StdRule, t:Int): Int = {
+    var t2Set = Set[Int]()
+    var notAll:Boolean = true
+    for(b <- r.B) {
+      notAll = true
+      for(interval <- tm(b)){
+        if(interval.contains(t)) {
+          notAll = false
+          t2Set += interval.upper
+        }
+      }
+      if(notAll) return t
+    }
+    t2Set.min
   }
 
   //Labels provided globally
