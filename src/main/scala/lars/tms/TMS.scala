@@ -330,25 +330,25 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def UpdateTimestamps(C: Set[WindowAtom], Lp:Labels, l: Int, t: Int): Unit = {
     var ki, ko, i2o, o2i = Set[WindowAtom]()
 
-    for(wa <- C) {
+    for (wa <- C) {
       val newStatus = L.status(wa)
 
-      if(newStatus == Lp.status(wa)) {
-       if(newStatus == in) ki += wa
+      if (newStatus == Lp.status(wa)) {
+       if (newStatus == in) ki += wa
         else ko += wa
       } else {
-        if(newStatus == in) o2i += wa
+        if (newStatus == in) o2i += wa
         else i2o += wa
       }
     }
 
-     for(rule <- stratum(l).rules){
-
+     for (rule <- stratum(l).rules) {
        val u1 = u123(rule, i2o, o2i, false)
        val u2 = u123(rule, ki, ko, true)
        val u3 = u123(rule, ko, ki, true)
-       if(u1 && u2) UpdateTimestamp(rule,in,t)
-       else if(u1 && u3) UpdateTimestamp(rule,out,t)
+       
+       if (u1 && u2) UpdateTimestamp(rule,in,t)
+       else if (u1 && u3) UpdateTimestamp(rule,out,t)
      }
   }
 
@@ -356,11 +356,11 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val bP = rule.Bp
     val bN = rule.Bn
     
-    for(wa <- i2o){
-      if(bP.contains(wa)) return false 
+    for (wa <- i2o) {
+      if (bP.contains(wa)) return false 
     }
-    for(wa <- o2i){
-      if(bN.contains(wa)) return false
+    for (wa <- o2i) {
+      if (bN.contains(wa)) return false
     }
     true
   }*/
@@ -368,11 +368,11 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def u123(rule: StdRule, sSet1: Set[WindowAtom], sSet2: Set[WindowAtom], bool:Boolean): Boolean = {
     val bP = rule.Bp
     val bN = rule.Bn
-    for(wa <- sSet1){
-      if(bP.contains(wa)) return bool
+    for (wa <- sSet1) {
+      if (bP.contains(wa)) return bool
     }
-    for(wa <- sSet2){
-      if(bN.contains(wa)) return bool
+    for (wa <- sSet2) {
+      if (bN.contains(wa)) return bool
     }
     !bool
   }
