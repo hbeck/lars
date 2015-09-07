@@ -1,23 +1,19 @@
 package lars.tms
 
 import lars.core.ClosedIntInterval
-import lars.core.semantics.formulas.WindowOperators.{ch2, StreamChoice}
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 import lars.core.semantics.streams.{Evaluation, Timeline, S}
-import lars.core.windowfn.WindowFunctionFixedParams
-import lars.core.windowfn.partition.{PartitionWindowParameters, PartitionWindow}
 import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindowParameters, TimeWindow}
 import lars.core.windowfn.tuple.{TupleWindowFixedParams, TupleWindow}
 import lars.strat.Strata
 import lars.tms.cons.{ConsW, ConsStar}
 import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
-import lars.tms.status.{Label, Labels}
+import lars.tms.status.{Status, Label, Labels}
 import lars.tms.status.Status.{in, unknown, out}
-import lars.tms.status.rule.fVal
 
 /**
  * Created by hb on 6/25/15.
@@ -27,13 +23,12 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   private val stratum: Map[Int, StdProgram] = Strata(P)
   private val n = stratum.keySet.reduce(math.max)
   private val L = Labels()
-  private var previousStream:S = S(Timeline(0,0))
   private var updated = Map[Int,Set[ExtendedAtom]]()
 
   init()
 
   def answerUpdate(t: Int, D: S, tp: Int): Result = {
-    previousStream = D
+    val Lp = L.copy()
     for (l <- 1 to n) {
       var C = Set[WindowAtom]()
       for ((alpha,omega) <- Expired(D,l,tp,t)) {
@@ -44,7 +39,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         FireInput(alpha,omega,t1)
         C = C + omega
       }
-      UpdateTimestamps(C,l,t)
+      UpdateTimestamps(C,Lp,l,t)
       SetUnknown(l,t)
       var madeNewAssignment = false
       do {
@@ -53,7 +48,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         if (opt.isEmpty) {
           return fail
         }
-        madeNewAssignment=opt.get
+        madeNewAssignment=opt.get.copy()
       } while (madeNewAssignment)
       SetOpenOrdAtomsOut(l,t)
       PushUp(l,t)
@@ -90,7 +85,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val omegaSet:Set[WindowAtom] = getOmega(P)
 
     for (omega <- omegaSet) {
-      val expSet = exp(omega,t,Fired(l,tp,t)).getOrElse(Set())
+      val expSet = exp(omega,t,Fired(l,t,omega.atom).get).getOrElse(Set())
       if (expSet.nonEmpty) {
         val expTuple = (expSet.head, omega)
         result += expTuple
@@ -207,7 +202,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     l match {
       case 0 => None
       case 1 => {
-        for(ea <- ConsW(stratum(l), atom)) {
+        for (ea <- ConsW(stratum(l), atom)) {
           val wat = wAtom(ea)
           if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
         }
@@ -241,17 +236,17 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def Push(l: Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
-    for(i <- 1 to l-1) {
+    for (i <- 1 to l-1) {
       for (atom <- updated(i)) {
         atom match {
           case ata:AtAtom => {
             var wa = wf(ata,l)
-            if(wa.isEmpty) wa = wf(atom,l)
-            if(wa.isDefined) {
+            if (wa.isEmpty) wa = wf(atom,l)
+            if (wa.isDefined) {
               val intervals = L.intervals(ata)
-              for(interval:ClosedIntInterval <- intervals) {
-//                if(interval.contains(ata.t))
-                  if(aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) result += ((ata,wa.get,ata.t))
+              for (interval:ClosedIntInterval <- intervals) {
+//                if (interval.contains(ata.t))
+                  if (aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) result += ((ata,wa.get,ata.t))
               }
             }
           }
@@ -264,7 +259,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def PushNow(l: Int, atom: Atom): (ExtendedAtom,WindowAtom) = {
     /*    var result = Set[(ExtendedAtom,WindowAtom)]()
-        for(i <- 1 to l-1) {
+        for (i <- 1 to l-1) {
           for (atom <- updated(i)) {*/
     /*result += */(atom,wf(atom, l).get)
     /*      }
@@ -274,7 +269,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
   def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
-    for(a <- ConsW(stratum(l),atom)) {
+    for (a <- ConsW(stratum(l),atom)) {
       a match {
         case wa:WindowAtom => return Option(wa)
       }
@@ -296,12 +291,12 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def FireInput(alpha: ExtendedAtom, omega: WindowAtom, t1: Int): Unit = {
     alpha match {
-      case ata:AtAtom => if(P.contains(ata)) L.update(ata,Label(in,(t1,t1)))
+      case ata:AtAtom => if (P.contains(ata)) L.update(ata,Label(in,(t1,t1)))
     }
      omega match {
        case wb:WBox =>
          wb.w.wfn match {
-           case tw:TimeWindowFixedParams =>
+           case tw:TimeWindowFixedParams => //TODO
            case tuw:TupleWindowFixedParams => //TODO
          }
        case wd:WDiam =>
@@ -318,22 +313,34 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def MinEnd(r:StdRule, t:Int): Int = {
     var t2Set = Set[Int]()
     var notAll:Boolean = true
-    for(b <- r.B) {
+    for (b <- r.B) {
       notAll = true
-      for(interval <- tm(b)){
-        if(interval.contains(t)) {
+      for (interval <- tm(b)) {
+        if (interval.contains(t)) {
           notAll = false
           t2Set += interval.upper
         }
       }
-      if(notAll) return t
+      if (notAll) return t
     }
     t2Set.min
   }
 
   //Labels provided globally
-  def UpdateTimestamps(C: Set[WindowAtom], l: Int, t: Int): Unit = {
+  def UpdateTimestamps(C: Set[WindowAtom], Lp:Labels, l: Int, t: Int): Unit = {
     //TODO
+  }
+
+  def UpdateTimestamp(r:StdRule, s:Status, t:Int) = {
+    if (L.label(r.h) == s) {
+      var newIntervals = collection.mutable.Set[ClosedIntInterval]()
+      val tStar = MinEnd(r,t)
+      /*really do that for all interval end-points?*/
+      for (interval <- L.intervals(r.h)) {
+        newIntervals += new ClosedIntInterval(interval.lower,tStar)
+      }
+      val newLabel = new Label(s,newIntervals)
+    }
   }
 
   def SetUnknown(l: Int, t: Int): Unit = {
