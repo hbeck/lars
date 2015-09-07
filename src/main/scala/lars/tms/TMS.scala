@@ -48,7 +48,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         if (opt.isEmpty) {
           return fail
         }
-        madeNewAssignment=opt.get.copy()
+        madeNewAssignment=opt.get
       } while (madeNewAssignment)
       SetOpenOrdAtomsOut(l,t)
       PushUp(l,t)
@@ -328,7 +328,65 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   //Labels provided globally
   def UpdateTimestamps(C: Set[WindowAtom], Lp:Labels, l: Int, t: Int): Unit = {
-    //TODO
+    var ki, ko, i2o, o2i = Set[WindowAtom]()
+
+    for(wa <- C) {
+      val newStatus = L.status(wa)
+
+      if(newStatus == Lp.status(wa)) {
+       if(newStatus == in) ki += wa
+        else ko += wa
+      } else {
+        if(newStatus == in) o2i += wa
+        else i2o += wa
+      }
+    }
+
+     for(rule <- stratum(l).rules){
+
+       val u1 = U1(rule, i2o, o2i)
+       val u2 = U2(rule, ki, ko)
+       val u3 = U3(rule, ko, ki)
+       if(u1 && u2) UpdateTimestamp(rule,in,t)
+       else if(u1 && u3) UpdateTimestamp(rule,out,t)
+     }
+  }
+
+  def U1(rule: StdRule, i2o: Set[WindowAtom], o2i: Set[WindowAtom]): Boolean = {
+    val bP = rule.Bp
+    val bN = rule.Bn
+    
+    for(wa <- i2o){
+      if(bP.contains(wa)) return false 
+    }
+    for(wa <- o2i){
+      if(bN.contains(wa)) return false
+    }
+    true
+  }
+
+  def U2(rule: StdRule, ki: Set[WindowAtom], ko: Set[WindowAtom]): Boolean = {
+    val bP = rule.Bp
+    val bN = rule.Bn
+    for(wa <- ki){
+      if(bP.contains(wa)) return true
+    }
+    for(wa <- ko){
+      if(bN.contains(wa)) return true
+    }
+    false
+  }
+
+  def U3(rule: StdRule, ko: Set[WindowAtom], ki: Set[WindowAtom]): Boolean = {
+    val bP = rule.Bp
+    val bN = rule.Bn
+    for(wa <- ko){
+      if(bP.contains(wa)) return true
+    }
+    for(wa <- ki){
+      if(bN.contains(wa)) return true
+    }
+    false
   }
 
   def UpdateTimestamp(r:StdRule, s:Status, t:Int) = {
