@@ -26,7 +26,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   private val n = stratum.keySet.reduce(math.max)
   private val L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
-  private var waOperators = HashMap[WindowFunctionFixedParams, WindowAtomOperators]()
+  private var waOperators = HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators]()
 
   init()
 
@@ -259,7 +259,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
               for (interval:ClosedIntInterval <- intervals) {
 //                if (interval.contains(ata.t))
 //                  if (aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) result += ((ata,wa.get,ata.t))
-                if (waOperators(wa.get.w.wfn).aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) {
+                if (waOperators(wa.get.w.wfn.getClass).aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) {
                   result += ((ata, wa.get, ata.t))
                 }
               }
