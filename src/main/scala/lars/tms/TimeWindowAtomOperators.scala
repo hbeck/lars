@@ -2,7 +2,7 @@ package lars.tms
 
 import lars.core.ClosedIntInterval
 import lars.core.semantics.formulas.ExtendedAtom
-import lars.core.semantics.programs.extatoms.{WBox, WDiam, WindowAtom}
+import lars.core.semantics.programs.extatoms.{AtAtom, WBox, WDiam, WindowAtom}
 import lars.core.windowfn.WindowFunctionFixedParams
 import lars.core.windowfn.time.TimeWindowFixedParams
 import lars.tms.status.Labels
@@ -52,6 +52,20 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
 
   def q(omega: WindowAtom, L:Labels): Map[ExtendedAtom,Set[Int]] = {
     var result = collection.mutable.HashMap[ExtendedAtom,Set[Int]]()
+/*    var res = Set[(ExtendedAtom,Int)]()
+    val c = omega.atom
+
+    if(L.status(c) == in){
+      val iv = L.intervals(c)
+      for(i <- iv) {
+
+        for(k <- i.lower to i.upper) {
+          res += ((c,k))
+        }
+      }
+
+    }*/
+
     val as = omega.fm.atoms()
 
     for (a <- as) {
@@ -75,5 +89,15 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
         case 0 => new ClosedIntInterval(lower, upper)
         case n: Int => new ClosedIntInterval(lower - n, upper - n)
       }
+  }
+
+  override def SIn(wfn: WindowFunctionFixedParams, t: Int, tLabel: Set[ClosedIntInterval]): ClosedIntInterval = {
+
+    new ClosedIntInterval(0,0)
+  }
+
+  override def SOut(wfn: WindowFunctionFixedParams, t: Int): ClosedIntInterval = {
+
+    new ClosedIntInterval(0,0)
   }
 }
