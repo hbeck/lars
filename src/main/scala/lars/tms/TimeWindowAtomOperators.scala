@@ -1,12 +1,15 @@
 package lars.tms
 
 import lars.core.ClosedIntInterval
-import lars.core.semantics.formulas.ExtendedAtom
+import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 import lars.core.semantics.programs.extatoms.{AtAtom, WBox, WDiam, WindowAtom}
+import lars.core.semantics.streams.S
 import lars.core.windowfn.WindowFunctionFixedParams
 import lars.core.windowfn.time.TimeWindowFixedParams
 import lars.tms.status.Labels
 import lars.tms.status.Status.in
+
+import scala.collection.parallel.mutable
 
 /**
  * Created by et on 09.09.15.
@@ -50,23 +53,19 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
     Option(result)
   }
 
-  def q(omega: WindowAtom, L:Labels): Map[ExtendedAtom,Set[Int]] = {
-    var result = collection.mutable.HashMap[ExtendedAtom,Set[Int]]()
-/*    var res = Set[(ExtendedAtom,Int)]()
+  def q(omega: WindowAtom, L:Labels): Set[Int] = {
+//    var result = collection.mutable.HashMap[ExtendedAtom,Set[Int]]()
+    var res = Set[Int]()
     val c = omega.atom
 
     if(L.status(c) == in){
-      val iv = L.intervals(c)
-      for(i <- iv) {
-
-        for(k <- i.lower to i.upper) {
-          res += ((c,k))
-        }
+      for(i <- L.intervals(c)) {
+        res = res ++ i.toSeq.toSet
       }
+    }
+    res
 
-    }*/
-
-    val as = omega.fm.atoms()
+/*    val as = omega.fm.atoms()
 
     for (a <- as) {
       var tmp = Set[Int]()
@@ -79,7 +78,7 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
       }
       result += (a -> tmp)
     }
-    result.toMap
+    result.toMap*/
   }
 
   override def aR(atom: ExtendedAtom, wa: WindowAtom, lower: Int, upper: Int): ClosedIntInterval = wa.w.wfn match {
@@ -91,9 +90,26 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
       }
   }
 
-  override def SIn(wfn: WindowFunctionFixedParams, t: Int, tLabel: Set[ClosedIntInterval]): ClosedIntInterval = {
+   override def SIn(wa: WindowAtom, t: Int, l: Int, D: S, tm: Set[ClosedIntInterval]): Option[ClosedIntInterval] = wa.w.wfn match {
+     case wfn: TimeWindowFixedParams =>
 
-    new ClosedIntInterval(0,0)
+       val N = wfn.x.l
+
+       wa match {
+         case wd:WDiam => Option(new ClosedIntInterval(t, t+N))
+         case wb:WBox =>
+           l match {
+           case 1 =>
+           for (t1 <- math.max (0, t - N) to t) {
+           if (! D.v (t1).contains (wa.atom) ) return None
+           }
+           return Option (new ClosedIntInterval (t, t) )
+           case _ =>
+           if (tm.contains (new ClosedIntInterval (math.max (0, t - N), t) ) )
+           return Option (new ClosedIntInterval (t, t) )
+           }
+       }
+       None
   }
 
   override def SOut(wfn: WindowFunctionFixedParams, t: Int): ClosedIntInterval = {

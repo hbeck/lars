@@ -40,7 +40,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         C = C + omega
       }
       for ((alpha,omega,t1) <- Fired(D,l,tp,t)) {
-        FireInput(alpha,omega,t1)
+        FireInput(alpha,omega,t1,l,D)
         C = C + omega
       }
       UpdateTimestamps(C,Lp,l,t)
@@ -295,20 +295,14 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     //TODO
   }
 
-  def FireInput(alpha: ExtendedAtom, omega: WindowAtom, t1: Int): Unit = {
+  def FireInput(alpha: ExtendedAtom, omega: WindowAtom, t1: Int, l:Int, D:S): Unit = {
     alpha match {
       case ata:AtAtom =>
         if (P.contains(ata)) L.update(ata,Label(in,(t1,t1)))
     }
-    omega match {
-      case wd:WDiam =>
-        val timelabels = L.intervals(alpha).filter(_.contains(t1)).toSet
-        val newInterval = waOperators(omega.w.wfn.getClass).SIn(omega.w.wfn,t1,timelabels)
-        L.update(omega,Label(in,(newInterval.lower,newInterval.upper)))
-      case wb:WBox =>
-
-    }
-    //TODO
+    val timelabels = L.intervals(alpha).filter(_.contains(t1)).toSet
+    val newInterval = waOperators(omega.w.wfn.getClass).SIn(omega.w.wfn,t1,timelabels,l,D)
+    L.update(omega,Label(in,(newInterval.lower,newInterval.upper)))
   }
 
   def tm(b: ExtendedAtom) = L.intervals(b)
