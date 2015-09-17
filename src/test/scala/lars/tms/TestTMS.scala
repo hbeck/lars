@@ -8,7 +8,7 @@ import lars.core.windowfn.time.TimeWindow
 import org.scalatest.FunSuite
 
 /**
- * Created by nechtan on 24.08.15.
+ * Created by et on 24.08.15.
  */
 class TestTMS  extends FunSuite {
 
@@ -44,4 +44,15 @@ class TestTMS  extends FunSuite {
 
   val P = StdProgram(Set(r1g,r2g,r3,r4,r5))
 
+
+  test("Exp15"){
+
+    val r2p = StdRule(AtAtom(m(44.1),expTrM),Set(WAt(wop5,m(39.1),tramB),on))
+    val Pp = StdProgram(Set(r2p))
+
+    val t = m(39.7)
+
+    val tms = TMS
+    tms.apply(Pp).init()
+  }
 }

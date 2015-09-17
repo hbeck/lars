@@ -15,6 +15,7 @@ import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
 import lars.tms.status.{Status, Label, Labels}
 import lars.tms.status.Status.{in, unknown, out}
+import scala.collection.mutable
 import scala.collection.mutable.HashMap
 
 /**
@@ -26,12 +27,13 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   private val n = stratum.keySet.reduce(math.max)
   private val L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
-  private var waOperators = HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators]()
+  private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> new TimeWindowAtomOperators)
 
   init()
 
-  def answerUpdate(t: Int, D: S, tp: Int, wAOp: HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators]): Result = {
-    waOperators = wAOp
+  def answerUpdate(t: Int, D: S, tp: Int, wAOp:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap()): Result = {
+//    if(wAOp.nonEmpty) waOperators = wAOp
+    waOperators ++= wAOp
     val Lp = L.copy()
     for (l <- 1 to n) {
       var C = Set[WindowAtom]()
@@ -62,11 +64,8 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def init() = {
     initLabels()
-    //Where does the map come from?
-    var c = HashMap[Class[_ <: WindowFunctionFixedParams], WindowAtomOperators]()
-    c += (TimeWindowFixedParams(TimeWindowParameters(0)).getClass -> new TimeWindowAtomOperators())
 
-    answerUpdate(0,S(Timeline(0,0)),0,c) //t'?
+    answerUpdate(0,S(Timeline(0,0)),0) //t'?
   }
 
   def initLabels() = {
@@ -93,13 +92,13 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val omegaSet:Set[WindowAtom] = getOmega(P)
 
     for (omega <- omegaSet) {
-      //TODO
-//      val expSet = exp(omega,t,Fired(l,t,omega.atom).get).getOrElse(Set())
+      for (t1 <- tp to t) {
+        val expSet = waOperators(omega.wop.wfn.getClass).exp(omega, L, t1, Fired(l, t1, omega.atom).get).getOrElse(Set())
 
-      val expSet = waOperators(omega.w.wfn.getClass).exp(omega,L,t,Fired(l,t,omega.atom).get).getOrElse(Set())
-      if (expSet.nonEmpty) {
-        val expTuple = (expSet.head, omega)
-        result += expTuple
+        if (expSet.nonEmpty) {
+          val expTuple = (expSet.head, omega)
+          result += expTuple
+        }
       }
     }
    result 
@@ -115,87 +114,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
     result
   }
-/*
-
-  def q(omega: WindowAtom): Map[ExtendedAtom,Set[Int]] = {
-    var result = collection.mutable.HashMap[ExtendedAtom,Set[Int]]()
-    val as = omega.fm.atoms()
-
-    for (a <- as) {
-      var tmp = Set[Int]()
-      if (L.status(a) == in) {
-        val intervals = L.intervals(a)
-        for (interval <- intervals) {
-          val tp = interval.upper
-          tmp = tmp ++ Set(tp)
-        }
-      }
-      result += (a -> tmp)
-    }
-    result.toMap
-  }
-*/
-/*
-  def mapInAtoms(omega: WindowAtom, fired: Set[(ExtendedAtom, WindowAtom, Int)], t: Int, atp: Map[ExtendedAtom, Set[Int]]): Option[Set[ExtendedAtom]] = {
-    var result = Set[ExtendedAtom]()
-
-    for (atom <- omega.fm.atoms()) {
-      if (!fired.contains((atom, omega, t))) {
-        for (time <- atp(atom)) {
-          if (time < t) {
-            result += atom
-          }
-        }
-      }
-    }
-    Option(result)
-  }*/
-/*
-
-  def exp(omega: WindowAtom, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): Option[Set[ExtendedAtom]] = {
-    val result = Set[ExtendedAtom]()
-    val atp = q(omega)
-
-    omega match {
-      case wd:WDiam => {
-        wd.w.wfn match {
-          case tw:TimeWindowFixedParams => {
-            var N = 0
-            val lower = tw.x.l
-            val upper = tw.x.u
-            if (lower == 0) {
-              N = upper
-            } else {
-              N = lower * -1
-            }
-
-            return mapInAtoms(omega,fired,t+N,atp)
-          }
-          case tuw:TupleWindowFixedParams =>
-        }
-        Option(result)
-      }
-      case wb:WBox =>
-        wb.w.wfn match {
-          case tw:TimeWindowFixedParams => {
-            return mapInAtoms(omega,fired,t,atp)
-
-            /*for (atom <- omega.fm.atoms()) {
-              if (!fired.contains((atom, omega, t))) {
-                for (time <- atp(atom)) {
-                  if (time < t) {
-                    result += atom
-                  }
-                }
-              }
-            }*/
-          }
-          case tuw:TupleWindowFixedParams =>
-        }
-        Option(result)
-    }
-  }
-*/
 
   //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
   def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
@@ -211,12 +129,11 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     result
   }
 
-  /*maybe rename this method to avoid confusion*/
   def Fired(l:Int, time:Int, atom:Atom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
     l match {
       case 0 => None
-      case 1 => {
+      case 1 =>
         for (ea <- ConsW(stratum(l), atom)) {
           val wat = wAtom(ea)
           if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
@@ -224,7 +141,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         val watStrat = getAt(stratum(l), atom, time)
         if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom), watStrat.get, watStrat.get.t))
         Option(result)
-      }
       case _ => Option(Push(l,time))
     }
   }
@@ -251,20 +167,17 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     for (i <- 1 to l-1) {
       for (atom <- updated(i)) {
         atom match {
-          case ata:AtAtom => {
+          case ata:AtAtom =>
             var wa = wf(ata,l)
             if (wa.isEmpty) wa = wf(atom,l)
             if (wa.isDefined) {
               val intervals = L.intervals(ata)
               for (interval:ClosedIntInterval <- intervals) {
-//                if (interval.contains(ata.t))
-//                  if (aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) result += ((ata,wa.get,ata.t))
-                if (waOperators(wa.get.w.wfn.getClass).aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) {
+                if (waOperators(wa.get.wop.wfn.getClass).aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) {
                   result += ((ata, wa.get, ata.t))
                 }
               }
             }
-          }
           case a:Atom => val pn = PushNow(l,a); result += ((pn._1,pn._2,t))
         }
       }
@@ -283,26 +196,29 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
     None
   }
-/*
-  def aR(atom: ExtendedAtom, wa: WindowAtom, lower: Int, upper: Int): ClosedIntInterval = wa.w.wfn match {
-    case twp:TimeWindowFixedParams => twp.x.u match {
-      case 0 => new ClosedIntInterval(lower,upper)
-      case n:Int => new ClosedIntInterval(lower-n,upper-n)
-    }
-  }*/
 
   def ExpireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int): Unit = {
-    //TODO
+    var s_out = new ClosedIntInterval(0,0)
+
+    val tInOmega = tm(omega).filter(e => e.upper > t)
+    if(tInOmega.isEmpty) s_out = waOperators(omega.wop.wfn.getClass).SOut(omega,t)
+    L.update(alpha, Label(out,(s_out.lower,s_out.upper)))
   }
 
   def FireInput(alpha: ExtendedAtom, omega: WindowAtom, t1: Int, l:Int, D:S): Unit = {
+    var s_in:Option[ClosedIntInterval] = None
+
     alpha match {
       case ata:AtAtom =>
         if (P.contains(ata)) L.update(ata,Label(in,(t1,t1)))
+        s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,ata.t,l,D,tm(alpha).toSet)
+        val tmp = L.intervals(ata).filter(e => e.lower <= s_in.get.upper || e.upper >= s_in.get.lower)
+        /*tmp may contain more than one element, if i am wrong*/
+       if(tmp.nonEmpty) s_in = Option(tmp.head)
+      case _ =>
+        s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,t1,l,D,tm(alpha).toSet)
     }
-    val timelabels = L.intervals(alpha).filter(_.contains(t1)).toSet
-    val newInterval = waOperators(omega.w.wfn.getClass).SIn(omega.w.wfn,t1,timelabels,l,D)
-    L.update(omega,Label(in,(newInterval.lower,newInterval.upper)))
+    if(s_in.isDefined) L.update(omega,Label(in,(s_in.get.lower,s_in.get.upper)))
   }
 
   def tm(b: ExtendedAtom) = L.intervals(b)

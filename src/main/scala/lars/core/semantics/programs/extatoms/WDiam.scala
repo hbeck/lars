@@ -5,8 +5,8 @@ import lars.core.semantics.formulas._
 /**
  * Created by hb on 7/14/15.
  */
-class WDiam(override val w: WindowOperatorFixedParams, val a: Atom) extends WindowAtom(w,Diam(a)) with ExtendedAtom {
-  override def toString = w + "◇" + a
+class WDiam(override val wop: WindowOperatorFixedParams, val a: Atom) extends WindowAtom(wop,Diam(a)) with ExtendedAtom {
+  override def toString = wop + "◇" + a
   override def atom = a
 }
 object WDiam {
