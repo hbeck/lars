@@ -58,7 +58,7 @@ class TestTMS  extends FunSuite {
     val trmBW = WAt(wop5, m(39.1), tramB)
     val onAtom = on
 
-    val r2p = StdRule(expTrmAt, Set(trmBW, onAtom))
+    val r2p = r2g //StdRule(expTrmAt, Set(trmBW, onAtom))
     val Pp = StdProgram(Set(r2p))
 
     val consw = ConsW(Pp, trmBAt)
@@ -94,11 +94,12 @@ class TestTMS  extends FunSuite {
     val trmBW = WAt(wop5, m(39.1), tramB)
     val onAtom = on
 
-    val v = Evaluation(Map(m(44.1) -> Set(expTrM), m(39.1) -> Set(tramB,on)))
-    val D = S(T,v)
+/*    val v = Evaluation(Map(m(44.1) -> Set(expTrM), m(39.1) -> Set(tramB,on)))
+    val D = S(T,v)*/
 
     val r2p = StdRule(expTrmAt, Set(trmBW, onAtom))
-    val Pp = StdProgram(Set(r2p))
+    val Pp1 = StdProgram(Set(r2p))
+//    val Pp2 = StdProgram(StdRule(Set(WDiam(wopP5,expTrM))))
 
     val ltram = Label(in, (m(39.1), m(44.1)))
     val lOn = Label(in, (m(39.7), m(40.7)))
@@ -110,11 +111,10 @@ class TestTMS  extends FunSuite {
     val tmsInit = tms.apply(P)
     tmsInit.initLabels()
 
-
 //    tmsInit.L = L
+//    val strat = Map[Int,StdProgram] = Map(1 -> Pp1, 2 -> Pp2)
 
-
-    val answerupdate = tmsInit.answerUpdate(t,D,0)
+    val answerupdate = tmsInit.answerUpdate(t,D,m(34))
     println(answerupdate)
 
 

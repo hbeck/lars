@@ -18,7 +18,9 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
   override def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): Option[Set[ExtendedAtom]] = omega.wop.wfn match {
     case wfn:TimeWindowFixedParams =>
 
+      println(L)
     val atp = q(omega, L)
+      println("atp: "+atp)
 
     omega match {
       case wd:WDiam =>
