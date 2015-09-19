@@ -24,7 +24,7 @@ import scala.collection.mutable.HashMap
 case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   private val stratum: Map[Int, StdProgram] = Strata(P)
-  private var n = stratum.keySet.reduce(math.max)
+  private val n = stratum.keySet.reduce(math.max)
   var L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
   private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> new TimeWindowAtomOperators)
@@ -33,20 +33,26 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def answerUpdate(t: Int, D: S, tp: Int, wAOp:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap()): Result = {
 //    if(wAOp.nonEmpty) waOperators = wAOp
+    println("initD: "+D)
+    println("stratum: "+stratum)
     waOperators ++= wAOp
     val Lp = L.copy()
     for (l <- 1 to n) {
       var C = Set[WindowAtom]()
+      println(l)
+//      println("expired: "+Expired(D,l,tp,t))
       for ((alpha,omega) <- Expired(D,l,tp,t)) {
+        println(alpha +" : "+omega)
         ExpireInput(alpha,omega,t)
         C = C + omega
       }
+      println("fired: "+Fired(D,l,tp,t))
       for ((alpha,omega,t1) <- Fired(D,l,tp,t)) {
         FireInput(alpha,omega,t1,l,D)
         C = C + omega
       }
       UpdateTimestamps(C,Lp,l,t)
-      SetUnknown(l,t)
+/*      SetUnknown(l,t)
       var madeNewAssignment = false
       do {
         if (SetRule(l,t) == fail) return fail
@@ -57,13 +63,14 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         madeNewAssignment=opt.get
       } while (madeNewAssignment)
       SetOpenOrdAtomsOut(l,t)
-      PushUp(l,t)
+      PushUp(l,t)*/
     }
     success
   }
 
   def init() = {
     initLabels()
+    println("initL: "+L)
 
 //    answerUpdate(0,S(Timeline(0,0)),0) //t'?
   }
@@ -172,21 +179,22 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def Push(l: Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
     for (i <- 1 to l-1) {
-      if(updated.contains(i))
-      for (atom <- updated(i)) {
-        atom match {
-          case ata:AtAtom =>
-            var wa = wf(ata,l)
-            if (wa.isEmpty) wa = wf(atom,l)
-            if (wa.isDefined) {
-              val intervals = L.intervals(ata)
-              for (interval:ClosedIntInterval <- intervals) {
-                if (waOperators(wa.get.wop.wfn.getClass).aR(atom,wa.get,interval.lower,interval.upper).contains(ata.t)) {
-                  result += ((ata, wa.get, ata.t))
+      if (updated.contains(i)){
+        for (atom <- updated(i)) {
+          atom match {
+            case ata: AtAtom =>
+              var wa = wf(ata, l)
+              if (wa.isEmpty) wa = wf(atom, l)
+              if (wa.isDefined) {
+                val intervals = L.intervals(ata)
+                for (interval: ClosedIntInterval <- intervals) {
+                  if (waOperators(wa.get.wop.wfn.getClass).aR(atom, wa.get, interval.lower, interval.upper).contains(ata.t)) {
+                    result += ((ata, wa.get, ata.t))
+                  }
                 }
               }
-            }
-          case a:Atom => val pn = PushNow(l,a); result += ((pn._1,pn._2,t))
+            case a: Atom => val pn = PushNow(l, a); result += ((pn._1, pn._2, t))
+          }
         }
       }
     }

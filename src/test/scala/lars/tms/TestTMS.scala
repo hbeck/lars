@@ -94,6 +94,9 @@ class TestTMS  extends FunSuite {
     val trmBW = WAt(wop5, m(39.1), tramB)
     val onAtom = on
 
+    val v = Evaluation(Map(m(44.1) -> Set(expTrM), m(39.1) -> Set(tramB,on)))
+    val D = S(T,v)
+
     val r2p = StdRule(expTrmAt, Set(trmBW, onAtom))
     val Pp = StdProgram(Set(r2p))
 
@@ -110,10 +113,7 @@ class TestTMS  extends FunSuite {
 
 //    tmsInit.L = L
 
-    println("L: "+tmsInit.L)
-    println("t: "+t)
-    println("Expired: "+tmsInit.Expired(D,1,0,t))
-    println("Fired: "+tmsInit.Fired(D,1,0,t))
+
     val answerupdate = tmsInit.answerUpdate(t,D,0)
     println(answerupdate)
 
