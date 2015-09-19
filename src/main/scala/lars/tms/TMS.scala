@@ -15,7 +15,7 @@ import lars.tms.acons.ACons
 import lars.tms.cons.{Cons, ConsW, ConsStar}
 import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
-import lars.tms.status.rule.{fInval, fVal}
+import lars.tms.status.rule.{ufVal, fInval, fVal}
 import lars.tms.status.{Status, Label, Labels}
 import lars.tms.status.Status.{in, unknown, out}
 import lars.tms.supp.SuppAt
@@ -392,12 +392,42 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def MakeAssignment(l: Int, t: Int): Option[Boolean] = {
-    //TODO
-    None
+    ACons(stratum(l),L,getA(l),t).foreach(alpha =>
+      if(L.status(alpha) == unknown){
+
+        val ph = PH(stratum(l),alpha)
+        if(ph.exists(r => ufVal(L,r))) {
+          L.update(alpha,Label(in,(t,t)))
+          for(beta <- ph.find(r => ufVal(L,r)).get.Bn){
+            if(L.status(beta) == unknown) L.update(beta,Label(out,(t,t)))
+          }
+          UpdateOrdAtom(alpha,in)
+          updated(l) += alpha
+          /*update supp+(alpha) as defined*/
+          return Option(false)
+        } else {
+          L.update(alpha,Label(out,(t,t)))
+          ph.foreach(r =>
+            r.Bp.foreach(b =>
+              if(L.status(b) == unknown) L.update(b,Label(out,(t,t)))
+            )
+          )
+          UpdateOrdAtom(alpha,out)
+          /*update supp-(alpha) as defined*/
+          return Option(false)
+        }
+      })
+    Option(true)
   }
 
   def SetOpenOrdAtomsOut(l: Int, t: Int): Unit = {
-    //TODO
+    stratum(l).rules.foreach(rule =>
+      (rule.B ++ Set(rule.h)).foreach({
+        case wa:WindowAtom => return
+        case a:ExtendedAtom =>
+          if (L.status(a) == unknown) L.update(a, Label(out, (t, t)))
+      })
+    )
   }
 
   def PushUp(l: Int, t: Int): Unit = {
