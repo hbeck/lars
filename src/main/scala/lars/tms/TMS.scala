@@ -12,12 +12,13 @@ import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindowParameters, Tim
 import lars.core.windowfn.tuple.{TupleWindowFixedParams, TupleWindow}
 import lars.strat.Strata
 import lars.tms.acons.ACons
-import lars.tms.cons.{ConsW, ConsStar}
+import lars.tms.cons.{Cons, ConsW, ConsStar}
 import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
-import lars.tms.status.rule.fVal
+import lars.tms.status.rule.{fInval, fVal}
 import lars.tms.status.{Status, Label, Labels}
 import lars.tms.status.Status.{in, unknown, out}
+import lars.tms.supp.SuppAt
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
 
@@ -75,7 +76,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def addToUpdated(atom: ExtendedAtom, l: Int) = {
-    if(stratum(l).rules.filter(r => r.h == atom).nonEmpty) updated(l) += atom
+    if(stratum(l).rules.exists(_.h == atom)) updated(l) += atom
   }
 
   def init() = {
@@ -310,7 +311,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def SetUnknown(l: Int, t: Int): Unit = {
     val k = ACons(stratum(l),L,getA(l),t)
     k.foreach(f =>
-      if(L.intervals(f).filter(_.contains(t)).isEmpty)
+      if(!L.intervals(f).exists(_.contains(t)))
         L.update(f,Label(unknown,L.intervals(f)))
     )
   }
@@ -333,18 +334,43 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     A
   }
 
-  def SetHead(alpha: ExtendedAtom, l: Int, t: Int) = {
-    var rr=Set[StdRule]()
+  def SetHead(alpha: ExtendedAtom, l: Int, t: Int): Unit = {
     if(PH(stratum(l),alpha).exists(r => fVal(L,r))) {
-      for(rule <- PH(stratum(l),alpha)) {
-        if(fVal(L,rule)) rr += rule
-      }
-      var minSet = Set[Int]()
-      rr.foreach(r => minSet += MinEnd(r,t))
-      val tStar = minSet.max
+
+      val tStar = fRuleInterval(PH(stratum(l),alpha),t).max
       L.update(alpha,Label(in,(t,tStar)))
       UpdateOrdAtom(alpha,in)
+      alpha match {
+        case wa:WindowAtom =>
+        case _ =>
+          val suppAt = SuppAt(stratum(l),L,alpha)
+          suppAt.foreach({case ata:AtAtom =>
+              L.intervals(ata) += new ClosedIntInterval(ata.t,ata.t)
+          })
+      }
+      updated(l) += alpha
+      /*Update Supp+ (alpha) as defined ???*/
+    } else if(PH(stratum(l),alpha).forall(r => fInval(L,r))) {
+
+      val tStar = fRuleInterval(PH(stratum(l),alpha),t).min
+      L.update(alpha,Label(out,(t,tStar)))
+      UpdateOrdAtom(alpha,out)
+      /*Update Supp-(alpha) as defined ???*/
     }
+
+    Cons(stratum(l),alpha).foreach(beta =>
+      if(L.status(beta) == unknown) SetHead(beta,l,t))
+  }
+
+  def fRuleInterval(rules: Set[StdRule], t: Int): Set[Int] = {
+    var rr=Set[StdRule]()
+
+    for(rule <- rules) {
+      if(fVal(L,rule)) rr += rule
+    }
+    var minSet = Set[Int]()
+    rr.foreach(r => minSet += MinEnd(r,t))
+    minSet
   }
 
   def UpdateOrdAtom(alpha: ExtendedAtom, s: Status): Unit = alpha match {
