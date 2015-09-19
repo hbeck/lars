@@ -24,8 +24,8 @@ import scala.collection.mutable.HashMap
 case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   private val stratum: Map[Int, StdProgram] = Strata(P)
-  private val n = stratum.keySet.reduce(math.max)
-  private val L = Labels()
+  private var n = stratum.keySet.reduce(math.max)
+  var L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
   private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> new TimeWindowAtomOperators)
 
@@ -65,7 +65,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def init() = {
     initLabels()
 
-    answerUpdate(0,S(Timeline(0,0)),0) //t'?
+//    answerUpdate(0,S(Timeline(0,0)),0) //t'?
   }
 
   def initLabels() = {
@@ -73,6 +73,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     for (a <- inputAtoms) {
       L.update(a,Label(out, (0,0)))
     }
+
     val transCons: Set[ExtendedAtom] = inputAtoms.flatMap(ConsStar(P,_))
     val unknowns = transCons.filter(!_.isInstanceOf[WindowAtom])
     for (x <- unknowns) {
@@ -91,6 +92,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     var result = Set[(ExtendedAtom,WindowAtom)]()
     val omegaSet:Set[WindowAtom] = getOmega(P)
 
+    if(omegaSet.isEmpty) return result
     for (omega <- omegaSet) {
       for (t1 <- tp to t) {
         val expSet = waOperators(omega.wop.wfn.getClass).exp(omega, L, t1, Fired(l, t1, omega.atom).get).getOrElse(Set())
@@ -110,6 +112,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     for (elem <- P.rules.flatMap(_.B)) {
       elem match {
         case wa:WindowAtom => result += wa
+        case _ => result
       }
     }
     result
@@ -119,12 +122,15 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
 
-    val tlp = Timeline(tp+1,t)
-    val Dp = S(tlp,D.v|tlp)
+    if(tp+1 <= t) {
+      val tlp = Timeline(tp + 1, t)
+      val Dp = S(tlp, D.v | tlp)
 
-    for ((time,atom) <- Dp.getTimestampedAtoms()) {
-      result = result ++ Fired(l,time, atom).getOrElse(Set())
+      for ((time, atom) <- Dp.getTimestampedAtoms()) {
+        result = result ++ Fired(l, time, atom).getOrElse(Set())
+      }
     }
+
 
     result
   }
@@ -156,6 +162,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
       val headAndBody = Set(rule.h) ++ rule.B
       headAndBody match {
         case wa:WAt => if (a == wa.a && t == wa.t) return Option(wa)
+        case _ => None
       }
     }
     None
@@ -165,6 +172,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def Push(l: Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
     for (i <- 1 to l-1) {
+      if(updated.contains(i))
       for (atom <- updated(i)) {
         atom match {
           case ata:AtAtom =>
@@ -266,7 +274,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def UpdateTimestamp(r:StdRule, s:Status, t:Int) = {
-    if (L.label(r.h) == s) {
+    if (L.status(r.h) == s) {
       var newIntervals = collection.mutable.Set[ClosedIntInterval]()
 
       for (interval <- L.intervals(r.h)) {

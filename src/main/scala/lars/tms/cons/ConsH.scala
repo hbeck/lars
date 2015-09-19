@@ -1,7 +1,8 @@
 package lars.tms.cons
 
-import lars.core.semantics.formulas.ExtendedAtom
-import lars.core.semantics.programs.standard.StdProgram
+import lars.core.semantics.formulas.{Atom, ExtendedAtom}
+import lars.core.semantics.programs.extatoms.AtAtom
+import lars.core.semantics.programs.standard.{StdRule, StdProgram}
 
 /**
  * Created by hb on 7/14/15.

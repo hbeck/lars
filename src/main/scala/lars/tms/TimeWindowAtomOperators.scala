@@ -30,10 +30,10 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
         } else {
           N = lower * -1
         }
-        return mapInAtoms(omega,fired,t+N,atp)
-      case wb:WBox => return mapInAtoms(omega,fired,t,atp)
+        mapInAtoms(omega,fired,t+N,atp)
+      case wb:WBox => mapInAtoms(omega,fired,t,atp)
+      case _ => None
     }
-    None
   }
 
   def mapInAtoms(omega: WindowAtom, fired: Set[(ExtendedAtom, WindowAtom, Int)], t: Int, atp: Set[Int]): Option[Set[ExtendedAtom]] = {

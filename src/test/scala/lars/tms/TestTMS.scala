@@ -1,10 +1,16 @@
 package lars.tms
 
-import lars.core.semantics.formulas.{Atom, Not}
+import lars.core.semantics.formulas.{ExtendedAtom, Atom, Not}
 import lars.core.semantics.programs.extatoms.{WDiam, AtAtom, WAt}
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.windowfn.time.TimeWindow
+import lars.tms.acons.ACons
+import lars.tms.cons.{ConsAt, ConsH, ConsW}
+import lars.tms.status.rule.fVal
+import lars.tms.status.{Labels, Label}
+import lars.tms.status.Status.in
+import lars.tms.supp.SuppP
 import org.scalatest.FunSuite
 
 /**
@@ -45,14 +51,72 @@ class TestTMS  extends FunSuite {
   val P = StdProgram(Set(r1g,r2g,r3,r4,r5))
 
 
-  test("Exp15"){
+  test("Exp10") {
 
-    val r2p = StdRule(AtAtom(m(44.1),expTrM),Set(WAt(wop5,m(39.1),tramB),on))
+    val expTrmAt = AtAtom(m(44.1), expTrM)
+    val trmBAt = AtAtom(m(39.1), tramB)
+    val trmBW = WAt(wop5, m(39.1), tramB)
+    val onAtom = on
+
+    val r2p = StdRule(expTrmAt, Set(trmBW, onAtom))
     val Pp = StdProgram(Set(r2p))
+
+    val consw = ConsW(Pp, trmBAt)
+    val conshTrmB = ConsH(Pp, trmBW)
+    val conshOn = ConsH(Pp, onAtom)
+    val consAt = ConsAt(Pp, expTrmAt)
+
+    assert(consw.size == 1 && consw.contains(WAt(wop5, m(39.1), tramB)))
+    assert(conshTrmB.size == 1 && conshTrmB.contains(expTrmAt))
+    assert(conshOn.size == 1 && conshOn.contains(expTrmAt))
+    assert(consAt.size == 1 && consAt.contains(expTrM))
+
+    val ltram = Label(in, (m(39.1), m(44.1)))
+    val lOn = Label(in, (m(39.7), m(40.7)))
+    val L = Labels(collection.mutable.Map(trmBW -> ltram, onAtom -> lOn))
+
+    assert(fVal(L, r2p))
+
+    L.update(expTrmAt, Label(in, (m(39.7), m(40.7))))
+
+    val supp = SuppP(Pp, L, expTrmAt)
+    val acons = ACons(Pp, L, trmBW)
+
+    assert(supp == Set(trmBW, onAtom))
+    assert(acons == Set(expTrmAt))
+
+  }
+
+  test("Exp15") {
+
+    val expTrmAt = AtAtom(m(44.1), expTrM)
+    val trmBAt = AtAtom(m(39.1), tramB)
+    val trmBW = WAt(wop5, m(39.1), tramB)
+    val onAtom = on
+
+    val r2p = StdRule(expTrmAt, Set(trmBW, onAtom))
+    val Pp = StdProgram(Set(r2p))
+
+    val ltram = Label(in, (m(39.1), m(44.1)))
+    val lOn = Label(in, (m(39.7), m(40.7)))
+    val L = Labels(collection.mutable.Map(trmBW -> ltram, onAtom -> lOn))
 
     val t = m(39.7)
 
     val tms = TMS
-    tms.apply(Pp).init()
+    val tmsInit = tms.apply(P)
+    tmsInit.initLabels()
+
+
+//    tmsInit.L = L
+
+    println("L: "+tmsInit.L)
+    println("t: "+t)
+    println("Expired: "+tmsInit.Expired(D,1,0,t))
+    println("Fired: "+tmsInit.Fired(D,1,0,t))
+    val answerupdate = tmsInit.answerUpdate(t,D,0)
+    println(answerupdate)
+
+
   }
 }

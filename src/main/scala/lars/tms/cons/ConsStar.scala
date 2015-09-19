@@ -11,16 +11,17 @@ import scala.annotation.tailrec
 object ConsStar {
 
   def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = {
-    _apply(P,Set(x))
+    _apply(P,Set(x),Set())
   }
 
-  @tailrec
-  def _apply(P: StdProgram, xs: Set[ExtendedAtom]): Set[ExtendedAtom] = {
+  def _apply(P: StdProgram, xs: Set[ExtendedAtom], xp: Set[ExtendedAtom]): Set[ExtendedAtom] = {
     val next: Set[ExtendedAtom] = xs.flatMap(Cons(P,_))
     if (next == xs) {
-      return xs
+      xs
+    } else if(xp.nonEmpty && xp == next) {
+      Set()
     } else {
-      return _apply(P,next)
+      _apply(P,next,xs)
     }
   }
 
