@@ -107,15 +107,14 @@ class TestTMS  extends FunSuite {
 
     val t = m(39.7)
 
-    val tms = TMS
-    val tmsInit = tms.apply(P)
-    tmsInit.initLabels()
+    val tms = TMS.apply(P)
 
 //    tmsInit.L = L
 //    val strat = Map[Int,StdProgram] = Map(1 -> Pp1, 2 -> Pp2)
 
-    val answerupdate = tmsInit.answerUpdate(t,D,m(34))
-    println(answerupdate)
+      val answerupdate = tms.answerUpdate(0, D, m(45))
+
+      println(answerupdate)
 
 
   }
