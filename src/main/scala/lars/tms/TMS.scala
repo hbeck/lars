@@ -50,7 +50,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
       var C = Set[WindowAtom]()
 //      //println(l)
 //      //println("expired: "+Expired(D,l,tp,t))
-      for ((alpha,omega) <- Expired(l,tp,t)) {
+      for ((alpha,omega) <- Expired(D,l,tp,t)) {
 //        //println(alpha +" : "+omega)
         ExpireInput(alpha,omega,t)
         C = C + omega
@@ -118,7 +118,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
       * resultSet.addToSet(a=AtomFrom(omega),omega) where
       *                   a == exp(omega,t,Fired(l,t)) without Fired(l,t))
       * }*/
-  def Expired(l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
+  def Expired(D: S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
     var result = Set[(ExtendedAtom,WindowAtom)]()
     val omegaSet:Set[WindowAtom] = getOmega(P)
 //    println("omegaSet: "+omegaSet)
@@ -126,7 +126,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     if (omegaSet.isEmpty) return result
     for (omega <- omegaSet) {
       for (t1 <- tp to t) {
-        val expSet = waOperators(omega.wop.wfn.getClass).exp(omega, L, t1, Fired(t1, omega.atom).get).getOrElse(Set())
+        val expSet = waOperators(omega.wop.wfn.getClass).exp(omega, L, t1, Fired(l,t1,D)).getOrElse(Set())
 //        println("expSet: "+expSet)
 
         if (expSet.nonEmpty) {
@@ -154,26 +154,63 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
   def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
-    if(tp+1 > t) return result
+    if(tp+1 > t) return Set()
+
+    for(t1 <- tp to t) {
+      result ++= Fired(l,t1,D)
+    }
 
     val tlp = Timeline(tp + 1, t)
     val Dp = S(tlp, D.v | tlp)
 
-    l match {
-      case 0 => None
+/*    l match {
+      case 0 => return result
       case 1 =>
         for((time,atom) <- Dp.getTimestampedAtoms()){
-          result ++= Fired(time,atom).getOrElse(Set())
+          result ++= Fired(l,time,atom).getOrElse(Set())
         }
       case _ =>
         for(t1 <- tp to t){
           result ++= Fired(l,t1).getOrElse(Set())
         }
-    }
+    }*/
     result
   }
 
-  def Fired(t1:Int, atom:ExtendedAtom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
+  def Fired(l: Int, t1: Int, D: S): Set[(ExtendedAtom,WindowAtom,Int)] = {
+    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
+    l match {
+      case 0 => return result
+      case 1 =>
+        val dAtoms = D(t1)
+        if(dAtoms.nonEmpty) {
+          dAtoms.foreach(a => {
+            for (rule <- stratum(1).rules) {
+              var atomSet = rule.B.filter(p => p.atom == a)
+              if(rule.h.atom == a) atomSet += rule.h
+              atomSet.filter({
+                case wat:WAt =>
+                  if(wat.a == a) {
+                    result += ((new AtAtom(wat.t,wat.a),wat,t1))
+                    true
+                  } else false
+              })
+            }
+            ConsW(stratum(1),a).foreach({ case wa:WindowAtom => result += ((a,wa,t1))})
+          })
+        }
+      case _ =>
+        var pNow = Set[(ExtendedAtom,WindowAtom,Int)]()
+        for (elem <- PushNow(l)) {
+          pNow += ((elem._1,elem._2,t1))
+        }
+        result ++= Push(l,t1) ++ pNow
+    }
+
+    result
+  }
+
+/*  def Fired(l:Int, t1:Int, atom:ExtendedAtom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
 
     for(rule <- stratum(1).rules) {
@@ -190,9 +227,17 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     ConsW(stratum(1),atom).foreach({ case wa:WindowAtom => result += ((atom,wa,t1))})
 
     Option(result)
+  }
+
+
+  def Fired(l: Int, t1: Int) = {
+
+    var pNow = Set[(ExtendedAtom,WindowAtom,Int)]()
+    for (elem <- PushNow(l)) {
+      pNow += ((elem._1,elem._2,t1))
     }
-
-
+    Option(Push(l,t1) ++ pNow)
+  }*/
 
 
 
@@ -216,14 +261,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
         Option(result)
   }*/
 
-  def Fired(l: Int, t1: Int) = {
-
-    var pNow = Set[(ExtendedAtom,WindowAtom,Int)]()
-    for (elem <- PushNow(l)) {
-      pNow += ((elem._1,elem._2,t1))
-    }
-    Option(Push(l,t1) ++ pNow)
-  }
 
   def wAtom(consW: ExtendedAtom): Option[WindowAtom] = consW match {
     case wa:WindowAtom => Option(wa)
