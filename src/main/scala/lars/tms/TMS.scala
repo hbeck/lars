@@ -149,7 +149,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     }
     result
   }
-//TODO make one method out of the two sub-fired methods
 
   //Don't use window functions See ijcai15-extended p.9 left column "Collecting Input"
   def Fired(D:S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom,Int)] = {
@@ -163,17 +162,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     val tlp = Timeline(tp + 1, t)
     val Dp = S(tlp, D.v | tlp)
 
-/*    l match {
-      case 0 => return result
-      case 1 =>
-        for((time,atom) <- Dp.getTimestampedAtoms()){
-          result ++= Fired(l,time,atom).getOrElse(Set())
-        }
-      case _ =>
-        for(t1 <- tp to t){
-          result ++= Fired(l,t1).getOrElse(Set())
-        }
-    }*/
     result
   }
 
@@ -209,58 +197,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
     result
   }
-
-/*  def Fired(l:Int, t1:Int, atom:ExtendedAtom): Option[Set[(ExtendedAtom,WindowAtom,Int)]] = {
-    var result = Set[(ExtendedAtom,WindowAtom,Int)]()
-
-    for(rule <- stratum(1).rules) {
-      var atomSet = rule.B.filter(p => p.atom == atom)
-      if(rule.h.atom == atom) atomSet += rule.h
-      atomSet.filter({
-        case wat:WAt =>
-          if(wat.a == atom) {
-          result += ((new AtAtom(wat.t,wat.a),wat,t1))
-          true
-        } else false
-      })
-      }
-    ConsW(stratum(1),atom).foreach({ case wa:WindowAtom => result += ((atom,wa,t1))})
-
-    Option(result)
-  }
-
-
-  def Fired(l: Int, t1: Int) = {
-
-    var pNow = Set[(ExtendedAtom,WindowAtom,Int)]()
-    for (elem <- PushNow(l)) {
-      pNow += ((elem._1,elem._2,t1))
-    }
-    Option(Push(l,t1) ++ pNow)
-  }*/
-
-
-
-
-
-/*        var c:AtAtom = null
-        var consw = Set[ExtendedAtom]()
-        if(atom.exists({case a:AtAtom => c = a; true; case _ => false})){
-
-          consw = ConsW(stratum(l), c)
-        }
-        consw = ConsW(stratum(l), )*/
-//        println(stratum(l) + " : "+atom)
-//        println(ConsW(stratum(l), atom))
-/*        for (ea <- ConsW(stratum(l),atom)) {
-          val wat = wAtom(ea)
-          if (wat.nonEmpty) result = result ++ Set((atom, wat.get, time))
-        }
-        val watStrat = getAt(stratum(l), atom, time)
-        if (watStrat.nonEmpty) result = result ++ Set((AtAtom(watStrat.get.t, atom.atom), watStrat.get, watStrat.get.t))
-        Option(result)
-  }*/
-
 
   def wAtom(consW: ExtendedAtom): Option[WindowAtom] = consW match {
     case wa:WindowAtom => Option(wa)
