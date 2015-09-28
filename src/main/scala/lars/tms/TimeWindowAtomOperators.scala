@@ -2,7 +2,7 @@ package lars.tms
 
 import lars.core.ClosedIntInterval
 import lars.core.semantics.formulas.{Atom, ExtendedAtom}
-import lars.core.semantics.programs.extatoms.{AtAtom, WBox, WDiam, WindowAtom}
+import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.streams.S
 import lars.core.windowfn.time.TimeWindowFixedParams
 import lars.tms.status.Labels
@@ -18,12 +18,11 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
   override def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(ExtendedAtom, WindowAtom, Int)]): Option[Set[ExtendedAtom]] = omega.wop.wfn match {
     case wfn:TimeWindowFixedParams =>
 
-//      println(L)
     val atp = q(omega, L)
-//      println("atp: "+atp)
 
     omega match {
-      case wd:WDiam =>
+      case wb:WBox => mapInAtoms(omega,fired,t,atp)
+      case _ =>
         var N = 0
         val lower = wfn.x.l
         val upper = wfn.x.u
@@ -33,8 +32,6 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
           N = lower * -1
         }
         mapInAtoms(omega,fired,t+N,atp)
-      case wb:WBox => mapInAtoms(omega,fired,t,atp)
-      case _ => None
     }
   }
 
@@ -93,6 +90,7 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
                if (tm.contains(new ClosedIntInterval(math.max(0,t-Nl),t+Nu)))
                return Option(new ClosedIntInterval(t,t))
            }
+         case wat:WAt => return Option(new ClosedIntInterval(wat.t,wat.t))
        }
        None
   }

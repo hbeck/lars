@@ -1,7 +1,7 @@
 package lars.tms
 
 import lars.core.semantics.formulas.{ExtendedAtom, Atom, Not}
-import lars.core.semantics.programs.extatoms.{WDiam, AtAtom, WAt}
+import lars.core.semantics.programs.extatoms.{WindowAtom, WDiam, AtAtom, WAt}
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.windowfn.time.TimeWindow
@@ -91,11 +91,11 @@ class TestTMS  extends FunSuite {
 
     val expTrmAt = AtAtom(m(44.1), expTrM)
     val trmBAt = AtAtom(m(39.1), tramB)
-    val trmBW = WAt(wop5, m(39.1), tramB)
+    val trmBW:ExtendedAtom = WAt(wop5, m(39.1), tramB)
     val onAtom = on
 
-/*    val v = Evaluation(Map(m(44.1) -> Set(expTrM), m(39.1) -> Set(tramB,on)))
-    val D = S(T,v)*/
+    val v = Evaluation(Map(m(44.1) -> Set(expTrM), m(39.1) -> Set(tramB,on)))
+    val D = S(T,v)
 
     val r2p = StdRule(expTrmAt, Set(trmBW, onAtom))
     val Pp1 = StdProgram(Set(r2p))
@@ -107,13 +107,38 @@ class TestTMS  extends FunSuite {
 
     val t = m(39.7)
 
-    val tms = TMS.apply(P)
+    val tms = TMS(Pp1)
+    tms.init()
+    tms.updateL(L)
+
+    println(tms.stratum)
+    tms.answerUpdate(t,D,m(37))
+    println(tms.L)
+
+/*    tms.updateL(L)
+
+    val l = 1
+    val tp = m(37)
+    var C = Set[WindowAtom]()
+    tms.setStratKey(l)
+
+    for ((alpha,omega,t1) <- tms.Fired(D,l,tp,t)) {
+      tms.FireInput(alpha,omega,t1,l,D)
+      C = C + omega
+      println("alph: "+alpha)
+      tms.addToUpdated(alpha,l)
+    }
+    println("woop: "+tms.L)*/
+
+
+//    val tms = TMS.apply(P)
+
+
 
 //    tmsInit.L = L
 //    val strat = Map[Int,StdProgram] = Map(1 -> Pp1, 2 -> Pp2)
 
-      val answerupdate = tms.answerUpdate(0, D, m(45))
-
+      val answerupdate = tms.answerUpdate(m(45), D, 0)
       println(answerupdate)
 
 
