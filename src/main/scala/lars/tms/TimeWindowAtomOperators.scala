@@ -78,7 +78,6 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
        val Nu = wfn.x.u
 
        wa match {
-         case wd:WDiam => Option(new ClosedIntInterval(t-Nu, t+Nl))
          case wb:WBox =>
            l match {
              case 1 =>
@@ -90,7 +89,7 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
                if (tm.contains(new ClosedIntInterval(math.max(0,t-Nl),t+Nu)))
                return Option(new ClosedIntInterval(t,t))
            }
-         case wat:WAt => return Option(new ClosedIntInterval(wat.t,wat.t))
+         case _ => return Option(new ClosedIntInterval(t-Nu, t+Nl))
        }
        None
   }

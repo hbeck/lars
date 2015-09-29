@@ -28,11 +28,10 @@ import scala.collection.mutable.HashMap
 case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
 
-  var stratum: Map[Int, StdProgram] = Strata(P)
-  println("stratum: "+stratum)
-  setStratKey(1)
+  private var stratum: Map[Int, StdProgram] = Strata(P)
+//  println("stratum: "+stratum)
   private val n = stratum.keySet.reduce(math.max)
-  var L = Labels()
+  private var L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
   private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> new TimeWindowAtomOperators)
   private var pushNow = Set[(ExtendedAtom,WindowAtom)]()
@@ -43,30 +42,35 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def answerUpdate(t: Int, D: S, tp: Int, wAOp:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap()): Result = {
     waOperators ++= wAOp
     val Lp = L.copy()
-    println(n)
+    println("tp: "+tp+" t: "+t)
+    println("stratum(1): "+stratum(1))
 
     for (l <- 1 to n) {
-      println("--- "+l+" ---")
-      println("updated: "+updated)
-      println("L: "+L)
+//      println("--- "+l+" ---")
+//      println("updated: "+updated)
+//      println("L: "+L)
       var C = Set[WindowAtom]()
+      println("expired: "+Expired(D,l,tp,t))
       for ((alpha,omega) <- Expired(D,l,tp,t)) {
         ExpireInput(alpha,omega,t)
         C = C + omega
         addToUpdated(alpha,l)
       }
-//      println("fired: "+Fired(D,l,tp,t))
+      println("fired: "+Fired(D,l,tp,t))
       for ((alpha,omega,t1) <- Fired(D,l,tp,t)) {
         FireInput(alpha,omega,t1,l,D)
+        println("L: "+L)
         C = C + omega
-//        println("alph: "+alpha)
+        println("C: "+C)
         addToUpdated(alpha,l)
+        println("updated: "+updated)
       }
       UpdateTimestamps(C,Lp,l,t)
       SetUnknown(l,t)
       var madeNewAssignment = false
       do {
         if (SetRule(l,t) == fail) return fail
+        println("L after setRule: "+L)
         val opt:Option[Boolean] = MakeAssignment(l,t)
         if (opt.isEmpty) {
           return fail
@@ -88,6 +92,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def init() = {
     initLabels()
+    println("init Labels: "+L)
     initUpdated()
 //    answerUpdate(0,S(Timeline(0,0)),0) //t'?
   }
@@ -121,7 +126,6 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   def Expired(D: S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
     var result = Set[(ExtendedAtom,WindowAtom)]()
     val omegaSet:Set[WindowAtom] = getOmega(P)
-//    println("omegaSet: "+omegaSet)
 
     if (omegaSet.isEmpty) return result
     for (omega <- omegaSet) {
@@ -157,12 +161,12 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
     var result = Set[(ExtendedAtom,WindowAtom,Int)]()
     if(tp+1 > t) return Set()
 
-    for(t1 <- tp to t) {
-      result ++= Fired(l,t1,D)
-    }
-
     val tlp = Timeline(tp + 1, t)
     val Dp = S(tlp, D.v | tlp)
+
+    for(t1 <- tp to t) {
+      result ++= Fired(l,t1,Dp)
+    }
 
     result
   }
@@ -178,13 +182,10 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
             for (rule <- stratum(1).rules) {
               var atomSet = rule.B.filter(p => p.atom == a)
               if(rule.h.atom == a) atomSet += rule.h
-              atomSet.filter({
+              atomSet.foreach({
                 case wat:WAt =>
-                  if(wat.a == a) {
-                    result += ((new AtAtom(wat.t,wat.a),wat,t1))
-                    true
-                  } else false
-                case _ => false
+                  if(wat.a == a) result += ((new AtAtom(t1,a), wat, t1))
+                case _ => result
               })
             }
             ConsW(stratum(1),a).foreach({ case wa:WindowAtom => result += ((a,wa,t1))})
@@ -271,25 +272,26 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
   }
 
   def FireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int, l:Int, D:S): Unit = {
-    var s_in:Option[ClosedIntInterval] = None
-
     val ata = new AtAtom(t,alpha.atom)
 
     if (P.rules.exists(r => r.B.exists(ea => ea.nested.contains(ata)) || r.h.nested.contains(ata))) {
       L.update(ata,Label(in,(t,t)))
     }
-    alpha match {
-      case ata:AtAtom =>
-        s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,ata.t,l,D,tm(alpha).toSet)
-        if(s_in.isDefined) {
+
+    var s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,t,l,D,tm(alpha).toSet)
+
+    if(s_in.isDefined) {
+      alpha match {
+        case ata: AtAtom =>
           val tmp = L.intervals(ata).filter(e => e.lower <= s_in.get.upper || e.upper >= s_in.get.lower)
           /*if i am wrong, tmp may contain more than one element*/
-          if (tmp.nonEmpty) s_in = Option(tmp.head)
-        }
-      case _ =>
-        s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,t,l,D,tm(alpha).toSet)
+          if (tmp.nonEmpty) {
+            s_in = Option(new ClosedIntInterval(math.min(tmp.head.lower,s_in.get.lower),math.max(tmp.head.upper,s_in.get.upper)))
+          }
+        case _ =>
+      }
+    L.update(omega, Label(in, (s_in.get.lower, s_in.get.upper)))
     }
-    if (s_in.isDefined) L.update(omega,Label(in,(s_in.get.lower,s_in.get.upper)))
   }
 
   def tm(b: ExtendedAtom) = L.intervals(b)

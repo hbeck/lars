@@ -31,7 +31,7 @@ class TestTMS  extends FunSuite {
   def m(i:Double) = (i*10*60).toInt
 
   val T = Timeline(0,m(50))
-  val v = Evaluation(Map(m(37.2) -> Set(busG), m(39.1) -> Set(tramB)))
+  val v = Evaluation(Map(m(37.2) -> Set(busG), m(39.1) -> Set(tramB), m(40.2) -> Set(expBusM),m(44.1) -> Set(expTrM)))
   val D = S(T,v)
   //
   def w = TimeWindow
@@ -111,9 +111,9 @@ class TestTMS  extends FunSuite {
     tms.init()
     tms.updateL(L)
 
-    println(tms.stratum)
+/*    println(tms.stratum)
     tms.answerUpdate(t,D,m(37))
-    println(tms.L)
+    println(tms.L)*/
 
 /*    tms.updateL(L)
 
@@ -141,6 +141,17 @@ class TestTMS  extends FunSuite {
       val answerupdate = tms.answerUpdate(m(45), D, 0)
       println(answerupdate)
 
+
+  }
+
+  test("Exp11"){
+
+    val tms = TMS(P)
+
+    tms.init()
+
+    val update = tms.answerUpdate(m(50),D,m(0))
+    println(update)
 
   }
 }
