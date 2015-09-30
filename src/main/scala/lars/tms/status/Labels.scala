@@ -20,6 +20,16 @@ case class Labels(private val labelOf: collection.mutable.Map[ExtendedAtom,Label
     labelOf(x)=l
   }
 
+  def copy: Labels = {
+    var r = collection.mutable.Map[ExtendedAtom,Label]()
+    for((k,v) <- labelOf) {
+      r += k -> v
+    }
+    Labels(r)
+  }
+
+
+
   //add convenience method like updateStatus etc whatever needed
 
 }

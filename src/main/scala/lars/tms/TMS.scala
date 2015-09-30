@@ -39,11 +39,20 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   init()
 
+
+/*  def copyL(L: Labels): Labels = {
+    val r = new Labels()
+    for((key,value) <- L.labelOf)
+  }*/
+
   def answerUpdate(t: Int, D: S, tp: Int, wAOp:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap()): Result = {
     waOperators ++= wAOp
-    val Lp = L.copy()
+    val Lp = L.copy
+//    val Lq:Labels = copyL(L)
+
     println("tp: "+tp+" t: "+t)
     println("stratum(1): "+stratum(1))
+    println("stratum(2): "+stratum(2))
 
     for (l <- 1 to n) {
 //      println("--- "+l+" ---")
@@ -92,8 +101,8 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
 
   def init() = {
     initLabels()
-    println("init Labels: "+L)
     initUpdated()
+    println("initL: "+L)
 //    answerUpdate(0,S(Timeline(0,0)),0) //t'?
   }
 
@@ -333,16 +342,7 @@ case class TMS(P: StdProgram, N:Set[ExtendedAtom],J:Set[J]) {
        val u2 = (rule.Bp intersect ki).nonEmpty || (rule.Bn intersect ko).nonEmpty
        val u3 = (rule.Bp intersect ko).nonEmpty || (rule.Bn intersect ki).nonEmpty
 
-       if (u1 && u2) {
-/*         println("before: ")
-         println(L)
-         println(Lp)*/
-         UpdateTimestamp(rule,in,t)
-/*         println("after: ")
-         println(L)
-         println(Lp)
-         println("----")*/
-       }
+       if (u1 && u2) UpdateTimestamp(rule,in,t)
        else if (u1 && u3) UpdateTimestamp(rule,out,t)
      }
   }
