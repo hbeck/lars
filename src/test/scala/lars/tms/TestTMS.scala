@@ -150,7 +150,7 @@ class TestTMS  extends FunSuite {
 
     tms.init()
 
-    val update = tms.answerUpdate(m(50),D,m(0))
+    val update = tms.answerUpdate(m(39.7),D,m(0))
     println(update)
 
   }
