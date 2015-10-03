@@ -33,7 +33,7 @@ case class TMS(P: StdProgram) {
   private val n = stratum.keySet.reduce(math.max)
   private var L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
-  private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> new TimeWindowAtomOperators)
+  private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> TimeWindowAtomOperators)
   private var pushNow = Set[WindowAtom]()
   private var push = Set[WindowAtom]()
   private var A = Set[Atom]()
@@ -56,11 +56,12 @@ case class TMS(P: StdProgram) {
 //      println("L: "+L)
       var C = Set[WindowAtom]()
       println("expired: "+Expired(D,l,tp,t))
-      for ((alpha,omega) <- Expired(D,l,tp,t)) {
-        ExpireInput(alpha,omega,t)
+      for (omega <- Expired(D,l,tp,t)) {
+        ExpireInput(omega,t)
         C = C + omega
-        A += alpha.atom
-        addToUpdated(alpha,l)
+        A += omega.atom
+        //TODO revisit
+        addToUpdated(omega.nested,l)
       }
       println("fired: "+Fired(D,l,tp,t))
       for ((omega,t1) <- Fired(D,l,tp,t)) {
@@ -69,7 +70,7 @@ case class TMS(P: StdProgram) {
         C = C + omega
         A += omega.atom
         println("C: "+C)
-        addToUpdated(omega,l)
+        addToUpdated(omega.nested,l)
         println("updated: "+updated)
       }
       UpdateTimestamps(C,Lp,l,t)
@@ -90,11 +91,12 @@ case class TMS(P: StdProgram) {
     success
   }
 
-  def addToUpdated(atom: ExtendedAtom, l: Int) = {
+  def addToUpdated(atoms: Set[ExtendedAtom], l: Int) = {
 //    println("stratl: "+stratum(l))
-    if (stratum(l).rules.exists(_.h == atom)) {
-      updated += l -> (updated(l) ++ Set(atom))
-    }
+    stratum(l).rules.foreach(a =>
+      if(atoms.contains(a.h)) {
+      updated += l -> (updated(l) ++ Set(a.h))
+    })
   }
 
   def init() = {
@@ -130,23 +132,19 @@ case class TMS(P: StdProgram) {
       * resultSet.addToSet(a=AtomFrom(omega),omega) where
       *                   a == exp(omega,t,Fired(l,t)) \ Fired(l,t))
       * }*/
-  def Expired(D: S, l:Int, tp:Int, t:Int): Set[(ExtendedAtom,WindowAtom)] = {
-    var result = Set[(ExtendedAtom,WindowAtom)]()
+  def Expired(D: S, l:Int, tp:Int, t:Int): Set[WindowAtom] = {
+    var result = Set[WindowAtom]()
     val omegaSet:Set[WindowAtom] = getOmega(P)
 
     if (omegaSet.isEmpty) return result
     for (omega <- omegaSet) {
       for (t1 <- tp to t) {
-        val expSet = waOperators(omega.wop.wfn.getClass).exp(omega, L, t1, Fired(l,t1,D)).getOrElse(Set())
-//        println("expSet: "+expSet)
+        val exp = waOperators(omega.wop.wfn.getClass).exp(omega, L, t1, Fired(l,t1,D))
 
-        if (expSet.nonEmpty) {
-          val expTuple = (expSet.head, omega)
-          result += expTuple
-        }
+        if (exp.isDefined) result += omega
       }
-    }
-   result 
+    } 
+    result 
   }
 
   def getOmega(P: StdProgram): Set[WindowAtom] = {
@@ -270,12 +268,12 @@ case class TMS(P: StdProgram) {
     None
   }
 
-  def ExpireInput(alpha: ExtendedAtom, omega: WindowAtom, t: Int): Unit = {
+  def ExpireInput(omega: WindowAtom, t: Int): Unit = {
     var s_out = new ClosedIntInterval(0,0)
 
     val tInOmega = tm(omega).filter(e => e.upper > t)
     if (tInOmega.isEmpty) s_out = waOperators(omega.wop.wfn.getClass).SOut(omega,t)
-    L.update(alpha, Label(out,(s_out.lower,s_out.upper)))
+    L.update(omega.atom, Label(out,(s_out.lower,s_out.upper)))
   }
 
   def FireInput(omega: WindowAtom, t: Int, l:Int, D:S): Unit = {
@@ -287,12 +285,14 @@ case class TMS(P: StdProgram) {
 
     var s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,t,l,D,tm(omega))
     if(s_in.isDefined) {
-      omega.nested.contains({case ata:AtAtom =>
-        val tmp = L.intervals(ata).filter(e => e.lower <= s_in.get.upper || e.upper >= s_in.get.lower)
-        /*if i am wrong, tmp may contain more than one element*/
-        if (tmp.nonEmpty) {
-          s_in = Option(new ClosedIntInterval(math.min(tmp.head.lower,s_in.get.lower),math.max(tmp.head.upper,s_in.get.upper)))
-        }
+      omega.nested.foreach({
+        case ata:AtAtom =>
+          val tmp = L.intervals(ata).filter(e => e.lower <= s_in.get.upper || e.upper >= s_in.get.lower)
+          /*if i am wrong, tmp may contain more than one element*/
+          if (tmp.nonEmpty) {
+            s_in = Option(new ClosedIntInterval(math.min(tmp.head.lower,s_in.get.lower),math.max(tmp.head.upper,s_in.get.upper)))
+          }
+        case _ => s_in
       })
       L.update(omega, Label(in, (s_in.get.lower, s_in.get.upper)))
     }
@@ -305,7 +305,7 @@ case class TMS(P: StdProgram) {
         case w:WindowAtom => r
         case a => r ++= L.intervals(a)})
         r
-    case _ => L.intervals(b).toSet
+    case _ => L.intervals(b)
   }
 
   def MinEnd(r:StdRule, t:Int): Int = {
@@ -352,10 +352,10 @@ case class TMS(P: StdProgram) {
 
   def UpdateTimestamp(r:StdRule, s:Status, t:Int) = {
     if (L.status(r.h) == s) {
-      var newIntervals = collection.mutable.Set[ClosedIntInterval]()
+      var newIntervals = Set[ClosedIntInterval]()
 
       for (interval <- L.intervals(r.h)) {
-        if (interval.contains(t)) newIntervals += new ClosedIntInterval(interval.lower,MinEnd(r,t))
+        if (interval.contains(t)) newIntervals ++= Set(new ClosedIntInterval(interval.lower,MinEnd(r,t)))
         newIntervals += interval
       }
       L.update(r.h,new Label(s,newIntervals))
@@ -399,7 +399,7 @@ case class TMS(P: StdProgram) {
         case _ =>
           val suppAt = SuppAt(stratum(l),L,alpha)
           suppAt.foreach({case ata:AtAtom =>
-              L.intervals(ata) += new ClosedIntInterval(ata.t,ata.t)
+              L.addInterval(ata,new ClosedIntInterval(ata.t,ata.t))
           })
       }
       updated += l -> (updated(l) ++ Set(alpha))
@@ -507,7 +507,7 @@ case class TMS(P: StdProgram) {
 }
 
 object TMS {
-  def apply(P: StdProgram): TMS = {
+/*  def apply(P: StdProgram): TMS = {
     TMS(P)
-  }
+  }*/
 }

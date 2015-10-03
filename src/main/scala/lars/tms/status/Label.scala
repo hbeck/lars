@@ -1,18 +1,19 @@
 package lars.tms.status
 
 import lars.core.ClosedIntInterval
+import collection.immutable._
 
 /**
  * Created by hb on 7/14/15.
  */
-case class Label(var status: Status, val intervals:collection.mutable.Set[ClosedIntInterval]=collection.mutable.HashSet[ClosedIntInterval]())
+case class Label(var status: Status, intervals:Set[ClosedIntInterval]=HashSet[ClosedIntInterval]())
 
 object Label {
 
   def apply(status: Status, pairs:(Int,Int)*): Label = {
-    val set = new collection.mutable.HashSet[ClosedIntInterval]()
+    var set = new HashSet[ClosedIntInterval]()
     for (pair <- pairs) {
-      set += new ClosedIntInterval(pair._1,pair._2)
+      set ++= HashSet(new ClosedIntInterval(pair._1,pair._2))
     }
     Label(status,set)
   }

@@ -13,9 +13,9 @@ import scala.collection.parallel.mutable
 /**
  * Created by et on 09.09.15.
  */
-class TimeWindowAtomOperators extends WindowAtomOperators{
+object TimeWindowAtomOperators extends WindowAtomOperators{
 
-  override def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(WindowAtom, Int)]): Option[Set[ExtendedAtom]] = omega.wop.wfn match {
+  override def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(WindowAtom, Int)]): Option[ExtendedAtom] = omega.wop.wfn match {
     case wfn:TimeWindowFixedParams =>
 
     val atp = q(omega, L)
@@ -23,27 +23,16 @@ class TimeWindowAtomOperators extends WindowAtomOperators{
     omega match {
       case wb:WBox => mapInAtoms(omega,fired,t,atp)
       case _ =>
-        var N = 0
-        val lower = wfn.x.l
-        val upper = wfn.x.u
-        if (lower == 0) {
-          N = upper
-        } else {
-          N = lower * -1
-        }
+        val N = wfn.x.u-wfn.x.l
         mapInAtoms(omega,fired,t+N,atp)
     }
   }
 
-  def mapInAtoms(omega: WindowAtom, fired: Set[(WindowAtom, Int)], t: Int, atp: Set[Int]): Option[Set[ExtendedAtom]] = {
-    var result = Set[ExtendedAtom]()
-
-    for (atom <- omega.fm.atoms()) {
+  def mapInAtoms(omega: WindowAtom, fired: Set[(WindowAtom, Int)], t: Int, atp: Set[Int]): Option[ExtendedAtom] = {
       if (!fired.contains((omega, t))) {
-        atp.foreach(t1 => if(t1 < t) result += atom)
+        atp.foreach(t1 => if(t1 < t) return Option(omega.atom))
       }
-    }
-    Option(result)
+    None
   }
 
   override def q(omega: WindowAtom, L:Labels): Set[Int] = {
