@@ -9,7 +9,7 @@ import lars.tms.status.Labels
 /**
  * Created by et on 09.09.15.
  */
-abstract class WindowAtomOperators {
+trait WindowAtomOperators {
 
   def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(WindowAtom, Int)]): Option[ExtendedAtom]
   def aR(atom: ExtendedAtom, wa: WindowAtom, lower: Int, upper: Int): ClosedIntInterval

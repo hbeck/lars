@@ -6,10 +6,9 @@ import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.inspect.PH
 import lars.core.semantics.programs.standard.{StdRule, StdProgram}
-import lars.core.semantics.streams.{Evaluation, Timeline, S}
+import lars.core.semantics.streams.{Timeline, S}
 import lars.core.windowfn.WindowFunctionFixedParams
-import lars.core.windowfn.time.{TimeWindowFixedParams, TimeWindowParameters, TimeWindow}
-import lars.core.windowfn.tuple.{TupleWindowFixedParams, TupleWindow}
+import lars.core.windowfn.time.TimeWindowFixedParams
 import lars.strat.Strata
 import lars.tms.acons.ACons
 import lars.tms.cons.{Cons, ConsW, ConsStar}
@@ -19,8 +18,7 @@ import lars.tms.status.rule.{ufVal, fInval, fVal}
 import lars.tms.status.{Status, Label, Labels}
 import lars.tms.status.Status.{in, unknown, out}
 import lars.tms.supp.SuppAt
-import scala.collection.mutable
-import scala.collection.mutable.HashMap
+import scala.collection.immutable
 
 /**
  * Created by hb on 6/25/15.
@@ -29,56 +27,54 @@ case class TMS(P: StdProgram) {
 
 
   private var stratum: Map[Int, StdProgram] = Strata(P)
-//  println("stratum: "+stratum)
   private val n = stratum.keySet.reduce(math.max)
   private var L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
-  private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap(classOf[TimeWindowFixedParams] -> TimeWindowAtomOperators)
+  private var waOperators:immutable.HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap(classOf[TimeWindowFixedParams] -> TimeWindowAtomOperators)
   private var pushNow = Set[WindowAtom]()
   private var push = Set[WindowAtom]()
   private var A = Set[Atom]()
 
   init()
 
-  def answerUpdate(t: Int, D: S, tp: Int, wAOp:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = mutable.HashMap()): Result = {
+  def answerUpdate(tp: Int, t: Int, D: S, wAOp:immutable.HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap()): Result = {
     waOperators ++= wAOp
     val Lp = L.copy
 //    val Lq:Labels = copyL(L)
 
-    println("tp: "+tp+" t: "+t)
-    println("stratum(0): "+stratum(0))
-    println("stratum(1): "+stratum(1))
-    println("stratum(2): "+stratum(2))
+    //println("tp: "+tp+" t: "+t)
+    //println("stratum(0): "+stratum(0))
+    //println("stratum(1): "+stratum(1))
+    //println("stratum(2): "+stratum(2))
 
     for (l <- 1 to n) {
-//      println("--- "+l+" ---")
-//      println("updated: "+updated)
-//      println("L: "+L)
+        //println("--- "+l+" ---")
+        //println("updated: "+updated)
+        //println("L: "+L)
       var C = Set[WindowAtom]()
-      println("expired: "+Expired(D,l,tp,t))
+      //println("expired: "+Expired(D,l,tp,t))
       for (omega <- Expired(D,l,tp,t)) {
         ExpireInput(omega,t)
         C = C + omega
         A += omega.atom
-        //TODO revisit
         addToUpdated(omega.nested,l)
       }
-      println("fired: "+Fired(D,l,tp,t))
+      //println("fired: "+Fired(D,l,tp,t))
       for ((omega,t1) <- Fired(D,l,tp,t)) {
         FireInput(omega,t1,l,D)
-        println("L: "+L)
+        //println("L: "+L)
         C = C + omega
         A += omega.atom
-        println("C: "+C)
+        //println("C: "+C)
         addToUpdated(omega.nested,l)
-        println("updated: "+updated)
+        //println("updated: "+updated)
       }
       UpdateTimestamps(C,Lp,l,t)
       SetUnknown(l,t)
       var madeNewAssignment = false
       do {
         if (SetRule(l,t) == fail) return fail
-        println("L after setRule: "+L)
+        //println("L after setRule: "+L)
         val opt:Option[Boolean] = MakeAssignment(l,t)
         if (opt.isEmpty) {
           return fail
@@ -92,7 +88,7 @@ case class TMS(P: StdProgram) {
   }
 
   def addToUpdated(atoms: Set[ExtendedAtom], l: Int) = {
-//    println("stratl: "+stratum(l))
+      //println("stratl: "+stratum(l))
     stratum(l).rules.foreach(a =>
       if(atoms.contains(a.h)) {
       updated += l -> (updated(l) ++ Set(a.h))
@@ -102,8 +98,8 @@ case class TMS(P: StdProgram) {
   def init() = {
     initLabels()
     initUpdated()
-    println("initL: "+L)
-    answerUpdate(0,S(Timeline(0,0)),0) //t'?
+    //println("initL: "+L)
+    answerUpdate(0,0,S(Timeline(0,0))) //t'?
   }
 
   def initLabels() = {
@@ -261,7 +257,7 @@ case class TMS(P: StdProgram) {
 
   /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
   def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
-//    println("consw: "+ConsW(stratum(l),atom))
+      //println("consw: "+ConsW(stratum(l),atom))
     ConsW(stratum(l),atom).foreach({
       case wa:WindowAtom => return Option(wa)
     })
@@ -503,6 +499,8 @@ case class TMS(P: StdProgram) {
   def setStratKey(i: Int) = {
     stratum += (1 -> stratum(0))
   }
+
+  def setA(A: Set[Atom]) = this.A = A
   /*--- end ---*/
 }
 

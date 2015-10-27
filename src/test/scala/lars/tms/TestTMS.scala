@@ -5,8 +5,9 @@ import lars.core.semantics.programs.extatoms.{WindowAtom, WDiam, AtAtom, WAt}
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.windowfn.time.TimeWindow
+import lars.strat.Strata
 import lars.tms.acons.ACons
-import lars.tms.cons.{ConsAt, ConsH, ConsW}
+import lars.tms.cons.{ConsStar, ConsAt, ConsH, ConsW}
 import lars.tms.status.rule.fVal
 import lars.tms.status.{Labels, Label}
 import lars.tms.status.Status.in
@@ -138,7 +139,7 @@ class TestTMS  extends FunSuite {
 //    tmsInit.L = L
 //    val strat = Map[Int,StdProgram] = Map(1 -> Pp1, 2 -> Pp2)
 
-      val answerupdate = tms.answerUpdate(m(45), D, 0)
+      val answerupdate = tms.answerUpdate(m(0),m(45), D)
       println(answerupdate)
 
 
@@ -148,10 +149,16 @@ class TestTMS  extends FunSuite {
 
     val tms = TMS(P)
 
-    tms.init()
+    tms.setA(Set(busG,tramB,request,jam))
+    val stratum = Strata(P)
 
-    val update = tms.answerUpdate(m(39.7),D,m(0))
-    println(update)
+    println(ConsStar(P,tramB))
+    println(ConsStar(P,busG))
+    println(ConsStar(P,jam))
+    println(ConsStar(P,tramB))
+/*    val update = tms.answerUpdate(m(0),m(39.7),D)
+    println(update)*/
 
   }
+
 }
