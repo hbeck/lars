@@ -1,5 +1,6 @@
 package lars.core.semantics.streams
 
+import lars.util.ToString
 import lars.util.map.Merge
 import lars.core.semantics.formulas.Atom
 
@@ -49,10 +50,11 @@ case class Evaluation(mapping:Map[Int,Set[Atom]]=new HashMap[Int,Set[Atom]]) ext
   def nonZeroSize: Int = Math.max(1,mapping.values.flatten.size)
 
   override def toString = {
+
     val sb = new StringBuilder()
     sb.append("{")
     for ((k, v) <- mapping) {
-      sb.append(" " + k + " -> " + v)
+      sb.append(" " + k + " -> " + ToString(v))
     }
     sb.append(" }")
     sb.toString()

@@ -2,9 +2,10 @@ package lars.core.semantics.programs.standard
 
 import lars.core.semantics.formulas._
 import lars.core.semantics.programs.AS
-import lars.core.semantics.programs.extatoms.AtAtom
+import lars.core.semantics.programs.extatoms.{AtAtom, WDiam}
 import lars.core.semantics.streams.S
 import lars.core.semantics.structure.IsAnswerStream
+import lars.core.windowfn.time.TimeWindow
 import org.scalatest.FunSuite
 
 /**
@@ -167,5 +168,73 @@ class TestStdPrograms extends FunSuite {
     assert(AS(Pp ++ R,E,1).size == 1)
 
   }
+
+  test("a <- win diam x.") {
+
+    val w2 = TimeWindow.toOp(2)
+
+    val r = StdRule(a, WDiam(w2,x))
+    val P = StdProgram(Set(r))
+
+    val D = S((0, 5),(0 -> x))
+
+//        for (t <- 0 to 5) {
+//          println("" + t)
+//          for (as <- AS(P, D, t)) {
+//            println(as)
+//          }
+//        }
+
+    assert(IsAnswerStream(D + (0 -> a),P,D,0)) //S([0,5],{ 0 -> {x, a} })
+    assert(IsAnswerStream(D + (1 -> a),P,D,1)) //S([0,5],{ 0 -> {x} 1 -> {a} })
+    assert(IsAnswerStream(D + (2 -> a),P,D,2)) //S([0,5],{ 0 -> {x} 2 -> {a} })
+    assert(IsAnswerStream(D,P,D,3))
+    assert(IsAnswerStream(D,P,D,4))
+    assert(IsAnswerStream(D,P,D,5))
+
+    for (t <- 0 to 5) {
+      assert(AS(P, D, t).size == 1)
+    }
+
+  }
+
+  test("@a <- @x. a <- win diam a") {
+
+    val w2 = TimeWindow.toOp(2)
+
+    val r0 = StdRule(AtAtom(0,a),AtAtom(0,x))
+//    val r1 = StdRule(AtAtom(1,a),AtAtom(1,x))
+//    val r2 = StdRule(AtAtom(2,a),AtAtom(2,x))
+//    val r3 = StdRule(AtAtom(3,a),AtAtom(3,x))
+//    val r4 = StdRule(AtAtom(4,a),AtAtom(4,x))
+//    val r5 = StdRule(AtAtom(5,a),AtAtom(5,x))
+    val r = StdRule(a, WDiam(w2,a))
+    //val P = StdProgram(Set(r0,r1,r2,r3,r4,r5))
+    //val P = StdProgram(Set(r0,r1,r2,r3,r4,r5,r))
+    val P = StdProgram(Set(r0,r))
+
+    val D = S((0, 5),(0 -> x))
+    val Dxa = D + (0 -> a)
+
+//    for (t <- 0 to 5) {
+//      println("" + t)
+//      for (as <- AS(P, D, t)) {
+//        println(as)
+//      }
+//    }
+
+    assert(IsAnswerStream(Dxa,P,D,0))
+    assert(IsAnswerStream(Dxa + (1 -> a),P,D,1))
+    assert(IsAnswerStream(Dxa + (2 -> a),P,D,2))
+    assert(IsAnswerStream(Dxa,P,D,3))
+    assert(IsAnswerStream(Dxa,P,D,4))
+    assert(IsAnswerStream(Dxa,P,D,5))
+
+    for (t <- 0 to 5) {
+      assert(AS(P, D, t).size == 1)
+    }
+
+  }
+
 
 }

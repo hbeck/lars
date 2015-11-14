@@ -13,7 +13,8 @@ object AS {
   def apply[R <: Rule](P: Program[R], D: S, t: Int): Set[S] = {
     val AInt = IntensionalAtoms(P)
     val atomsInHead = HeadOrdinaryAtoms(P)
-    val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t))
+    //val atAtomsInHead = Map2Time(HeadAtAtomsAfter(P,t)) //TODO that's a specific assumption
+    val atAtomsInHead = Map2Time(HeadAtAtoms(P))
     val temporallyQuantifiedInHead = TemporallyQuantifiedInHead(P)
     //1) create maximal extension
     var I = S(D.T)
