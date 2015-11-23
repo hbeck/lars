@@ -7,7 +7,7 @@ import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.windowfn.time.TimeWindow
 import lars.strat.Strata
 import lars.tms.acons.ACons
-import lars.tms.cons.{ConsStar, ConsAt, ConsH, ConsW}
+import lars.tms.cons._
 import lars.tms.status.rule.fVal
 import lars.tms.status.{Labels, Label}
 import lars.tms.status.Status.in
@@ -147,15 +147,22 @@ class TestTMS  extends FunSuite {
 
   test("Exp11"){
 
-    val tms = TMS(P)
+/*    val tms = TMS(P)
 
     tms.setA(Set(busG,tramB,request,jam))
-    val stratum = Strata(P)
+    val stratum = Strata(P)*/
+//    println(stratum)
 
+/*    println("trmB: "+Cons(P,tramB))
+    println("bsm: "+Cons(P,takeBusM))
+    for(a <- Cons(P,jam)) {
+      println(Cons(P,a))
+    }*/
     println(ConsStar(P,tramB))
-    println(ConsStar(P,busG))
-    println(ConsStar(P,jam))
-    println(ConsStar(P,tramB))
+    /*
+        println(ConsStar(P,busG))
+        println(ConsStar(P,jam))
+        println(ConsStar(P,tramB))*/
 /*    val update = tms.answerUpdate(m(0),m(39.7),D)
     println(update)*/
 
