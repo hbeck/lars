@@ -152,17 +152,15 @@ class TestTMS  extends FunSuite {
     tms.setA(Set(busG,tramB,request,jam))
     val stratum = Strata(P)*/
 //    println(stratum)
-
-/*    println("trmB: "+Cons(P,tramB))
-    println("bsm: "+Cons(P,takeBusM))
-    for(a <- Cons(P,jam)) {
-      println(Cons(P,a))
-    }*/
-    println(ConsStar(P,tramB))
     /*
-        println(ConsStar(P,busG))
-        println(ConsStar(P,jam))
-        println(ConsStar(P,tramB))*/
+    println("trmB: "+Cons(P,tramB))
+    println("bsm: "+Cons(P,takeTrM))
+        for(a <- Cons(P,jam)) {
+          println(Cons(P,a))
+        }*/
+        println("busG: "+ConsStar(P,busG))
+        println("jam: "+ConsStar(P,jam))
+        println("tramB: "+ConsStar(P,tramB))
 /*    val update = tms.answerUpdate(m(0),m(39.7),D)
     println(update)*/
 
