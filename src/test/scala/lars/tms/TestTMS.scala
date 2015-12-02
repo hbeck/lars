@@ -147,22 +147,43 @@ class TestTMS  extends FunSuite {
 
   test("Exp11"){
 
-/*    val tms = TMS(P)
+    val tms = TMS(P)
 
-    tms.setA(Set(busG,tramB,request,jam))
-    val stratum = Strata(P)*/
-//    println(stratum)
-    /*
-    println("trmB: "+Cons(P,tramB))
-    println("bsm: "+Cons(P,takeTrM))
-        for(a <- Cons(P,jam)) {
-          println(Cons(P,a))
-        }*/
-        println("busG: "+ConsStar(P,busG))
-        println("jam: "+ConsStar(P,jam))
-        println("tramB: "+ConsStar(P,tramB))
-/*    val update = tms.answerUpdate(m(0),m(39.7),D)
-    println(update)*/
+    println("tramB: "+ConsStar(P,tramB))
+    assert(ConsStar(P,tramB) == Set(WAt(wop5,m(39.1),tramB),
+                                    AtAtom(m(39.1)+m(5),expTrM),
+                                    WDiam(wopP5,expTrM),
+                                    expTrM,
+                                    takeTrM,
+                                    takeBusM))
+    
+    println("busG: "+ConsStar(P,busG))
+    assert(ConsStar(P,busG) == Set(WAt(wop3,m(37.2),busG),
+                                    AtAtom(m(37.2)+m(3),expBusM),
+                                    WDiam(wopP5,expBusM),
+                                    expBusM,
+                                    takeTrM,
+                                    takeBusM))
+
+    println("jam: "+ConsStar(P,jam))
+    assert(ConsStar(P,jam) == Set(WDiam(wop3,jam),
+                                  AtAtom(m(37.2)+m(3),expBusM),
+                                  WDiam(wopP5,expBusM),
+                                  expBusM,
+                                  takeTrM,
+                                  takeBusM))
+
+    println("request: "+ConsStar(P,request))
+    assert(ConsStar(P,request) == Set(WDiam(wop1,request),
+                                      AtAtom(m(39.1)+m(5),expTrM),
+                                      AtAtom(m(37.2)+m(3),expBusM),
+                                      WDiam(wopP5,expTrM),
+                                      WDiam(wopP5,expBusM),
+                                      on,
+                                      expTrM,
+                                      expBusM,
+                                      takeTrM,
+                                      takeBusM))
 
   }
 

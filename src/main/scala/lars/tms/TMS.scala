@@ -284,7 +284,7 @@ case class TMS(P: StdProgram) {
       omega.nested.foreach({
         case ata:AtAtom =>
           val tmp = L.intervals(ata).filter(e => e.lower <= s_in.get.upper || e.upper >= s_in.get.lower)
-          /*if i am wrong, tmp may contain more than one element*/
+          /*if i am wrong, tmp may contain more than one element and this doesn't work right*/
           if (tmp.nonEmpty) {
             s_in = Option(new ClosedIntInterval(math.min(tmp.head.lower,s_in.get.lower),math.max(tmp.head.upper,s_in.get.upper)))
           }
@@ -372,17 +372,6 @@ case class TMS(P: StdProgram) {
     )
     success
   }
-  
-/*  def getA(l: Int): Set[Atom] = {
-
-    var A = Set[Atom]()
-    for (rule <- stratum(l).rules) {
-//      if (updated(l).contains(rule.h)) {
-        A = A ++ rule.body.atoms() ++ rule.head.atoms()
-//      }
-    }
-    A
-  }*/
 
   def SetHead(alpha: ExtendedAtom, l: Int, t: Int): Unit = {
     if (PH(stratum(l),alpha).exists(r => fVal(L,r))) {
@@ -499,8 +488,6 @@ case class TMS(P: StdProgram) {
   def setStratKey(i: Int) = {
     stratum += (1 -> stratum(0))
   }
-
-  def setA(A: Set[Atom]) = this.A = A
   /*--- end ---*/
 }
 
