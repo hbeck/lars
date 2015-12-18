@@ -2,17 +2,20 @@ package lars.tms
 
 import lars.core.semantics.formulas.{ExtendedAtom, Atom, Not}
 import lars.core.semantics.programs.extatoms.{WindowAtom, WDiam, AtAtom, WAt}
+import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.core.semantics.streams.{S, Evaluation, Timeline}
 import lars.core.windowfn.time.TimeWindow
 import lars.strat.Strata
 import lars.tms.acons.ACons
 import lars.tms.cons._
-import lars.tms.status.rule.fVal
+import lars.tms.status.rule.{fInval, fVal}
 import lars.tms.status.{Labels, Label}
-import lars.tms.status.Status.in
-import lars.tms.supp.SuppP
+import lars.tms.status.Status.{out, in}
+import lars.tms.supp.{SuppN, SuppP}
 import org.scalatest.FunSuite
+
+import scala.collection.immutable.HashMap
 
 /**
  * Created by et on 24.08.15.
@@ -147,17 +150,30 @@ class TestTMS  extends FunSuite {
 
   test("Exp11"){
 
-    val tms = TMS(P)
+//    val tms = TMS(P)
+    var L = Labels()
+    val stratum = Strata(P)
 
-    println("tramB: "+ConsStar(P,tramB))
+    val A: Set[Atom] = ExtensionalAtoms(P)
+    for (a <- A) {
+      L.update(a,Label(out, (0,0)))
+    }
+
+    val transCons: Set[ExtendedAtom] = A.flatMap(ConsStar(P,_))
+    val outs = transCons.filter(!_.isInstanceOf[WindowAtom])
+    for (x <- outs) {
+      L.update(x,Label(out))
+    }
+
+//    println("tramB: "+ConsStar(P,tramB))
     assert(ConsStar(P,tramB) == Set(WAt(wop5,m(39.1),tramB),
                                     AtAtom(m(39.1)+m(5),expTrM),
                                     WDiam(wopP5,expTrM),
                                     expTrM,
                                     takeTrM,
                                     takeBusM))
-    
-    println("busG: "+ConsStar(P,busG))
+
+//    println("busG: "+ConsStar(P,busG))
     assert(ConsStar(P,busG) == Set(WAt(wop3,m(37.2),busG),
                                     AtAtom(m(37.2)+m(3),expBusM),
                                     WDiam(wopP5,expBusM),
@@ -165,15 +181,15 @@ class TestTMS  extends FunSuite {
                                     takeTrM,
                                     takeBusM))
 
-    println("jam: "+ConsStar(P,jam))
+//    println("jam: "+ConsStar(P,jam))
     assert(ConsStar(P,jam) == Set(WDiam(wop3,jam),
-                                  AtAtom(m(37.2)+m(3),expBusM),
-                                  WDiam(wopP5,expBusM),
-                                  expBusM,
+//                                  AtAtom(m(37.2)+m(3),expBusM),
+//                                  WDiam(wopP5,expBusM),
+//                                  expBusM,
                                   takeTrM,
                                   takeBusM))
 
-    println("request: "+ConsStar(P,request))
+//    println("request: "+ConsStar(P,request))
     assert(ConsStar(P,request) == Set(WDiam(wop1,request),
                                       AtAtom(m(39.1)+m(5),expTrM),
                                       AtAtom(m(37.2)+m(3),expBusM),
@@ -184,6 +200,28 @@ class TestTMS  extends FunSuite {
                                       expBusM,
                                       takeTrM,
                                       takeBusM))
+
+
+//    println("acons: "+ACons(P,L,A,0))
+    assert(ACons(P,L,A,0) == A.flatMap(a => ConsStar(P,a)))
+
+    println("this is acons: "+ACons(stratum(1),L,A,0))
+
+    println("stratum(0): "+stratum(0))
+    println("stratum(1): "+stratum(1))
+
+    val tms = TMS(P)
+
+    val expired = tms.Expired(D,1,0,0)
+    val fired = tms.Fired(D,1,0,0)
+
+    val unkowns = tms.SetUnknown(1,0)
+    val setrule = tms.SetRule(1,0)
+    val sethead = tms.SetHead(on,on,1,0)
+
+        println("labels: "+L)
+    println(fInval(L,r3))
+//    tms.answerUpdate(m(0),m(0),D)
 
   }
 

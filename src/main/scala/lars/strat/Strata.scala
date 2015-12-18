@@ -15,7 +15,7 @@ object Strata {
     }
     val strat = optStrat.get
     val mMap = new collection.mutable.HashMap[Int,StdProgram]()
-    var nr = -1;
+    var nr = -1
     for (i <- 0 to strat.maxStratum) {
       val rules = P.rules.filter(rule => strat(ExtendedAtoms(rule.head,false).head) == i) //brave; in use case, rule head should be single ExtendedAtom
       if (rules.nonEmpty) {

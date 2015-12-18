@@ -42,39 +42,40 @@ case class TMS(P: StdProgram) {
     val Lp = L.copy
 //    val Lq:Labels = copyL(L)
 
-    //println("tp: "+tp+" t: "+t)
-    //println("stratum(0): "+stratum(0))
-    //println("stratum(1): "+stratum(1))
-    //println("stratum(2): "+stratum(2))
+//    println("tp: "+tp+" t: "+t)
+//    println("stratum(0): "+stratum(0))
+//    println("stratum(1): "+stratum(1))
+//    println("stratum(2): "+stratum(2))
 
     for (l <- 1 to n) {
-        //println("--- "+l+" ---")
-        //println("updated: "+updated)
-        //println("L: "+L)
+//        println("--- "+l+" ---")
+//        println("updated: "+updated)
+//        println("L: "+L)
       var C = Set[WindowAtom]()
-      //println("expired: "+Expired(D,l,tp,t))
+//      println("expired: "+Expired(D,l,tp,t))
       for (omega <- Expired(D,l,tp,t)) {
         ExpireInput(omega,t)
         C = C + omega
         A += omega.atom
         addToUpdated(omega.nested,l)
       }
-      //println("fired: "+Fired(D,l,tp,t))
+//      println("fired: "+Fired(D,l,tp,t))
       for ((omega,t1) <- Fired(D,l,tp,t)) {
         FireInput(omega,t1,l,D)
-        //println("L: "+L)
+//        println("L: "+L)
         C = C + omega
         A += omega.atom
-        //println("C: "+C)
+//        println("C: "+C)
         addToUpdated(omega.nested,l)
-        //println("updated: "+updated)
+//        println("updated: "+updated)
       }
       UpdateTimestamps(C,Lp,l,t)
       SetUnknown(l,t)
       var madeNewAssignment = false
       do {
+        println("stratum("+l+"): "+stratum(l))
         if (SetRule(l,t) == fail) return fail
-        //println("L after setRule: "+L)
+        println("L after setRule: "+L)
         val opt:Option[Boolean] = MakeAssignment(l,t)
         if (opt.isEmpty) {
           return fail
@@ -107,11 +108,18 @@ case class TMS(P: StdProgram) {
     for (a <- inputAtoms) {
       L.update(a,Label(out, (0,0)))
     }
+    A = inputAtoms
 
     val transCons: Set[ExtendedAtom] = inputAtoms.flatMap(ConsStar(P,_))
+
+    val outs = transCons.filter(_.isInstanceOf[WindowAtom])
+    for (x <- outs) {
+      L.update(x,Label(out,(0,0)))
+    }
+
     val unknowns = transCons.filter(!_.isInstanceOf[WindowAtom])
     for (x <- unknowns) {
-      L.update(x,Label(unknown))
+      L.update(x,Label(unknown,(0,0)))
     }
   }
 
@@ -367,20 +375,22 @@ case class TMS(P: StdProgram) {
   }
 
   def SetRule(l: Int, t: Int): Result = {
+    println("Acons("+l+"): "+ACons(stratum(l),L,A,t))
     ACons(stratum(l),L,A,t).foreach(f =>
-      if (L.status(f) == unknown) SetHead(f,l,t)
+      if (L.status(f) == unknown) SetHead(f,f,l,t)
     )
     success
   }
 
-  def SetHead(alpha: ExtendedAtom, l: Int, t: Int): Unit = {
+  def SetHead(prev: ExtendedAtom, alpha: ExtendedAtom, l: Int, t: Int): Unit = {
+    println("label alpha("+alpha+"): "+L.status(alpha))
     if (PH(stratum(l),alpha).exists(r => fVal(L,r))) {
 
       val tStar = fRuleInterval(PH(stratum(l),alpha),t).max
       L.update(alpha,Label(in,(t,tStar)))
       UpdateOrdAtom(alpha,in)
       alpha match {
-        case wa:WindowAtom =>
+        case wa:WindowAtom => /*do nothing*/
         case _ =>
           val suppAt = SuppAt(stratum(l),L,alpha)
           suppAt.foreach({case ata:AtAtom =>
@@ -389,16 +399,17 @@ case class TMS(P: StdProgram) {
       }
       updated += l -> (updated(l) ++ Set(alpha))
       /*Update Supp+ (alpha) as defined ???*/
-    } else if (PH(stratum(l),alpha).forall(r => fInval(L,r))) {
+    } else if (PH(stratum(l),alpha).nonEmpty && PH(stratum(l),alpha).forall(r => fInval(L,r))) {
 
-      val tStar = fRuleInterval(PH(stratum(l),alpha),t).min
+      val minSet = fRuleInterval(PH(stratum(l),alpha),t)
+      var tStar = 0
+      if(minSet.nonEmpty) tStar = minSet.min
       L.update(alpha,Label(out,(t,tStar)))
       UpdateOrdAtom(alpha,out)
       /*Update Supp-(alpha) as defined ???*/
     }
-
     Cons(stratum(l),alpha).foreach(beta =>
-      if (L.status(beta) == unknown) SetHead(beta,l,t))
+      if (prev != beta && beta != alpha && L.status(beta) == unknown) SetHead(alpha, beta,l,t))
   }
 
   def fRuleInterval(rules: Set[StdRule], t: Int): Set[Int] = {

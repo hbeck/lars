@@ -1,6 +1,6 @@
 package lars.core.semantics.programs.standard
 
-import lars.core.semantics.formulas.ExtendedAtom
+import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 import lars.core.semantics.programs.Program
 
 /**

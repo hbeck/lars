@@ -10,7 +10,7 @@ import lars.tms.status.Labels
 object Supp {
 
   def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] = {
-    SuppP(P,L,x) union SuppM(P,L,x) union SuppAt(P,L,x)
+    SuppP(P,L,x) union SuppN(P,L,x) union SuppAt(P,L,x)
   }
 
 }
