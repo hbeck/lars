@@ -40,7 +40,7 @@ object Stratify {
     Option(Stratification(nrToAtoms))
   }
 
-  def apply[T <: DiGraph[ExtendedAtom]](P: StdProgram, f: ((DepGraph, QuotientGraph[ExtendedAtom]) => QuotientGraph[ExtendedAtom])): Option[Stratification] = {
+  def apply[T <: DiGraph[ExtendedAtom]](P: StdProgram, f: (DepGraph, QuotientGraph[ExtendedAtom]) => QuotientGraph[ExtendedAtom]): Option[Stratification] = {
     apply(DepGraph(P),f)
   }
 

@@ -12,11 +12,7 @@ case class StdProgram(override val rules:Set[StdRule]) extends Program[StdRule](
 
   def contains(x: ExtendedAtom): Boolean = {
     rules.exists(r => r.contains(x))
-<<<<<<< HEAD
 /*    rules.find( r => r.contains(x) ).isDefined*/
-=======
-//    rules.find( r => r.contains(x) ).isDefined
->>>>>>> tms
   }
 
   override def apply(rules:Set[StdRule]): StdProgram = StdProgram(rules)
