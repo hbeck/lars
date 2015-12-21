@@ -23,7 +23,10 @@ case class Stratification(map: Map[Int,Set[ExtendedAtom]]) { //"other" way as de
 object Stratification {
 
   def apply(P: StdProgram): Option[Stratification] = {
-    val depGraph = DepGraph(P)
+    _apply(DepGraph(P))
+  }
+
+  def _apply(depGraph: DepGraph[ExtendedAtom]): Option[Stratification] = {
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
     // if any of these components contains an edge with dependency > (greater),
     // no stratification exists
@@ -81,7 +84,7 @@ object Stratification {
 
   def hasCycleWithGrt(depGraph: DepGraph[ExtendedAtom], condensation: QuotientGraph[ExtendedAtom]): Boolean = {
     for (scc <- condensation.nodes) {
-      val dg = depGraph.subgraph(scc)
+      val dg = depGraph.subgraph(scc.toSet)
       if (dg.edges.exists{ e => dg.label(e._1,e._2) == grt }) {
         return true
       }
@@ -97,7 +100,7 @@ object Stratification {
           val set = m(nr) ++ nodes
           m = m.updated(nr, set)
         } else {
-          m = m.updated(nr, nodes)
+          m = m.updated(nr, nodes.toSet)
         }
       }
     }

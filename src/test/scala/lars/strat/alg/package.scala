@@ -8,8 +8,8 @@ import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 package object alg {
 
   def e(from:ExtendedAtom, to:ExtendedAtom, dep: Dependency) = DepEdge(from,to,dep)
-  def g(s:Set[ExtendedAtom], e:DepEdge*): DepGraph = DepGraph(s,e.toSet)
-  def gs(s:Set[ExtendedAtom], edges: Set[DepEdge]): DepGraph = DepGraph(s,edges)
+  def g(nodes:Set[ExtendedAtom], e:DepEdge[ExtendedAtom]*): DepGraph[ExtendedAtom] = DepGraph(nodes,e.toSet)
+  def gs(nodes:Set[ExtendedAtom], edges: Set[DepEdge[ExtendedAtom]]): DepGraph[ExtendedAtom] = DepGraph(nodes,edges)
 
   //
 

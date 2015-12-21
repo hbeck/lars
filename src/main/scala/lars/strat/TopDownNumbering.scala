@@ -15,7 +15,7 @@ object TopDownNumbering {
 
   def _apply[V](g: DepGraph[V], node:V, min:Int): Map[V, Int] = {
     if (g.isLeaf(node)) {
-      Map(node,min)
+      Map() + (node -> min)
     } else {
       val children = g.outgoing(node)
       val childrenMaps: Set[Map[V, Int]] = children.map( child => _apply(g,child,min) )

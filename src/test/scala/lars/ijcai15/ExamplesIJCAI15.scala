@@ -238,7 +238,7 @@ class ExamplesIJCAI15 extends FunSuite {
     //
     def e(from:ExtendedAtom, to:ExtendedAtom, d:Dependency) = DepEdge(from, to, d)
     val nodes = ExtendedAtoms(Pp,true)
-    val expectedDepGraph = DepGraph(nodes,Set[DepEdge](
+    val expectedDepGraph = DepGraph(nodes,Set[DepEdge[ExtendedAtom]](
       e(AtAtom(t,x),WAt(w3,t,y),geq),
       e(WAt(w3,t,y),y,grt),
       e(AtAtom(t,x),x,eql),
