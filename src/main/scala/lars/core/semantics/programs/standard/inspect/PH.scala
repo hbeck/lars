@@ -10,6 +10,8 @@ import lars.core.semantics.programs.standard.{StdRule, StdProgram}
  */
 object PH {
 
-  def apply(P: StdProgram, x: ExtendedAtom): Set[StdRule] = P.rules.filter(_.h == x)
+  def apply(P: StdProgram, x: ExtendedAtom): Set[StdRule] = {
+    P.rules.filter(_.h == x)
+  }
 
 }

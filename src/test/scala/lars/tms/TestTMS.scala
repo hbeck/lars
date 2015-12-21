@@ -205,7 +205,6 @@ class TestTMS  extends FunSuite {
 //    println("acons: "+ACons(P,L,A,0))
     assert(ACons(P,L,A,0) == A.flatMap(a => ConsStar(P,a)))
 
-    println("this is acons: "+ACons(stratum(1),L,A,0))
 
     println("stratum(0): "+stratum(0))
     println("stratum(1): "+stratum(1))

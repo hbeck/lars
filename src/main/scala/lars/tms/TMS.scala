@@ -17,7 +17,7 @@ import lars.tms.incr.Result.{fail, success}
 import lars.tms.status.rule.{ufVal, fInval, fVal}
 import lars.tms.status.{Status, Label, Labels}
 import lars.tms.status.Status.{in, unknown, out}
-import lars.tms.supp.SuppAt
+import lars.tms.supp.{SuppN, SuppAt}
 import scala.collection.immutable
 
 /**
@@ -47,7 +47,7 @@ case class TMS(P: StdProgram) {
 //    println("stratum(1): "+stratum(1))
 //    println("stratum(2): "+stratum(2))
 
-    for (l <- 1 to n) {
+    for (l <- 0 to n) {
 //        println("--- "+l+" ---")
 //        println("updated: "+updated)
 //        println("L: "+L)
@@ -73,7 +73,7 @@ case class TMS(P: StdProgram) {
       SetUnknown(l,t)
       var madeNewAssignment = false
       do {
-        println("stratum("+l+"): "+stratum(l))
+//        println("stratum("+l+"): "+stratum(l))
         if (SetRule(l,t) == fail) return fail
         println("L after setRule: "+L)
         val opt:Option[Boolean] = MakeAssignment(l,t)
@@ -383,7 +383,6 @@ case class TMS(P: StdProgram) {
   }
 
   def SetHead(prev: ExtendedAtom, alpha: ExtendedAtom, l: Int, t: Int): Unit = {
-    println("label alpha("+alpha+"): "+L.status(alpha))
     if (PH(stratum(l),alpha).exists(r => fVal(L,r))) {
 
       val tStar = fRuleInterval(PH(stratum(l),alpha),t).max
