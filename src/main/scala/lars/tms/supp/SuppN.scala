@@ -10,7 +10,7 @@ import lars.tms.status.rule.fVal
 /**
  * Created by hb on 7/15/15.
  */
-object SuppM {
+object SuppN {
 
   def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] = {
     if (L.status(x) != out) {

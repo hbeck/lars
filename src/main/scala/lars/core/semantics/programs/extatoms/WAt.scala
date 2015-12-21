@@ -5,8 +5,8 @@ import lars.core.semantics.formulas._
 /**
  * Created by hb on 7/14/15.
  */
-class WAt(override val w: WindowOperatorFixedParams, val t:Int, val a: Atom) extends WindowAtom(w,At(t,a)) /* Wop(w,At(t,a)) */ with ExtendedAtom {
-  override def toString = w + "@{" + t+ "}"+a
+class WAt(override val wop: WindowOperatorFixedParams, val t:Int, val a: Atom) extends WindowAtom(wop,At(t,a)) /* Wop(w,At(t,a)) */ with ExtendedAtom {
+  override def toString = wop + "@{" + t+ "}"+a
   override def atom = a
   override def nested = Set[ExtendedAtom](this,AtAtom(t,a),a)
 }
