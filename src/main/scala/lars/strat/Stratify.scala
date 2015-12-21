@@ -16,7 +16,7 @@ object Stratify {
    * @param f takes a dependency graph and a condensation, and creates a new quotient graph
    * @return a Stream Stratification for program P, if it has one exists
    */
-  def apply(P: StdProgram, f: DepQuotientGraph[ExtendedAtom] => DepQuotGraph[ExtendedAtom]): Option[Stratification] = {
+  def apply(P: StdProgram, f: DepQuotientGraph[ExtendedAtom] => DepQuotientGraph[ExtendedAtom]): Option[Stratification] = {
     val depGraph = DepGraph(P)
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph)
     // if any of these components contains an edge with dependency > (greater),
@@ -24,21 +24,21 @@ object Stratify {
     if (hasCycleWithGrt(depGraph, condensation)) {
       return None
     }
-    Option(apply(depGraph,condensation,f))
+    Option(_apply(depGraph,condensation,f))
   }
 
   /**
    * @param depGraph dependency graph
    * @param condensation quotient graph whose nodes are strongly connected components
    * @param f takes a dependency graph and a condensation, and creates a new quotient graph
-   * @return a Stream Stratification
+   * @return a Stream Stratificatio                 n
    */
-  def apply(depGraph: DepGraph[ExtendedAtom], condensation: QuotientGraph[ExtendedAtom], f: DepQuotientGraph[Block[ExtendedAtom]] => DepQuotientGraph[ExtendedAtom]) : Stratification = {
+  def _apply(depGraph: DepGraph[ExtendedAtom], condensation: QuotientGraph[ExtendedAtom], f: DepQuotientGraph[Block[ExtendedAtom]] => DepQuotientGraph[ExtendedAtom]) : Stratification = {
     val condensationDepGraph: DepGraph[Block[ExtendedAtom]] = createCondensationDepGraph(depGraph,condensation)
     val stratumGraph: DepQuotient[ExtendedAtom] = f(condensationDepGraph)
     val subgraphNr: Map[Block[ExtendedAtom], Int] = BottomUpNumbering(stratumGraph)
-    val nrToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
-    Stratification(nrToAtoms)
+    val idxToAtoms: Map[Int, Set[ExtendedAtom]] = createStratumMapping(subgraphNr)
+    Stratification(idxToAtoms)
   }
 
   /**
@@ -67,7 +67,7 @@ object Stratify {
         }
       }
     }
-    return `geq`
+    return `geq` //`eq` not possible, these are already within a block
   }
 
   def hasCycleWithGrt(depGraph: DepGraph[ExtendedAtom], condensation: QuotientGraph[ExtendedAtom]): Boolean = {

@@ -9,7 +9,7 @@ import lars.core.semantics.programs.standard.StdProgram
 object Strata {
 
   def apply(P: StdProgram): Map[Int,StdProgram] = {
-    val optStrat: Option[Stratification] = Stratification(P)
+    val optStrat: Option[Stratification] = Stratify(P,MinStratumGraph)
     if (optStrat.isEmpty) {
       return Map(0 -> P)
     }
