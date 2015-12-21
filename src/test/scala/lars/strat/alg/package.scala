@@ -41,6 +41,11 @@ package object alg {
   object wa extends Atom
   object wb extends Atom
   object wc extends Atom
+  object wd extends Atom
+  object wf extends Atom
+  object wh extends Atom
+  object wx extends Atom
+  object wy extends Atom
   object wd1 extends Atom
 
 
