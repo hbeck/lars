@@ -333,4 +333,37 @@ class TestStratification extends FunSuite {
     assert(stratum(2)==(p((w3,w(x3)))) + StdRule(w1,Set(w(x1),x3)))
   }
 
+  test("strat 9 disconnected 1") {
+    val program = p((a,b),(c,d))
+    val optStrat: Option[Stratification] = Stratification(program)
+    assert(optStrat.isDefined)
+    val strat: Stratification = optStrat.get
+    //println(strat)
+    assert(strat.maxStratum == 0)
+    assert(strat(0) == Set(a,b,c,d))
+
+    val stratum = Strata(program)
+    assert(stratum(0)==program)
+  }
+
+  test("strat 10 disconnected 2") {
+    val program =
+      p((y1,w(x1)),(x1,x2),(x2,x1),(x1,z1),(x2,z2)) ++
+      p((y2,wat(a)),(a,b),(at(a),w(b)))
+
+    val optStrat: Option[Stratification] = Stratification(program)
+    assert(optStrat.isDefined)
+    val strat: Stratification = optStrat.get
+    //println(strat)
+    assert(strat.maxStratum == 2)
+    assert(strat(0) == Set(z1,z2,x1,x2,b))
+    assert(strat(1) == Set(w(x1),y1,a,at(a),w(b)))
+    assert(strat(2) == Set(wat(a),y2))
+
+    val stratum = Strata(program)
+    assert(stratum(0)==p((x1,x2),(x2,x1),(x1,z1),(x2,z2)))
+    assert(stratum(1)==p((y1,w(x1)),(a,b),(at(a),w(b))))
+    assert(stratum(2)==p((y2,wat(a))))
+  }
+
 }
