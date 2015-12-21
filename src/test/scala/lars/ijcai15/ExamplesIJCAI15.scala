@@ -262,7 +262,7 @@ class ExamplesIJCAI15 extends FunSuite {
 
   test("ex8") {
     val program = Pp
-    val opt: Option[Stratification] = Stratify(program)
+    val opt: Option[Stratification] = Stratification(program)
     assert(opt.isDefined)
     val strat = opt.get
     assert(strat.maxStratum == 2)
@@ -313,7 +313,7 @@ class ExamplesIJCAI15 extends FunSuite {
     )
     assert(extendedAtoms == expectedExtendedAtoms)
     //
-    val strat = Stratify(program).get
+    val strat = Stratification(program).get
     //
     assert(strat.maxStratum == 5)
     // 5

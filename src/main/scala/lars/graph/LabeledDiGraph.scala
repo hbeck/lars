@@ -3,7 +3,7 @@ package lars.graph
 /**
  * Created by hb on 7/17/15.
  */
-class LabeledDiGraph[V,L](override val adjList:Map[V,Set[V]], val label: ((V,V) => L)) extends DiGraph[V](adjList) {
+class LabeledDiGraph[V,L](override val adjList:Map[V,Set[V]], val label: (V,V) => L) extends DiGraph[V](adjList) {
 
   def ==(other: LabeledDiGraph[V,L]): Boolean = {
     if (adjList != other.adjList) {

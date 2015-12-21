@@ -1,10 +1,10 @@
 package lars.strat
 
 import lars.core.semantics.formulas._
-import lars.core.semantics.programs.extatoms._
+import lars.core.semantics.programs.extatoms.{AtAtom, _}
 import lars.core.semantics.programs.standard.{StdProgram, StdRule}
 import lars.graph.{DiGraph, LabeledDiGraph}
-import lars.core.semantics.programs.extatoms.AtAtom
+import lars.util.map.Merge
 
 import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
@@ -25,11 +25,22 @@ class DepGraph[V](override val adjList: Map[V,Set[V]],
     new DepGraph[V](digraph.adjList, label) //reduce label "keys"?
   }
 
+  //TODO other symbol than --
   //remaining graph when removing the given nodes
   def -- (nodes: Set[V]) : DepGraph[V] = {
     val newNodes = this.nodes -- nodes
     subgraph(newNodes)
   }
+
+  //TODO other symbol than ++
+  def ++ (depEdges: Set[DepEdge[V]]): DepGraph[V] = {
+    val newNodes = this.nodes ++ depEdges.flatMap{ e => Set[V](e.from,e.to) }
+    val diffAdjList: Map[V, Set[V]] = DepGraph.createAdjList(newNodes, depEdges)
+    val newAdjList = Merge(this.adjList,diffAdjList)
+    new DepGraph[V](newAdjList,DepGraph.mkLabel(depEdges ++ this.depEdges))
+  }
+  
+  def depEdges(): Set[DepEdge[V]] = edges.map{ e:(V,V) => DepEdge(e._1,e._2,label(e._1,e._2)) }
 
   override def equals(other:Any) : Boolean = {
     other match {
@@ -53,12 +64,17 @@ object DepGraph {
   def apply[V](nodes: Set[V], depEdges: Set[DepEdge[V]]): DepGraph[V] = {
     val adjList = createAdjList(nodes,depEdges)
     //abstract away dependencies into label function (as map):
+    new DepGraph[V](adjList,mkLabel(depEdges))
+  }
+
+  def mkLabel[V](depEdges: Set[DepEdge[V]]): ((V,V) => Dependency) = {
     var m = Map[(V,V),Dependency]()
     for (e@DepEdge(from,to,dep) <- depEdges) {
       m = m + ((from,to) -> dep)
     }
-    val label = { (x:V,y:V) => m((x,y)) }
-    new DepGraph[V](adjList,label)
+    val imm = m.toMap
+    val labelFn = { (x:V,y:V) => imm((x,y)) }
+    labelFn
   }
 
   def createAdjList[V](vertices: Set[V], edges:Set[DepEdge[V]]): Map[V,Set[V]] = {

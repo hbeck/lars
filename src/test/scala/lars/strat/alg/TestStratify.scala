@@ -76,7 +76,7 @@ class TestStratify extends FunSuite {
     assert(idx(set_w) == 1)
   }
 
-  val strat:Stratification = Stratification(Stratify.createStratumMapping(BottomUpNumbering(con)))
+  val strat:Stratification = Stratification.createStratumMapping(BottomUpNumbering(con))
 
   test("makeStrat") {
     assert(strat(0) == Set(z1,z2,y2))
@@ -138,7 +138,7 @@ class TestStratify extends FunSuite {
     object a2 extends Atom
     val nodes = Set[ExtendedAtom](a1,a2,b,c,d,f)
     val depGraph = g(nodes, e(f,b,grt), e(f,d,grt), e(d,c,grt), e(c,b,grt), e(b,a1,grt), e(d,a2,grt))
-    val s: Stratification = Stratify(depGraph).get
+    val s: Stratification = Stratification(depGraph).get
     assert(s(a1)==0)
     assert(s(a2)==0)
     assert(s(b)==1)
@@ -149,7 +149,7 @@ class TestStratify extends FunSuite {
 
   test("no stratification") {
     val cycleG = g(Set(x,y),e(x,y,grt),e(y,x,grt))
-    val s: Option[Stratification] = Stratify(cycleG)
+    val s: Option[Stratification] = Stratification(cycleG)
     assert(s.isEmpty)
   }
 
