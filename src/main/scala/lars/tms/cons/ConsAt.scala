@@ -13,9 +13,9 @@ object ConsAt {
     x match {
       case y:AtAtom => {
         if (P.rules.flatMap(r => r.B + r.h).contains(y)) {
-          return Set(y.a)
+          Set(y.a)
         } else {
-          return Set()
+          Set()
         }
       }
       case _ => Set()

@@ -19,9 +19,9 @@ object AConsStar {
   def _apply(P: StdProgram, L: Labels, xs: Set[ExtendedAtom]): Set[ExtendedAtom] = {
     val next: Set[ExtendedAtom] = xs.flatMap(ACons(P,L,_))
     if (next == xs) {
-      return xs
+      xs
     } else {
-      return _apply(P,L,next)
+      _apply(P,L,next)
     }
   }
 
