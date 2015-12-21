@@ -33,11 +33,14 @@ package object alg {
 
   object x1 extends Atom
   object x2 extends Atom
+  object x3 extends Atom
   object y1 extends Atom
   object y2 extends Atom
   object z1 extends Atom
   object z2 extends Atom
-  object w extends Atom
+  object w1 extends Atom
+  object w2 extends Atom
+  object w3 extends Atom
   object wa extends Atom
   object wb extends Atom
   object wc extends Atom

@@ -265,28 +265,16 @@ class ExamplesIJCAI15 extends FunSuite {
     val opt: Option[Stratification] = Stratification(program)
     assert(opt.isDefined)
     val strat = opt.get
-    assert(strat.maxStratum == 2)
+    //println(strat)
+    assert(strat.maxStratum == 1)
     assert(strat(0) == Set(AtAtom(t,y),y))
-    assert(strat(1) == Set(WAt(w3,t,y)))
-    assert(strat(2) == Set(AtAtom(t,x),x))
+    assert(strat(1) == Set(WAt(w3,t,y),AtAtom(t,x),x))
     // can call also in direction as given in paper:
     assert(strat(AtAtom(t,y)) == 0)
     assert(strat(y) == 0)
     assert(strat(WAt(w3,t,y)) == 1)
-    assert(strat(AtAtom(t,x)) == 2)
-    assert(strat(x) == 2)
-    // decision was made to have a 'maximal' stratification in the algorithm
-    // however, ex8 as presented in the paper is also a stratification:
-    assert(
-      Stratification.isStratification(Map(
-      AtAtom(t,y) -> 0,
-      y -> 0,
-      WAt(w3,t,y) -> 1,
-      AtAtom(t,x) -> 1,
-      x -> 1),
-      program))
-    //
-    assert(Strata(program)(0)==program)
+    assert(strat(AtAtom(t,x)) == 1)
+    assert(strat(x) == 1)
   }
 
   /*
@@ -300,7 +288,6 @@ class ExamplesIJCAI15 extends FunSuite {
   val ruleMapGen = Map[Int,GeneralRule]()+(1 -> r1g_gen)+(2 -> r2g_gen)+(3 -> r3_gen)+(4 -> r4_gen)+(5 -> r5_gen)
   val ruleMapStd = Map[Int,StdRule]()+(1 -> r1g)+(2 -> r2g)+(3 -> r3)+(4 -> r4)+(5 -> r5)
 
-  // TODO create new test with new minimal stratification (that is not using StrongComponentGraph)
   test("ex9") {
     val program = P
     val extendedAtoms: Set[ExtendedAtom] = ExtendedAtoms(program,true)
@@ -315,41 +302,25 @@ class ExamplesIJCAI15 extends FunSuite {
     //
     val strat = Stratification(program).get
     //
-    assert(strat.maxStratum == 5)
-    // 5
-    for (x <- Set(takeBusM, takeTrM)) {
-      assert(strat(x) == 5)
-    }
-    // 4
-    for (x <- Set(WDiam(wopP5,expBusM),WDiam(wopP5,expTrM))) {
-      assert(strat(x) == 4)
-    }
-    // 3
-    for (x <- Set(AtAtom(m(37.2)+m(3),expBusM), expBusM, AtAtom(m(39.1)+m(5),expTrM), expTrM)) {
-      assert(strat(x) == 3)
-    }
-    // 2
-    for (x <- Set(on)) {
+    assert(strat.maxStratum == 2)
+    for (x <- Set(takeBusM, takeTrM, WDiam(wopP5,expBusM),WDiam(wopP5,expTrM))) {
       assert(strat(x) == 2)
     }
-    // 1
-    for (x <- Set(WDiam(wop1,request),WAt(wop5,m(39.1),tramB),WAt(wop3,m(37.2),busG),WDiam(wop3,jam))) {
+    for (x <- Set(WDiam(wop1,request),WAt(wop5,m(39.1),tramB),WAt(wop3,m(37.2),busG),WDiam(wop3,jam),
+                  AtAtom(m(37.2)+m(3),expBusM), expBusM, AtAtom(m(39.1)+m(5),expTrM), expTrM, on)) {
       assert(strat(x) == 1)
     }
-    // 0
     for (x <- Set(request,AtAtom(m(37.2),busG),busG,jam,AtAtom(m(39.1),tramB), tramB)) {
       assert(strat(x) == 0)
     }
 
     val stratum: Map[Int, StdProgram] = Strata(program)
 
-    val P2 = program(Set(r3))
-    val P3 = program(Set(r1g,r2g))
-    val P5 = program(Set(r4,r5))
+    val P1 = program(Set(r1g,r2g,r3))
+    val P2 = program(Set(r4,r5))
 
-    assert(stratum(0) == P2)
-    assert(stratum(1) == P3)
-    assert(stratum(2) == P5)
+    assert(stratum(1) == P1)
+    assert(stratum(2) == P2)
 
     //example for property 1:
     val ias: Set[S] = IAS(program,Dp,t)
