@@ -28,7 +28,7 @@ class DiGraph[V](val adjList:Map[V,Set[V]]) extends AdjList[V] with Outgoing[V] 
   def root(): Option[V] = {
     val candidates = startNodes()
     if (candidates.size == 1) {
-      Option(candidates.head)
+      return Option(candidates.head)
     }
     None
   }

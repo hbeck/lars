@@ -16,14 +16,33 @@ package object alg {
   object x extends Atom
   object y extends Atom
   object z extends Atom
+
   object a extends Atom
+  object a1 extends Atom
+  object a2 extends Atom
+  object a3 extends Atom
   object b extends Atom
   object c extends Atom
   object d extends Atom
+  object d1 extends Atom
+  object d2 extends Atom
   object f extends Atom
   object h extends Atom
   object i extends Atom
   object j extends Atom
+
+  object x1 extends Atom
+  object x2 extends Atom
+  object y1 extends Atom
+  object y2 extends Atom
+  object z1 extends Atom
+  object z2 extends Atom
+  object w extends Atom
+  object wa extends Atom
+  object wb extends Atom
+  object wc extends Atom
+  object wd1 extends Atom
+
 
   val g_x = g(Set(x))
   val g_xy_1 = g(Set(x,y),e(x,y,geq))
