@@ -52,6 +52,7 @@ class TMN(val N:collection.immutable.Set[Node], val J:Set[Justification]=Set()) 
     Jn(n).find( j => j.I.subsetOf(MSub) && j.O.intersect(M.toSet).isEmpty )
   }
 
+  //TODO return new model (maintain order)
   def update(j:Justification): Unit = {
 
     def n = j.n //alias
