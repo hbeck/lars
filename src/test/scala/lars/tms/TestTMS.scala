@@ -145,7 +145,7 @@ class TestTMS  extends FunSuite {
 
   }
 
-  test("Exp11"){
+  test("Exp16"){
 
     val tms = TMS(P)
 
