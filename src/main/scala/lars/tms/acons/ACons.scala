@@ -12,8 +12,12 @@ import lars.tms.supp.Supp
  */
 object ACons {
 
-  def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] =
-    Cons(P,x).filter( y => Supp(P,L,y).contains(x) ) union ConsAt(P,x)
+  def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] = {
+/*    println("cons: "+Cons(P, x))
+    Cons(P, x).foreach(y => println("supp("+y+"): "+Supp(P, L, y)))
+    println("consat: "+ConsAt(P, x))*/
+    Cons(P, x).filter(y => Supp(P, L, y).contains(x)) union ConsAt(P, x)
+  }
 
   //instead of having int l as parameter, assume strata are known outside
   //and simply provide the program P_l

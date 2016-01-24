@@ -10,6 +10,6 @@ import lars.tms.status.Status.{in, out, unknown}
 object fInval {
 
   def apply(L: Labels, r:StdRule): Boolean = r.B.forall(L.status(_) != unknown) &&
-    ( r.Bp.exists(L.status(_) == out) && r.Bn.exists(L.status(_) == in) )
+    ( r.Bp.exists(L.status(_) == out) || r.Bn.exists(L.status(_) == in) )
 
 }
