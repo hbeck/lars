@@ -167,7 +167,7 @@ class TestTMS  extends FunSuite {
 
 
 
-    println("tramB: "+ConsStar(P,tramB))
+//    println("tramB: "+ConsStar(P,tramB))
     assert(ConsStar(P,tramB) == Set(WAt(wop5,m(39.1),tramB),
                                     AtAtom(m(39.1)+m(5),expTrM),
                                     WDiam(wopP5,expTrM),
@@ -175,7 +175,7 @@ class TestTMS  extends FunSuite {
                                     takeTrM,
                                     takeBusM))
     
-    println("busG: "+ConsStar(P,busG))
+//    println("busG: "+ConsStar(P,busG))
     assert(ConsStar(P,busG) == Set(WAt(wop3,m(37.2),busG),
                                     AtAtom(m(37.2)+m(3),expBusM),
                                     WDiam(wopP5,expBusM),
@@ -183,7 +183,7 @@ class TestTMS  extends FunSuite {
                                     takeTrM,
                                     takeBusM))
 
-    println("jam: "+ConsStar(P,jam))
+//    println("jam: "+ConsStar(P,jam))
     assert(ConsStar(P,jam) == Set(WDiam(wop3,jam),
 /*                                  AtAtom(m(37.2)+m(3),expBusM),
                                   WDiam(wopP5,expBusM),
@@ -191,7 +191,7 @@ class TestTMS  extends FunSuite {
                                   takeTrM,
                                   takeBusM))
 
-    println("request: "+ConsStar(P,request))
+//    println("request: "+ConsStar(P,request))
     assert(ConsStar(P,request) == Set(WDiam(wop1,request),
                                       AtAtom(m(39.1)+m(5),expTrM),
                                       AtAtom(m(37.2)+m(3),expBusM),
@@ -218,24 +218,24 @@ class TestTMS  extends FunSuite {
     assert(fired == Set())
 
     val unknowns = tms.SetUnknown(1,0,L)
-//    println("on status: "+L.label(on))
-//    println("cons(on,1): " + Cons(stratum(1),on))
 
-    val setrule = tms.SetRule(1,0)
-//    println("setrule: "+setrule)
+    val setrule = tms.SetRule(1,0,L)
 
     assert(SuppN(stratum(1),L,on) == r3.B)
-    assert(SuppN(stratum(1),L,AtAtom(m(37.2)+m(3),expBusM)) == Set(on))
-    assert(SuppN(stratum(1),L,AtAtom(m(39.1)+m(5),expTrM)) == Set(on))
+    assert(SuppN(stratum(1),L,AtAtom(m(37.2)+m(3),expBusM)) == Set(WAt(wop3,m(37.2),busG)))
+    assert(SuppN(stratum(1),L,AtAtom(m(39.1)+m(5),expTrM)) == Set(WAt(wop5,m(39.1),tramB)))
 
+    tms.MakeAssignment(1,0,L)
+
+    println("stratum(l): "+stratum(1))
     tms.SetOpenOrdAtomsOut(1,0,L)
+    println("L: "+L)
 
     /*revisit if this is actually the case*/
     assert(L.status(expTrM) == out)
     assert(L.status(expBusM) == out)
 
     /**Stratum 2**/
-
     assert(L.status(WDiam(wopP5,expTrM)) == out)
     assert(L.status(WDiam(wopP5,expBusM)) == out)
 
@@ -268,7 +268,7 @@ class TestTMS  extends FunSuite {
 /*    println("cons bus"+Cons(P,AtAtom(m(37.2),busG)))
     println("supp bus"+SuppN(P,L,AtAtom(m(37.2),busG)))*/
 
-    tms.SetRule(1,t)
+    tms.SetRule(1,t,L)
 
     assert(L.status(on) == out)
     assert(fInval(L,r1g))
@@ -327,7 +327,7 @@ class TestTMS  extends FunSuite {
     println(ACons(P,L,A,t))
 
     assert(fVal(L,r3))
-    tms.SetRule(1,t)
+    tms.SetRule(1,t,L)
 
     assert(L.status(on) == in)
     assert(L.intervals(on) == Set(new ClosedIntInterval(t,m(40.7))))
@@ -375,7 +375,7 @@ class TestTMS  extends FunSuite {
     assert(L.status(takeTrM) == unknown)
     assert(L.status(takeBusM) == unknown)
 
-    tms.SetRule(2,t)
+    tms.SetRule(2,t,L)
 
     tms.MakeAssignment(2,t,L)
     assert(ufVal(L,r4))

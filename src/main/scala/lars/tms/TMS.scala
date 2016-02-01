@@ -40,41 +40,26 @@ case class TMS(P: StdProgram) {
   def answerUpdate(tp: Int, t: Int, D: S, wAOp:immutable.HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap()): Result = {
     waOperators ++= wAOp
     val Lp = L.copy
-//    val Lq:Labels = copyL(L)
-
-    //println("tp: "+tp+" t: "+t)
-    //println("stratum(0): "+stratum(0))
-    //println("stratum(1): "+stratum(1))
-    //println("stratum(2): "+stratum(2))
 
     for (l <- 1 to n) {
-        //println("--- "+l+" ---")
-        //println("updated: "+updated)
-        //println("L: "+L)
       var C = Set[WindowAtom]()
-      //println("expired: "+Expired(D,l,tp,t))
       for (omega <- Expired(D,l,tp,t,L)) {
         ExpireInput(omega,t)
         C = C + omega
         A += omega.atom
         addToUpdated(omega.nested,l)
       }
-      //println("fired: "+Fired(D,l,tp,t))
       for ((omega,t1) <- Fired(D,l,tp,t)) {
         FireInput(omega,t1,l,D,L)
-        //println("L: "+L)
         C = C + omega
         A += omega.atom
-        //println("C: "+C)
         addToUpdated(omega.nested,l)
-        //println("updated: "+updated)
       }
       UpdateTimestamps(C,L,Lp,l,t)
       SetUnknown(l,t,L)
       var madeNewAssignment = false
       do {
-        if (SetRule(l,t) == fail) return fail
-        //println("L after setRule: "+L)
+        if (SetRule(l,t,L) == fail) return fail
         val opt:Option[Boolean] = MakeAssignment(l,t,L)
         if (opt.isEmpty) {
           return fail
@@ -88,7 +73,6 @@ case class TMS(P: StdProgram) {
   }
 
   def addToUpdated(atoms: Set[ExtendedAtom], l: Int) = {
-      //println("stratl: "+stratum(l))
     stratum(l).rules.foreach(a =>
       if(atoms.contains(a.h)) {
       updated += l -> (updated(l) ++ Set(a.h))
@@ -244,7 +228,6 @@ case class TMS(P: StdProgram) {
 
   /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
   def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
-      //println("consw: "+ConsW(stratum(l),atom))
     ConsW(stratum(l),atom).foreach({
       case wa:WindowAtom => return Option(wa)
     })
@@ -291,20 +274,18 @@ case class TMS(P: StdProgram) {
     case _ => L.intervals(b)
   }
 
+  /*if ∀b ∈ B (r) : t ∈ tm(b)
+      MinEnd (r, t) = min{t 2 | b ∈ B (r) ∧ tm(b) = [t 1 , t 2 ]};
+    else
+      MinEnd (r, t) = t.*/
   def MinEnd(r:StdRule, t:Int, L:Labels): Int = {
     var t2Set = Set[Int]()
-    var notAll:Boolean = true
-    for (b <- r.B) {
-      notAll = true
-      for (interval <- tm(b,L)) {
-        if (interval.contains(t)) {
-          notAll = false
-          t2Set += interval.upper
-        }
-      }
-      if (notAll) return t
+
+    if(r.B.forall(b => tm(b,L).exists(i => i.contains(t)))){
+      r.B.foreach(b =>  tm(b,L).foreach(i => t2Set += i.upper))
+      return t2Set.min
     }
-    t2Set.min
+    t
   }
 
   //Labels provided globally
@@ -349,11 +330,15 @@ case class TMS(P: StdProgram) {
     val k = ACons(stratum(l),L,A,t)
     k.foreach(f =>
      if (!L.intervals(f).exists(_.contains(t)))
-        L.update(f,Label(unknown,L.intervals(f)))
+       if(A.contains(f.atom)) {
+         L.update(f, Label(L.status(f.atom),L.intervals(f.atom)))
+       } else {
+         L.update(f, Label(unknown, L.intervals(f)))
+       }
     )
   }
 
-  def SetRule(l: Int, t: Int): Result = {
+  def SetRule(l: Int, t: Int, L:Labels): Result = {
     ACons(stratum(l),L,A,t).foreach(f =>
       if (L.status(f) == unknown) {
         if(SetHead(f,f,l,t,L) == fail) return fail
@@ -364,50 +349,48 @@ case class TMS(P: StdProgram) {
 
   def SetHead(prev: ExtendedAtom, alpha: ExtendedAtom, l: Int, t: Int, L:Labels): Result = {
     val ph = PH(stratum(l),alpha)
-    if (ph.exists(r => fVal(L,r))) {
+    val timeSet = minTime(ph,t,L)
+    var tStar = 0
 
-      val tStar = fRuleInterval(PH(stratum(l),alpha),t,L).max
-      L.update(alpha,Label(in,(t,tStar)))
-      UpdateOrdAtom(alpha,in,L)
-      alpha match {
-        case wa:WindowAtom => /*do nothing*/
-        case _ =>
-          val suppAt = SuppAt(stratum(l),L,alpha)
-          suppAt.foreach({case ata:AtAtom =>
-            L.addInterval(ata,new ClosedIntInterval(ata.t,ata.t))
-          })
+    if (ph.exists(r => fVal(L,r))) {
+      if(timeSet.nonEmpty) {
+        tStar = timeSet.max
+
+        tStar = minTime(ph,t,L).max
+        L.update(alpha,Label(in,(t,tStar)))
+        UpdateOrdAtom(alpha,in,L)
+        alpha match {
+          case wa:WindowAtom => /*do nothing*/
+          case _ =>
+            val suppAt = SuppAt(stratum(l),L,alpha)
+            suppAt.foreach({case ata:AtAtom =>
+                            L.addInterval(ata,new ClosedIntInterval(ata.t,ata.t))
+                          })
+        }
+        updated += l -> (updated(l) ++ Set(alpha))
       }
-      updated += l -> (updated(l) ++ Set(alpha))
-      /*Update Supp+ (alpha) as defined ???*/
     } else if (ph.nonEmpty && ph.forall(r => fInval(L,r))) {
 
-      val minSet = fRuleInterval(ph,t,L)
-      var tStar = 0
-      if(minSet.nonEmpty) tStar = minSet.min
-      L.update(alpha,Label(out,(t,tStar)))
-      UpdateOrdAtom(alpha,out,L)
-      /*Update Supp-(alpha) as defined ???*/
-    } else {
+      if(timeSet.nonEmpty) {
+        tStar = timeSet.min
+        L.update(alpha,Label(out,(t,tStar)))
+        UpdateOrdAtom(alpha,out,L)
+      }
+    } /*else {
       return fail
-    }
+    }*/
     Cons(stratum(l),alpha).foreach(beta =>
       if (prev != beta && beta != alpha && L.status(beta) == unknown) {
         if(SetHead(alpha, beta,l,t,L) == fail){
           return fail
         }
       })
-//    println("label alpha("+alpha+"): "+L.status(alpha))
     success
   }
 
-  def fRuleInterval(rules: Set[StdRule], t: Int, L:Labels): Set[Int] = {
-    var rr=Set[StdRule]()
-
-    for (rule <- rules) {
-      if (fVal(L,rule)) rr += rule
-    }
+  def minTime(rules: Set[StdRule], t: Int, L:Labels): Set[Int] = {
     var minSet = Set[Int]()
-    rr.foreach(r => minSet += MinEnd(r,t,L))
+    rules.foreach(r => minSet += MinEnd(r,t,L))
     minSet
   }
 
@@ -463,9 +446,10 @@ case class TMS(P: StdProgram) {
   def SetOpenOrdAtomsOut(l: Int, t: Int, L:Labels): Unit = {
     stratum(l).rules.foreach(rule =>
       (rule.B ++ Set(rule.h)).foreach({
-        case wa:WindowAtom => return
+//        case wa:WindowAtom => return
         case a:ExtendedAtom =>
-          if (L.status(a) == unknown) L.update(a, Label(out, (t, t)))
+          if (L.status(a.atom) == unknown) L.update(a.atom, Label(out, (t, t)))
+        case _ =>
       })
     )
   }
@@ -483,11 +467,6 @@ case class TMS(P: StdProgram) {
   def updateL(labels: Labels) = {
     L = labels
   }
-
-  def getLabels = L
-
-  /*t is a dummy argument for now; maybe somehow use it to set the time for the evaluation of updateAnswer*/
-//  def request(a:Set[Atom], t:Int=0) = D + (t,a)
   /*--- end ---*/
 }
 
