@@ -15,17 +15,20 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   val SJ: Map[Node, Option[Justification]] = new HashMap[Node, Option[Justification]]
   val status: Map[Node, Status] = new HashMap[Node, Status]
 
-  //init
   for (n <- N) {
-    status(n) = out
-    Cons(n) = new HashSet[Node]()
-    Supp(n) = new HashSet[Node]()
-    SJ(n) = None
+    init(n)
   }
   for (j <- J) {
     for (m <- j.I union j.O) {
       Cons(m) += j.n
     }
+  }
+
+  def init(n:Node) ={
+    if(!status.isDefinedAt(n)) status(n) = out
+    if(!Cons.isDefinedAt(n))Cons(n) = new HashSet[Node]()
+    if(!Supp.isDefinedAt(n))Supp(n) = new HashSet[Node]()
+    if(!SJ.isDefinedAt(n)) SJ(n) = None
   }
 
   /** @return true if M is admissible **/
@@ -61,6 +64,8 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     for (m <- j.I union j.O) {
       Cons(m) += n
     }
+
+    init(n)
 
     //if conclusion was already drawn, we are done
     if (status(n) == in) {
