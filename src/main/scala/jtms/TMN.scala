@@ -98,7 +98,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def setIn(j: Justification) = {
     status(j.n) = in
-    Supp(j.n) = j.I union j.O
+    Supp(j.n) =  (j.I union j.O).to
     SJ(j.n) = Option(j)
   }
 
