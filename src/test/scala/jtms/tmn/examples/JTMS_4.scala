@@ -92,18 +92,57 @@ class JTMS_4 extends JTMS {
   it should "have Supp* B,A,C" in {
     assert(tmn.SuppTrans(D) == Set(B, A, C))
   }
-  it should "have no Cons" in{
+  it should "have no Cons" in {
     assert(tmn.Cons(D).isEmpty)
   }
-  it should "have no ACons" in{
+  it should "have no ACons" in {
     assert(tmn.ACons(D).isEmpty)
   }
-  it should "have no ACons*" in{
+  it should "have no ACons*" in {
     assert(tmn.AConsTrans(D).isEmpty)
   }
 
-  "The support of F" should "contain only C" in {
-    assert(tmn.Supp(F) == Set(C))
+  "Node E" should "have state in" in {
+    assert(tmn.status(E) == in)
+  }
+  it should "have Justification j5" in {
+    assert(tmn.SJ(E) == Some(j5))
+  }
+  it should "have no Supp" in {
+    assert(tmn.Supp(E).isEmpty)
+  }
+  it should "have no Supp*" in {
+    assert(tmn.SuppTrans(E).isEmpty)
+  }
+  it should "have Cons F" in {
+    assert(tmn.Cons(E) == Set(F))
+  }
+  it should "have no ACons" in {
+    assert(tmn.ACons(E).isEmpty)
+  }
+  it should "have no ACons*" in {
+    assert(tmn.AConsTrans(E).isEmpty)
   }
 
+  "Node F" should "have state out" in {
+    assert(tmn.status(F) == out)
+  }
+  it should "have no Justification" in {
+    assert(tmn.SJ(F).isEmpty)
+  }
+  it should "have Supp C" in {
+    assert(tmn.Supp(F) == Set(C))
+  }
+  it should "have Supp* C,A" in {
+    assert(tmn.SuppTrans(F) == Set(C, A))
+  }
+  it should "have no Cons" in {
+    assert(tmn.Cons(F).isEmpty)
+  }
+  it should "have no ACons" in {
+    assert(tmn.ACons(F).isEmpty)
+  }
+  it should "have no ACons*" in {
+    assert(tmn.AConsTrans(F).isEmpty)
+  }
 }
