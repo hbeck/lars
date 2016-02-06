@@ -46,6 +46,10 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     true
   }
 
+  def getModel() = {
+    status.filter(_._2 == in).map(_._1).toSet
+  }
+
   /** takes node at list M index idx and tries to find a valid justification
     * that is founded wrt indexes 0..idx-1
     */
@@ -55,7 +59,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     Jn(n).find(j => j.I.subsetOf(MSub) && j.O.intersect(M.toSet).isEmpty)
   }
 
-  def update(j: Justification): Unit = {
+  def update(j: Justification): scala.collection.immutable.Set[Node] = {
 
     def n = j.n //alias
 
@@ -69,7 +73,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     //if conclusion was already drawn, we are done
     if (status(n) == in) {
-      return
+      return scala.collection.immutable.Set()
     }
 
     //otherwise, we are done, if the new justification is not valid in M, i.e.,
@@ -77,21 +81,31 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     val spoiler: Option[Node] = findSpoiler(j)
     if (spoiler.isDefined) {
       Supp(n) += spoiler.get
-      return
+      return scala.collection.immutable.Set()
     }
 
     if (ACons(n).isEmpty) {
       //then we can treat n independently
       setIn(j)
-      return
+      // TODO (CF): Missing to add n to M (M = M + n)?
+      return scala.collection.immutable.Set()
     }
 
     val L = AConsTrans(n) + n
+
+    val oldState = L.map(x=>(x, status(x))).toList
+
     setUnknown(L)
 
     setConsequences(L)
 
     chooseAssignments(L)
+
+    val newState = L.map(x=>(x, status(x))).toList
+
+    val diffState = oldState.diff(newState)
+
+    diffState.map(_._1).toSet
   }
 
   def Jn(n: Node) = J.filter(_.n == n)
