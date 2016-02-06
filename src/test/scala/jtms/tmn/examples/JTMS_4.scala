@@ -1,7 +1,6 @@
 package jtms.tmn.examples
 
 import jtms.{in, out}
-import jtms.tmn.TMNSpec
 
 /**
   * Created by FM on 05.02.16.
