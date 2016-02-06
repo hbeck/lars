@@ -101,7 +101,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def AConsTrans(n: Node): Set[Node] = trans(ACons, n)
 
-  def SuppTrans(n: Node) = trans(Supp,n)
+  def SuppTrans(n: Node): Set[Node] = trans(Supp, n)
 
   def setIn(j: Justification) = {
     status(j.n) = in
@@ -213,13 +213,13 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   }
 
   def trans[T](f: T => Set[T], t: T): Set[T] = {
-    trans(f)(Set(t))
+    trans(f)(f(t))
   }
 
   @tailrec
   final def trans[T](f: T => Set[T])(s: Set[T]): Set[T] = {
     val next: Set[T] = s.flatMap(f)
-    if (s == next) {
+    if (s == next || next.isEmpty) {
       return s
     }
     trans(f)(next ++ s)
