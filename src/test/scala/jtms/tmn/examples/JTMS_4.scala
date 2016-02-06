@@ -23,8 +23,8 @@ class JTMS_4 extends JTMS {
   it should "have Supp C" in {
     assert(tmn.Supp(A) == Set(C))
   }
-  it should "have Supp* C,A" in{
-    assert(tmn.SuppTrans(A) == Set(C,A))
+  it should "have Supp* C,A" in {
+    assert(tmn.SuppTrans(A) == Set(C, A))
   }
   it should "have Cons B,C" in {
     assert(tmn.Cons(A) == Set(B, C))
@@ -45,10 +45,10 @@ class JTMS_4 extends JTMS {
   it should "have Supp A" in {
     assert(tmn.Supp(B) == Set(A))
   }
-  it should "have Supp* A,C" in{
-    assert(tmn.SuppTrans(B) == Set(A,C))
+  it should "have Supp* A,C" in {
+    assert(tmn.SuppTrans(B) == Set(A, C))
   }
-  it should "have Cons D" in{
+  it should "have Cons D" in {
     assert(tmn.Cons(B) == Set(D))
   }
   it should "have ACons D" in {
@@ -56,6 +56,28 @@ class JTMS_4 extends JTMS {
   }
   it should "have ACons* D" in {
     assert(tmn.AConsTrans(B) == Set(D))
+  }
+
+  "Node C" should "have state out" in {
+    assert(tmn.status(C) == out)
+  }
+  it should "have no Justification" in {
+    assert(tmn.SJ(C).isEmpty)
+  }
+  it should "have Supp A" in {
+    assert(tmn.Supp(C) == Set(A))
+  }
+  it should "have Supp* A,C" in {
+    assert(tmn.SuppTrans(C) == Set(A, C))
+  }
+  it should "have Cons D" in {
+    assert(tmn.Cons(C) == Set(A, D, F))
+  }
+  it should "have ACons D" in {
+    assert(tmn.ACons(C) == Set(A, F))
+  }
+  it should "have ACons* A,F,B,C,D" in {
+    assert(tmn.AConsTrans(C) == Set(A, F, B, C, D))
   }
 
   "With D" should "support only B" in {
