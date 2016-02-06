@@ -80,11 +80,27 @@ class JTMS_4 extends JTMS {
     assert(tmn.AConsTrans(C) == Set(A, F, B, C, D))
   }
 
-  "With D" should "support only B" in {
+  "Node D" should "have state in" in {
+    assert(tmn.status(D) == in)
+  }
+  it should "have Justification j4a" in {
+    assert(tmn.SJ(D) == Some(j4a))
+  }
+  it should "have Supp B" in {
     assert(tmn.Supp(D) == Set(B))
   }
-
-
+  it should "have Supp* B,A,C" in {
+    assert(tmn.SuppTrans(D) == Set(B, A, C))
+  }
+  it should "have no Cons" in{
+    assert(tmn.Cons(D).isEmpty)
+  }
+  it should "have no ACons" in{
+    assert(tmn.ACons(D).isEmpty)
+  }
+  it should "have no ACons*" in{
+    assert(tmn.AConsTrans(D).isEmpty)
+  }
 
   "The support of F" should "contain only C" in {
     assert(tmn.Supp(F) == Set(C))

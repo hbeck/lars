@@ -219,10 +219,11 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   @tailrec
   final def trans[T](f: T => Set[T])(s: Set[T]): Set[T] = {
     val next: Set[T] = s.flatMap(f)
-    if (s == next || next.isEmpty) {
+    val nextSet = next ++ s
+    if (s == nextSet || next.isEmpty) {
       return s
     }
-    trans(f)(next ++ s)
+    trans(f)(nextSet)
   }
 
 }
