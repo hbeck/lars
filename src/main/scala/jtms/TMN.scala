@@ -101,6 +101,8 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def AConsTrans(n: Node): Set[Node] = trans(ACons, n)
 
+  def SuppTrans(n: Node) = trans(Supp,n)
+
   def setIn(j: Justification) = {
     status(j.n) = in
     Supp(j.n) =  (j.I union j.O).to
@@ -220,7 +222,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     if (s == next) {
       return s
     }
-    trans(f)(next)
+    trans(f)(next ++ s)
   }
 
 }
