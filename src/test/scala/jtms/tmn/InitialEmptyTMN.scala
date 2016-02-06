@@ -33,4 +33,19 @@ class InitialEmptyTMN extends TMNSpec with BeforeAndAfter {
     assert(tmn.J.size == 1)
   }
 
+  it should "have no consequences and no support" in {
+    assert(tmn.Cons(assumptionA.n).size == 0)
+    assert(tmn.Supp(assumptionA.n).size == 0)
+  }
+
+  "An TMN with the same assumptions applied two times" should "still contain one status" in {
+    tmn.update(assumptionA)
+
+    assert(tmn.status.size == 1)
+  }
+  it should "also contain just one Justification" in {
+    tmn.update(assumptionA)
+
+    assert(tmn.J.size ==1)
+  }
 }

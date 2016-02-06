@@ -194,8 +194,8 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
           j.get.O.foreach(status(_) = out)
           chooseAssignments(unknownCons(n))
         } else {
-          aCons += n
-          for (m <- aCons) {
+          //          aCons += n
+          for (m <- (aCons + n)) {
             status(m) = unknown
             chooseAssignments(m)
           }
