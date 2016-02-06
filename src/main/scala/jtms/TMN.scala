@@ -24,11 +24,11 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     }
   }
 
-  def init(n:Node) ={
-    if(!status.isDefinedAt(n)) status(n) = out
-    if(!Cons.isDefinedAt(n))Cons(n) = new HashSet[Node]()
-    if(!Supp.isDefinedAt(n))Supp(n) = new HashSet[Node]()
-    if(!SJ.isDefinedAt(n)) SJ(n) = None
+  def init(n: Node) = {
+    if (!status.isDefinedAt(n)) status(n) = out
+    if (!Cons.isDefinedAt(n)) Cons(n) = new HashSet[Node]()
+    if (!Supp.isDefinedAt(n)) Supp(n) = new HashSet[Node]()
+    if (!SJ.isDefinedAt(n)) SJ(n) = None
   }
 
   /** @return true if M is admissible **/
@@ -105,7 +105,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def setIn(j: Justification) = {
     status(j.n) = in
-    Supp(j.n) =  (j.I union j.O).to
+    Supp(j.n) = (j.I union j.O).to
     SJ(j.n) = Option(j)
   }
 
