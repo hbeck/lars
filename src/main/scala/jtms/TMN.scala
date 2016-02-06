@@ -93,7 +93,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     val L = AConsTrans(n) + n
 
-    val oldState = L.map(x=>(x, status(x))).toList
+    val oldState = stateOfNodes(L)
 
     setUnknown(L)
 
@@ -101,12 +101,14 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     chooseAssignments(L)
 
-    val newState = L.map(x=>(x, status(x))).toList
+    val newState = stateOfNodes(L)
 
     val diffState = oldState.diff(newState)
 
     diffState.map(_._1).toSet
   }
+
+  private def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
 
   def Jn(n: Node) = J.filter(_.n == n)
 
