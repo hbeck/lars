@@ -13,7 +13,10 @@ import lars.tms.supp.Supp
 object ACons {
 
   def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] = {
-/*    println("cons: "+Cons(P, x))
+   /* var t:ExtendedAtom = x
+    if(Cons(P, x).nonEmpty) t = Cons(P, x).head
+    println("label acons "+t+": "+L.label(t))
+    println("cons: "+Cons(P, x))
     Cons(P, x).foreach(y => println("supp("+y+"): "+Supp(P, L, y)))
     println("consat: "+ConsAt(P, x))*/
     Cons(P, x).filter(y => Supp(P, L, y).contains(x)) union ConsAt(P, x)

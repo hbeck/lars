@@ -95,9 +95,18 @@ case class TMS(P: StdProgram) {
     }
 
     val transCons: Set[ExtendedAtom] = inputAtoms.flatMap(ConsStar(P,_))
-    val unknowns = transCons.filter(!_.isInstanceOf[WindowAtom])
+    /*set all windowatoms to out*/
+/*    val unknowns = transCons.filter(!_.isInstanceOf[WindowAtom])
     for (x <- unknowns) {
       L.update(x,Label(unknown))
+    }*/
+
+    for(x <- transCons){
+      if(x.isInstanceOf[WindowAtom]) {
+        L.update(x,Label(out))
+      } else {
+        L.update(x,Label(unknown))
+      }
     }
   }
 
@@ -165,7 +174,7 @@ case class TMS(P: StdProgram) {
       case 0 => return result
       case 1 =>
         val dAtoms = D(t1)
-        if(dAtoms.nonEmpty) println("dAtoms: "+dAtoms)
+//        if(dAtoms.nonEmpty) println("dAtoms: "+dAtoms)
         if(dAtoms.nonEmpty) {
           dAtoms.foreach(a => {
             for (rule <- stratum(1).rules) {
@@ -245,9 +254,15 @@ case class TMS(P: StdProgram) {
   def FireInput(omega: WindowAtom, t: Int, l:Int, D:S, L:Labels): Unit = {
     val ata = new AtAtom(t,omega.atom)
 
+    //NOTE checks for @atoms within window atoms
     if (P.rules.exists(r => r.B.exists(ea => ea.nested.contains(ata)) || r.h.nested.contains(ata))) {
       L.update(ata,Label(in,(t,t)))
     }
+
+    //NOTE checks for @atoms directly in the program
+/*        if (P.rules.exists(r => r.B.contains(ata) || r.h == ata)) {
+          L.update(ata,Label(in,(t,t)))
+        }*/
 
     var s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,t,l,D,tm(omega,L))
     if(s_in.isDefined) {
@@ -350,13 +365,12 @@ case class TMS(P: StdProgram) {
   def SetHead(prev: ExtendedAtom, alpha: ExtendedAtom, l: Int, t: Int, L:Labels): Result = {
     val ph = PH(stratum(l),alpha)
     val timeSet = minTime(ph,t,L)
-    var tStar = 0
 
     if (ph.exists(r => fVal(L,r))) {
       if(timeSet.nonEmpty) {
-        tStar = timeSet.max
+        val tStar = timeSet.max
 
-        tStar = minTime(ph,t,L).max
+//        tStar = minTime(ph,t,L).max
         L.update(alpha,Label(in,(t,tStar)))
         UpdateOrdAtom(alpha,in,L)
         alpha match {
@@ -372,7 +386,8 @@ case class TMS(P: StdProgram) {
     } else if (ph.nonEmpty && ph.forall(r => fInval(L,r))) {
 
       if(timeSet.nonEmpty) {
-        tStar = timeSet.min
+        val tStar = timeSet.min
+        println("alpha: "+alpha+", time: "+t+", tStar: "+tStar)
         L.update(alpha,Label(out,(t,tStar)))
         UpdateOrdAtom(alpha,out,L)
       }
