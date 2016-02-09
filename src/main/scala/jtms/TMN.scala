@@ -119,6 +119,15 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def SuppTrans(n: Node): Set[Node] = trans(Supp, n)
 
+  def Ant(n: Node): Set[Node] = {
+    if (status(n) == in)
+      return Supp(n)
+    return Set()
+  }
+
+  def AntTrans(n: Node) = trans(Ant, n)
+
+
   def setIn(j: Justification) = {
     status(j.n) = in
     Supp(j.n) = (j.I union j.O).to

@@ -34,6 +34,12 @@ class JTMS_4 extends JTMS {
   it should "have ACons* B,C,D,A,F" in {
     assert(tmn.AConsTrans(A) == Set(B, C, D, A, F))
   }
+  it should "have no Ant" in {
+    assert(tmn.Ant(A) == Set())
+  }
+  it should "have no Ant*" in {
+    assert(tmn.AntTrans(A) == Set())
+  }
 
   "Node B" should "have Status in" in {
     assert(tmn.status(B) == in)
@@ -55,6 +61,12 @@ class JTMS_4 extends JTMS {
   }
   it should "have ACons* D" in {
     assert(tmn.AConsTrans(B) == Set(D))
+  }
+  it should "have Ant A" in {
+    assert(tmn.Ant(B) == Set(A))
+  }
+  it should "have Ant* A" in {
+    assert(tmn.AntTrans(B) == Set(A))
   }
 
   "Node C" should "have state out" in {
@@ -78,6 +90,12 @@ class JTMS_4 extends JTMS {
   it should "have ACons* A,F,B,C,D" in {
     assert(tmn.AConsTrans(C) == Set(A, F, B, C, D))
   }
+  it should "have no Ant" in {
+    assert(tmn.Ant(C) == Set())
+  }
+  it should "have no Ant*" in {
+    assert(tmn.AntTrans(C) == Set())
+  }
 
   "Node D" should "have state in" in {
     assert(tmn.status(D) == in)
@@ -99,6 +117,12 @@ class JTMS_4 extends JTMS {
   }
   it should "have no ACons*" in {
     assert(tmn.AConsTrans(D).isEmpty)
+  }
+  it should "have Ant B" in {
+    assert(tmn.Ant(D) == Set(B))
+  }
+  it should "have Ant* B,A" in {
+    assert(tmn.AntTrans(D) == Set(B, A))
   }
 
   "Node E" should "have state in" in {
@@ -122,6 +146,12 @@ class JTMS_4 extends JTMS {
   it should "have no ACons*" in {
     assert(tmn.AConsTrans(E).isEmpty)
   }
+  it should "have no Ant" in {
+    assert(tmn.Ant(E) == Set())
+  }
+  it should "have no Ant*" in {
+    assert(tmn.AntTrans(E) == Set())
+  }
 
   "Node F" should "have state out" in {
     assert(tmn.status(F) == out)
@@ -143,5 +173,11 @@ class JTMS_4 extends JTMS {
   }
   it should "have no ACons*" in {
     assert(tmn.AConsTrans(F).isEmpty)
+  }
+  it should "have no Ant" in {
+    assert(tmn.Ant(F) == Set())
+  }
+  it should "have no Ant*" in {
+    assert(tmn.AntTrans(F) == Set())
   }
 }
