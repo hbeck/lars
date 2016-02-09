@@ -139,6 +139,25 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   def AntTrans(n: Node) = trans(Ant, n)
 
 
+  def MaxAssumptions(n: Node) : Set[Justification] = {
+    if(!Ncont.contains(n))
+      Set()
+
+    val assumptionsOfN = AntTrans(n).map(Assumptions).filter(_.isDefined).map(_.get)
+
+    val assumptions = Set[Justification]()
+    for(a <- assumptionsOfN){
+      val assumptionsOfA = MaxAssumptions(a.n)
+      if(assumptionsOfA.isEmpty)
+        assumptions.add(a)
+    }
+
+    assumptions
+  }
+
+  def Assumptions(n: Node) = SJ(n).filterNot(_.O.isEmpty)
+
+
   def setIn(j: Justification) = {
     status(j.n) = in
     Supp(j.n) = (j.I union j.O).to
