@@ -8,7 +8,7 @@ import scala.collection.mutable.{HashMap, HashSet, Map, Set}
   * truth maintenance network
   * Created by hb on 12/22/15.
   */
-class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set()) {
+class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set(), val Ncont: Set[Node] = Set()) {
 
   val Cons: Map[Node, Set[Node]] = new HashMap[Node, Set[Node]]
   val Supp: Map[Node, Set[Node]] = new HashMap[Node, Set[Node]]
@@ -101,11 +101,22 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     chooseAssignments(L)
 
+    val model = getModel()
+
+    for (n <- model) {
+      if (Ncont.contains(n) && status(n) == in)
+        DDB()
+    }
+
     val newState = stateOfNodes(L)
 
     val diffState = oldState.diff(newState)
 
     diffState.map(_._1).toSet
+  }
+
+  def DDB() = {
+
   }
 
   private def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
