@@ -73,6 +73,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     //if conclusion was already drawn, we are done
     if (status(n) == in) {
+      doDDB()
       return scala.collection.immutable.Set()
     }
 
@@ -81,12 +82,14 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     val spoiler: Option[Node] = findSpoiler(j)
     if (spoiler.isDefined) {
       Supp(n) += spoiler.get
+      doDDB
       return scala.collection.immutable.Set()
     }
 
     if (ACons(n).isEmpty) {
       //then we can treat n independently
       setIn(j)
+      doDDB
       // TODO (CF): Missing to add n to M (M = M + n)?
       return scala.collection.immutable.Set()
     }
@@ -101,12 +104,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     chooseAssignments(L)
 
-    val model = getModel()
-
-    for (n <- model) {
-      if (Ncont.contains(n) && status(n) == in)
-        DDB()
-    }
+    doDDB
 
     val newState = stateOfNodes(L)
 
@@ -115,8 +113,36 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     diffState.map(_._1).toSet
   }
 
-  def DDB() = {
+  def doDDB() = {
+    val model = getModel()
 
+    for (n <- model) {
+      if (Ncont.contains(n) && status(n) == in)
+        DDB(n)
+    }
+  }
+
+  def DDB(n: Node) = {
+    val assumptions = MaxAssumptions(n)
+
+    if (assumptions.isEmpty)
+      throw new RuntimeException("We have an unsolveable contradiction for node " + n)
+
+    val n_a = assumptions.head
+
+    val j_cont = J_cont(assumptions.map(_.n))
+
+    val n_star = SJ(n_a.n).get.O.head
+
+    val justification = new Justification(j_cont.flatMap(_.I),j_cont.flatMap(_.O) - n_star,n_star)
+
+    update(justification)
+
+
+  }
+
+  def J_cont (nodes:Set[Node]) = {
+    SJ.filterKeys(nodes.contains(_)).values.map(_.get).toSet
   }
 
   private def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
@@ -139,17 +165,17 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   def AntTrans(n: Node) = trans(Ant, n)
 
 
-  def MaxAssumptions(n: Node) : Set[Justification] = {
-    if(!Ncont.contains(n))
-      Set()
-
-    val assumptionsOfN = AntTrans(n).map(Assumptions).filter(_.isDefined).map(_.get)
-
+  def MaxAssumptions(n: Node): Set[Justification] = {
     val assumptions = Set[Justification]()
-    for(a <- assumptionsOfN){
-      val assumptionsOfA = MaxAssumptions(a.n)
-      if(assumptionsOfA.isEmpty)
-        assumptions.add(a)
+
+    if (Ncont.contains(n)) {
+      val assumptionsOfN = AntTrans(n).map(Assumptions).filter(_.isDefined).map(_.get)
+
+      for (a <- assumptionsOfN) {
+        val assumptionsOfA = MaxAssumptions(a.n)
+        if (assumptionsOfA.isEmpty)
+          assumptions.add(a)
+      }
     }
 
     assumptions
