@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{TMN, Node, Justification}
+import jtms.{Premise, TMN, Node, Justification}
 import org.scalatest.FlatSpec
 
 /**
@@ -15,13 +15,13 @@ class JTMS extends FlatSpec {
   val E = Node("E")
   val F = Node("F")
 
-  val j1 = new Justification(Set(C), Set(), A)
-  val j2 = new Justification(Set(), Set(A), B)
-  val j3 = new Justification(Set(A), Set(), C)
-  val j4a = new Justification(Set(B), Set(), D)
-  val j4b = new Justification(Set(C), Set(), D)
-  val j5 = new Justification(Set(), Set(), E)
-  val j6 = new Justification(Set(C, E), Set(), F)
+  val j1 = Justification.in(C).node(A)
+  val j2 = Justification.out(A).node(B)
+  val j3 = Justification.in(A).node(C)
+  val j4a = Justification.in(B).node(D)
+  val j4b = Justification.in(C).node(D)
+  val j5 = Premise(E)
+  val j6 = Justification.in(C, E).node(F)
 
   def JTMS = {
     //    var tmn = new TMN(Set(A, B, C, D, E, F), Set(j1, j2, j3, j4a, j4b, j5, j6).to)

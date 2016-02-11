@@ -1,6 +1,6 @@
 package jtms.tmn
 
-import jtms.{TMN, Node, Justification}
+import jtms.{Premise, TMN, Node, Justification}
 import org.scalatest.FlatSpec
 
 /**
@@ -9,7 +9,7 @@ import org.scalatest.FlatSpec
 class TMNSpec extends FlatSpec {
   def Assumption(node: String): Justification = Assumption(new Node(node))
 
-  def Assumption(node: Node): Justification = new Justification(Set(), Set(), node)
+  def Assumption(node: Node): Justification = Premise(node)
 
   def EmptyTMN = new TMN(Set())
 }

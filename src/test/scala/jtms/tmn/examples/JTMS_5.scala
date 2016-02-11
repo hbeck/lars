@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{Node, Justification}
+import jtms.{Premise, Node}
 
 
 /**
@@ -8,7 +8,7 @@ import jtms.{Node, Justification}
   */
 class JTMS_5 extends JTMS {
 
-  val j0 = new Justification(Set(), Set(), A)
+  val j0 = Premise(A)
 
   var diff: Set[Node] = Set();
   val tmn = {

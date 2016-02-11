@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{TMN, Justification, Node}
+import jtms.{Premise, TMN, Justification, Node}
 import org.scalatest.FlatSpec
 
 /**
@@ -14,13 +14,13 @@ class Tweety extends FlatSpec {
   val F_not = new Node("nicht fliegen können")
   val N_cont = new Node("Widerspruch")
 
-  val j0 = new Justification(Set(P), Set(), F_not)
-  val j1 = new Justification(Set(P), Set(), V)
-  val j2 = new Justification(Set(V), Set(P), F)
-  val j3 = new Justification(Set(F, F_not), Set(), N_cont)
-  val j4 = new Justification(Set(), Set(), V)
+  val j0 = Justification.in(P).node(F_not)
+  val j1 = Justification.in(P).node(V)
+  val j2 = Justification.in(V).out(P).node(F)
+  val j3 = Justification.in(F, F_not).node(N_cont)
+  val j4 = Premise(V)
 
-  val j5 = new Justification(Set(), Set(), P)
+  val j5 = Premise(P)
 
   def TMN = {
     val tmn = new TMN(Set(V, P, F, F_not, N_cont))
