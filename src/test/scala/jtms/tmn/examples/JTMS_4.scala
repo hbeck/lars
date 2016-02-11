@@ -1,11 +1,13 @@
 package jtms.tmn.examples
 
+import jtms.tmn.NodeValidation
 import jtms.{in, out}
+import org.scalatest.GivenWhenThen
 
 /**
   * Created by FM on 05.02.16.
   */
-class JTMS_4 extends JTMS {
+class JTMS_4 extends JTMS with NodeValidation with GivenWhenThen {
 
   val tmn = {
     val tmn = JTMS
@@ -13,171 +15,75 @@ class JTMS_4 extends JTMS {
     tmn
   }
 
-  "Node A" should "have Status out" in {
-    assert(tmn.status(A) == out)
-  }
-  it should "have no Justifications" in {
-    assert(tmn.SJ(A).isEmpty)
-  }
-  it should "have Supp C" in {
-    assert(tmn.Supp(A) == Set(C))
-  }
-  it should "have Supp* C,A" in {
-    assert(tmn.SuppTrans(A) == Set(C, A))
-  }
-  it should "have Cons B,C" in {
-    assert(tmn.Cons(A) == Set(B, C))
-  }
-  it should "have ACons B,C" in {
-    assert(tmn.ACons(A) == Set(B, C))
-  }
-  it should "have ACons* B,C,D,A,F" in {
-    assert(tmn.AConsTrans(A) == Set(B, C, D, A, F))
-  }
-  it should "have no Ant" in {
-    assert(tmn.Ant(A) == Set())
-  }
-  it should "have no Ant*" in {
-    assert(tmn.AntTrans(A) == Set())
+  "Node A" must behave like nodeValidation(tmn, A) { validator =>
+    validator.state(out)
+    validator.SJ(None)
+    validator.Supp(C)
+    validator.SuppTrans(C, A)
+    validator.Cons(B, C)
+    validator.ACons(B, C)
+    validator.AConsTrans(B, C, D, A, F)
+    validator.Ant()
+    validator.AntTrans()
   }
 
-  "Node B" should "have Status in" in {
-    assert(tmn.status(B) == in)
-  }
-  it should "have Justification j2" in {
-    assert(tmn.SJ(B) == Some(j2))
-  }
-  it should "have Supp A" in {
-    assert(tmn.Supp(B) == Set(A))
-  }
-  it should "have Supp* A,C" in {
-    assert(tmn.SuppTrans(B) == Set(A, C))
-  }
-  it should "have Cons D" in {
-    assert(tmn.Cons(B) == Set(D))
-  }
-  it should "have ACons D" in {
-    assert(tmn.ACons(B) == Set(D))
-  }
-  it should "have ACons* D" in {
-    assert(tmn.AConsTrans(B) == Set(D))
-  }
-  it should "have Ant A" in {
-    assert(tmn.Ant(B) == Set(A))
-  }
-  it should "have Ant* A" in {
-    assert(tmn.AntTrans(B) == Set(A))
+  "Node B" must behave like nodeValidation(tmn, B) { validator =>
+    validator.state(in)
+    validator.SJ(Some(j2))
+    validator.Supp(A)
+    validator.SuppTrans(A, C)
+    validator.Cons(D)
+    validator.ACons(D)
+    validator.AConsTrans(D)
+    validator.Ant(A)
+    validator.AntTrans(A)
   }
 
-  "Node C" should "have state out" in {
-    assert(tmn.status(C) == out)
-  }
-  it should "have no Justification" in {
-    assert(tmn.SJ(C).isEmpty)
-  }
-  it should "have Supp A" in {
-    assert(tmn.Supp(C) == Set(A))
-  }
-  it should "have Supp* A,C" in {
-    assert(tmn.SuppTrans(C) == Set(A, C))
-  }
-  it should "have Cons D" in {
-    assert(tmn.Cons(C) == Set(A, D, F))
-  }
-  it should "have ACons D" in {
-    assert(tmn.ACons(C) == Set(A, F))
-  }
-  it should "have ACons* A,F,B,C,D" in {
-    assert(tmn.AConsTrans(C) == Set(A, F, B, C, D))
-  }
-  it should "have no Ant" in {
-    assert(tmn.Ant(C) == Set())
-  }
-  it should "have no Ant*" in {
-    assert(tmn.AntTrans(C) == Set())
+  "Node C" must behave like nodeValidation(tmn, C) { validator =>
+    validator.state(out)
+    validator.SJ(None)
+    validator.Supp(A)
+    validator.SuppTrans(A, C)
+    validator.Cons(A, D, F)
+    validator.ACons(A, F)
+    validator.AConsTrans(A, F, B, C, D)
+    validator.Ant()
+    validator.AntTrans()
   }
 
-  "Node D" should "have state in" in {
-    assert(tmn.status(D) == in)
-  }
-  it should "have Justification j4a" in {
-    assert(tmn.SJ(D) == Some(j4a))
-  }
-  it should "have Supp B" in {
-    assert(tmn.Supp(D) == Set(B))
-  }
-  it should "have Supp* B,A,C" in {
-    assert(tmn.SuppTrans(D) == Set(B, A, C))
-  }
-  it should "have no Cons" in {
-    assert(tmn.Cons(D).isEmpty)
-  }
-  it should "have no ACons" in {
-    assert(tmn.ACons(D).isEmpty)
-  }
-  it should "have no ACons*" in {
-    assert(tmn.AConsTrans(D).isEmpty)
-  }
-  it should "have Ant B" in {
-    assert(tmn.Ant(D) == Set(B))
-  }
-  it should "have Ant* B,A" in {
-    assert(tmn.AntTrans(D) == Set(B, A))
+  "Node D" must behave like nodeValidation(tmn, D) { validator =>
+    validator.state(in)
+    validator.SJ(Some(j4a))
+    validator.Supp(B)
+    validator.SuppTrans(B, A, C)
+    validator.Cons()
+    validator.ACons()
+    validator.AConsTrans()
+    validator.Ant(B)
+    validator.AntTrans(B, A)
   }
 
-  "Node E" should "have state in" in {
-    assert(tmn.status(E) == in)
-  }
-  it should "have Justification j5" in {
-    assert(tmn.SJ(E) == Some(j5))
-  }
-  it should "have no Supp" in {
-    assert(tmn.Supp(E).isEmpty)
-  }
-  it should "have no Supp*" in {
-    assert(tmn.SuppTrans(E).isEmpty)
-  }
-  it should "have Cons F" in {
-    assert(tmn.Cons(E) == Set(F))
-  }
-  it should "have no ACons" in {
-    assert(tmn.ACons(E).isEmpty)
-  }
-  it should "have no ACons*" in {
-    assert(tmn.AConsTrans(E).isEmpty)
-  }
-  it should "have no Ant" in {
-    assert(tmn.Ant(E) == Set())
-  }
-  it should "have no Ant*" in {
-    assert(tmn.AntTrans(E) == Set())
+  "Node E" must behave like nodeValidation(tmn, E) { validator =>
+    validator.state(in)
+    validator.SJ(Some(j5))
+    validator.Supp()
+    validator.SuppTrans()
+    validator.Cons(F)
+    validator.ACons()
+    validator.AConsTrans()
+    validator.Ant()
+    validator.AntTrans()
   }
 
-  "Node F" should "have state out" in {
-    assert(tmn.status(F) == out)
-  }
-  it should "have no Justification" in {
-    assert(tmn.SJ(F).isEmpty)
-  }
-  it should "have Supp C" in {
-    assert(tmn.Supp(F) == Set(C))
-  }
-  it should "have Supp* C,A" in {
-    assert(tmn.SuppTrans(F) == Set(C, A))
-  }
-  it should "have no Cons" in {
-    assert(tmn.Cons(F).isEmpty)
-  }
-  it should "have no ACons" in {
-    assert(tmn.ACons(F).isEmpty)
-  }
-  it should "have no ACons*" in {
-    assert(tmn.AConsTrans(F).isEmpty)
-  }
-  it should "have no Ant" in {
-    assert(tmn.Ant(F) == Set())
-  }
-  it should "have no Ant*" in {
-    assert(tmn.AntTrans(F) == Set())
+  "Node F" must behave like nodeValidation(tmn, F) { validator =>
+    validator.state(out)
+    validator.SJ(None)
+    validator.Supp(C)
+    validator.SuppTrans(C, A)
+    validator.Cons()
+    validator.ACons()
+    validator.AConsTrans()
+    validator.Ant()
+    validator.AntTrans()
   }
 }
