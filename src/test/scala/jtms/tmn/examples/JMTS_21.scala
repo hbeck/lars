@@ -20,12 +20,6 @@ class JMTS_21 extends JTMS {
     tmn
   }
 
-  "The MaxAssumptions for the contradiction node" should "contain Justification j2" in {
-    val tmn = JTMS_DDB
-    assert(tmn.MaxAssumptions(N_cont) == Set(j2))
-  }
-
-
   "The model" should "contain A,C,D,F,E" in {
     assert(JTMS_DDB.getModel() == Set(A, C, D, F, E))
   }
