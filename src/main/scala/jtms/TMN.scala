@@ -1,5 +1,6 @@
 package jtms
 
+import scala.Predef
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, HashSet, Map, Set}
@@ -60,9 +61,9 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     selectJustification(justifications)
   }
 
-  def update(j: Justification): scala.collection.immutable.Set[Node] = {
+  def update(j: Justification): Predef.Set[Node] = {
 
-    def n = j.n //alias
+    val n = j.n //alias
 
     //update structure
     J += j
@@ -95,6 +96,10 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
       return scala.collection.immutable.Set()
     }
 
+    updateNode(n)
+  }
+
+  def updateNode(n: Node): Predef.Set[Node] = {
     val L = AConsTrans(n) + n
 
     val oldState = stateOfNodes(L)
@@ -112,6 +117,26 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     val diffState = oldState.diff(newState)
 
     diffState.map(_._1).toSet
+  }
+
+  def remove(j: Justification) = {
+
+    for (m <- j.I union j.O) {
+      Cons(m) -= j.n
+    }
+//    val cons = j.I.flatMap(Cons)
+//    val cons = Cons(j.n)
+//    cons.foreach(status(_) == unknown)
+
+    J.remove(j)
+
+
+
+    this.updateNode(j.n)
+//    status.remove(j.n)
+
+//    val cons = Cons(j.n)
+//    cons.foreach(status(_) == unknown)
   }
 
   def doDDB() = {
