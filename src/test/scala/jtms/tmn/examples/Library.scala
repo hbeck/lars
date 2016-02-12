@@ -54,7 +54,7 @@ class Library extends FlatSpec with NodeValidation {
 
   "Node V" must behave like nodeValidation(TMN, V) { validator =>
     validator.state(in)
-    validator.justifications(j1)
+    validator.Justifications(j1)
     validator.SJ(Some(j1))
     validator.Supp()
     validator.SuppTrans()
@@ -67,7 +67,7 @@ class Library extends FlatSpec with NodeValidation {
 
   "Node P" must behave like nodeValidation(TMN, P) { validator =>
     validator.state(in)
-    validator.justifications(j2)
+    validator.Justifications(j2)
     validator.SJ(Some(j2))
     validator.Supp(V, F, G)
     validator.SuppTrans(V, F, G)
@@ -80,7 +80,7 @@ class Library extends FlatSpec with NodeValidation {
 
   "Node A" must behave like nodeValidation(TMN, A) { validator =>
     validator.state(in)
-    validator.justifications(j5)
+    validator.Justifications(j5)
     validator.SJ(Some(j5))
     validator.Supp(P, H, N)
     validator.SuppTrans(P, H, N, V, F, G)
@@ -93,7 +93,7 @@ class Library extends FlatSpec with NodeValidation {
 
   "Node F" must behave like nodeValidation(TMN, F) { validator =>
     validator.state(out)
-    validator.justifications()
+    validator.Justifications()
     validator.SJ(None)
     validator.Supp()
     validator.SuppTrans()
@@ -105,7 +105,7 @@ class Library extends FlatSpec with NodeValidation {
   }
   "Node G" must behave like nodeValidation(TMN, G) { validator =>
     validator.state(out)
-    validator.justifications()
+    validator.Justifications()
     validator.SJ(None)
     validator.Supp()
     validator.SuppTrans()
@@ -119,7 +119,7 @@ class Library extends FlatSpec with NodeValidation {
 
   "Node H" must behave like nodeValidation(TMN, H) { validator =>
     validator.state(out)
-    validator.justifications()
+    validator.Justifications()
     validator.SJ(None)
     validator.Supp()
     validator.SuppTrans()
@@ -131,7 +131,7 @@ class Library extends FlatSpec with NodeValidation {
   }
   "Node N" must behave like nodeValidation(TMN, N) { validator =>
     validator.state(out)
-    validator.justifications()
+    validator.Justifications()
     validator.SJ(None)
     validator.Supp()
     validator.SuppTrans()
@@ -145,7 +145,7 @@ class Library extends FlatSpec with NodeValidation {
   "Node P_not" must behave like nodeValidation(TMN, P_not) { validator =>
     validator.state(out)
     validator.SJ(None)
-    validator.justifications(j3, j4)
+    validator.Justifications(j3, j4)
     validator.Supp(F, G)
     validator.SuppTrans(F, G)
     validator.Ant()
@@ -158,7 +158,7 @@ class Library extends FlatSpec with NodeValidation {
   "Node A_not" must behave like nodeValidation(TMN, A_not) { validator =>
     validator.state(out)
     validator.SJ(None)
-    validator.justifications(j8, j7)
+    validator.Justifications(j8, j7)
     validator.Supp(H, N)
     validator.SuppTrans(H, N)
     validator.Ant()
@@ -171,7 +171,7 @@ class Library extends FlatSpec with NodeValidation {
   "Node N_cont" must behave like nodeValidation(TMN, N_cont) { validator =>
     validator.state(out)
     validator.SJ(None)
-    validator.justifications(j6, j9)
+    validator.Justifications(j6, j9)
     validator.Supp(P_not, A_not)
     validator.SuppTrans(P_not, A_not, F, G, H, N)
     validator.Ant()

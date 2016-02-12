@@ -17,6 +17,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   "Node A" must behave like   nodeValidation(tmn, A) { validator =>
     validator.state(out)
+    validator.Justifications(j1)
     validator.SJ(None)
     validator.Supp(C)
     validator.SuppTrans(C, A)
@@ -29,6 +30,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   "Node B" must behave like nodeValidation(tmn, B) { validator =>
     validator.state(in)
+    validator.Justifications(j2)
     validator.SJ(Some(j2))
     validator.Supp(A)
     validator.SuppTrans(A, C)
@@ -41,6 +43,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   "Node C" must behave like nodeValidation(tmn, C) { validator =>
     validator.state(out)
+    validator.Justifications(j3)
     validator.SJ(None)
     validator.Supp(A)
     validator.SuppTrans(A, C)
@@ -53,6 +56,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   "Node D" must behave like nodeValidation(tmn, D) { validator =>
     validator.state(in)
+    validator.Justifications(j4a,j4b)
     validator.SJ(Some(j4a))
     validator.Supp(B)
     validator.SuppTrans(B, A, C)
@@ -65,6 +69,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   "Node E" must behave like nodeValidation(tmn, E) { validator =>
     validator.state(in)
+    validator.Justifications(j5)
     validator.SJ(Some(j5))
     validator.Supp()
     validator.SuppTrans()
@@ -77,6 +82,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   "Node F" must behave like nodeValidation(tmn, F) { validator =>
     validator.state(out)
+    validator.Justifications(j6)
     validator.SJ(None)
     validator.Supp(C)
     validator.SuppTrans(C, A)

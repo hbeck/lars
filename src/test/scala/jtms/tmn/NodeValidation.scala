@@ -30,7 +30,7 @@ trait NodeValidation {
       }
     }
 
-    def justifications(justifications: Justification*) = {
+    def Justifications(justifications: Justification*) = {
       val justificationSet = justifications.toSet
       it should "have the justifications" + justificationSet in {
         assert(tmn.Jn(n) == justificationSet)
