@@ -131,13 +131,16 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     // TODO: Ordering + Selection?
     val n_a = assumptions.head
 
-    val j_cont = J_cont(assumptions.map(_.n))
-
     // TODO: Ordering + Selection?
     // (we pick currently only the first O)
-    val n_star = SJ(n_a.n).get.O.head
+    val n_star = n_a.O.head
 
-    val justification = new Justification(j_cont.flatMap(_.I), j_cont.flatMap(_.O) - n_star, n_star)
+    val j_cont = J_cont(assumptions.map(_.n))
+
+    val I_cont = j_cont.flatMap(_.I)
+    val O_cont = j_cont.flatMap(_.O) - n_star;
+
+    val justification = new Justification(I_cont, O_cont, n_star)
 
     update(justification)
   }
@@ -170,14 +173,14 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     val assumptions = Set[Justification]()
 
     if (Ncont.contains(n)) {
-      val assumptionsOfN = AntTrans(n).map(Assumptions).filter(_.isDefined).map(_.get)
+      val assumptionsOfN = AntTrans(n).map(asAssumption).filter(_.isDefined).map(_.get)
 
       for (a <- assumptionsOfN) {
         val otherAssumptions = assumptionsOfN - a
 
         val allOtherAssumptions = otherAssumptions.flatMap(x => AntTrans(x.n)).toSet
 
-        if(!allOtherAssumptions.contains(a.n))
+        if (!allOtherAssumptions.contains(a.n))
           assumptions.add(a)
       }
     }
@@ -185,7 +188,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     assumptions
   }
 
-  def Assumptions(n: Node) = SJ(n).filterNot(_.O.isEmpty)
+  def asAssumption(n: Node) = SJ(n).filterNot(_.O.isEmpty)
 
 
   def setIn(j: Justification) = {
