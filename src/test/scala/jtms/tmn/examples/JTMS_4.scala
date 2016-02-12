@@ -15,7 +15,7 @@ class JTMS_4 extends JTMS with NodeValidation with GivenWhenThen {
     tmn
   }
 
-  "Node A" must behave like nodeValidation(tmn, A) { validator =>
+  "Node A" must behave like   nodeValidation(tmn, A) { validator =>
     validator.state(out)
     validator.SJ(None)
     validator.Supp(C)

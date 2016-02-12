@@ -25,60 +25,71 @@ trait NodeValidation {
     Given(n.toString)
 
     def state(status: Status) = {
-      Then("the state is " + status)
-
-      assert(tmn.status(n) == status)
+      it should "have the state " + status in {
+        assert(tmn.status(n) == status)
+      }
     }
 
     def justifications(justifications: Justification*) = {
       val justificationSet = justifications.toSet
-      Then("the justifications are " + justificationSet)
-
-      assert(tmn.Jn(n) == justificationSet)
+      it should "have the justifications" + justificationSet in {
+        assert(tmn.Jn(n) == justificationSet)
+      }
     }
 
     def SJ(j: Option[Justification]) = {
-      if (j.isDefined)
-        Then("the supporting justification is " + j)
-      else
-        Then("there are no supporting justifications")
 
-      assert(tmn.SJ(n) == j)
+      var text: String = ""
+      if (j.isDefined)
+        text = "have the supporting justification " + j;
+      else
+        text = "have no supporting justifications";
+
+      it should text in {
+        assert(tmn.SJ(n) == j)
+      }
     }
 
     def Supp(nodes: Node*) = {
-      Then("the Supp is " + nodes.toSet)
-      assert(tmn.Supp(n) == nodes.toSet)
+      it should "have Supp " + nodes.toSet in {
+        assert(tmn.Supp(n) == nodes.toSet)
+      }
     }
 
     def SuppTrans(nodes: Node*) = {
-      Then("the Supp* is " + nodes.toSet)
-      assert(tmn.SuppTrans(n) == nodes.toSet)
+      it should "have Supp*  " + nodes.toSet in {
+        assert(tmn.SuppTrans(n) == nodes.toSet)
+      }
     }
 
     def Ant(nodes: Node*) = {
-      Then("the Ant is " + nodes.toSet)
-      assert(tmn.Ant(n) == nodes.toSet)
+      it should "have Ant " + nodes.toSet in {
+        assert(tmn.Ant(n) == nodes.toSet)
+      }
     }
 
     def AntTrans(nodes: Node*) = {
-      Then("the Ant* is " + nodes.toSet)
-      assert(tmn.AntTrans(n) == nodes.toSet)
+      it should "have Ant* " + nodes.toSet in {
+        assert(tmn.AntTrans(n) == nodes.toSet)
+      }
     }
 
     def Cons(nodes: Node*) = {
-      Then("the Cons is " + nodes.toSet)
-      assert(tmn.Cons(n) == nodes.toSet)
+      it should "have Cons " + nodes.toSet in {
+        assert(tmn.Cons(n) == nodes.toSet)
+      }
     }
 
     def ACons(nodes: Node*) = {
-      Then("the ACons is " + nodes.toSet)
-      assert(tmn.ACons(n) == nodes.toSet)
+      it should "have ACons " + nodes.toSet in {
+        assert(tmn.ACons(n) == nodes.toSet)
+      }
     }
 
     def AConsTrans(nodes: Node*) = {
-      Then("the ACons* is " + nodes.toSet)
-      assert(tmn.AConsTrans(n) == nodes.toSet)
+      it should "have ACons* " + nodes.toSet in {
+        assert(tmn.AConsTrans(n) == nodes.toSet)
+      }
     }
   }
 
