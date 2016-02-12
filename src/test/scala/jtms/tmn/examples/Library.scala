@@ -7,7 +7,7 @@ import org.scalatest.{GivenWhenThen, FlatSpec}
 /**
   * Created by FM on 11.02.16.
   */
-class Library extends FlatSpec with NodeValidation with GivenWhenThen {
+class Library extends FlatSpec with NodeValidation {
 
   val V = new Node("verfügbar")
   val G = new Node("gestohlen")
@@ -199,6 +199,7 @@ class Library extends FlatSpec with NodeValidation with GivenWhenThen {
     tmn.update(Justification.in(A).node(N_cont2))
 
     val model = tmn.getModel()
+    info("H is currently chosen 'by random'")
     assert(model == Set(A_not, H, P, V))
   }
   it should "also return the same model when using just a single contradiction node" in {
@@ -207,7 +208,17 @@ class Library extends FlatSpec with NodeValidation with GivenWhenThen {
     tmn.update(Justification.in(A).node(N_cont))
 
     val model = tmn.getModel()
-
+    info("H is currently chosen 'by random'")
     assert(model == Set(A_not, H, P, V))
+  }
+
+  "With a contradiction node for P the model" should "be P_not,F,V" in {
+    val tmn = TMN
+
+    tmn.update(Justification.in(P).node(N_cont))
+
+    val model = tmn.getModel()
+    info("F is currently chosen 'by random'")
+    assert(model == Set(P_not, F, V))
   }
 }

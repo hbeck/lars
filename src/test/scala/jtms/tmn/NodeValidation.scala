@@ -8,7 +8,7 @@ import org.scalatest.{GivenWhenThen, FlatSpec}
   */
 
 trait NodeValidation {
-  this: FlatSpec with GivenWhenThen =>
+  this: FlatSpec =>
 
   def nodeValidation(tmn: TMN, n: Node): ((NodeValidator) => Any) => Any = {
     val nc = new NodeValidator(tmn, n)
@@ -22,7 +22,7 @@ trait NodeValidation {
 
   class NodeValidator(tmn: TMN, n: Node) {
 
-    Given(n.toString)
+    info(n.toString)
 
     def state(status: Status) = {
       it should "have the state " + status in {

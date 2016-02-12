@@ -7,7 +7,7 @@ import org.scalatest.GivenWhenThen
 /**
   * Created by FM on 05.02.16.
   */
-class JTMS_4 extends JTMS with NodeValidation with GivenWhenThen {
+class JTMS_4 extends JTMS with NodeValidation {
 
   val tmn = {
     val tmn = JTMS
