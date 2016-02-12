@@ -128,20 +128,21 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     if (assumptions.isEmpty)
       throw new RuntimeException("We have an unsolveable contradiction for node " + n)
 
+    // TODO: Ordering + Selection?
     val n_a = assumptions.head
 
     val j_cont = J_cont(assumptions.map(_.n))
 
+    // TODO: Ordering + Selection?
+    // (we pick currently only the first O)
     val n_star = SJ(n_a.n).get.O.head
 
-    val justification = new Justification(j_cont.flatMap(_.I),j_cont.flatMap(_.O) - n_star,n_star)
+    val justification = new Justification(j_cont.flatMap(_.I), j_cont.flatMap(_.O) - n_star, n_star)
 
     update(justification)
-
-
   }
 
-  def J_cont (nodes:Set[Node]) = {
+  def J_cont(nodes: Set[Node]) = {
     SJ.filterKeys(nodes.contains(_)).values.map(_.get).toSet
   }
 
@@ -172,8 +173,11 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
       val assumptionsOfN = AntTrans(n).map(Assumptions).filter(_.isDefined).map(_.get)
 
       for (a <- assumptionsOfN) {
-        val assumptionsOfA = MaxAssumptions(a.n)
-        if (assumptionsOfA.isEmpty)
+        val otherAssumptions = assumptionsOfN - a
+
+        val allOtherAssumptions = otherAssumptions.flatMap(x => AntTrans(x.n)).toSet
+
+        if(!allOtherAssumptions.contains(a.n))
           assumptions.add(a)
       }
     }
@@ -256,7 +260,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
         val aCons = ACons(n)
         if (aCons.isEmpty) {
           setIn(j.get)
-          j.get.O.foreach(status(_) = out)
+          j.get.O.filter(status(_) == unknown).foreach(status(_) = out)
           chooseAssignments(unknownCons(n))
         } else {
           //          aCons += n

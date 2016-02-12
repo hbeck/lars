@@ -189,4 +189,25 @@ class Library extends FlatSpec with NodeValidation with GivenWhenThen {
 
     assert(model == Set(V, H, P, A_not))
   }
+
+  "With a contradiction node for A the model" should "be A_not,H,P, V" in {
+    val tmn = TMN
+
+    val N_cont2 = new Node("Widerspruch2")
+    tmn.Ncont.add(N_cont2)
+
+    tmn.update(Justification.in(A).node(N_cont2))
+
+    val model = tmn.getModel()
+    assert(model == Set(A_not, H, P, V))
+  }
+  it should "also return the same model when using just a single contradiction node" in {
+    val tmn = TMN
+
+    tmn.update(Justification.in(A).node(N_cont))
+
+    val model = tmn.getModel()
+
+    assert(model == Set(A_not, H, P, V))
+  }
 }
