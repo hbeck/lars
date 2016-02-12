@@ -1,5 +1,6 @@
 package jtms.tmn
 
+import jtms.tmn.examples.JMTS_21
 import jtms.{TMN, Premise, Justification, Node}
 import org.scalatest.FlatSpec
 
@@ -85,19 +86,19 @@ class Deletion extends FlatSpec {
     val j1 = Premise(A)
     val j2 = Justification.in(B).node(C)
 
-    val tmn = new TMN(Set(A,B,C))
+    val tmn = new TMN(Set(A, B, C))
 
     tmn.update(j0)
     tmn.update(j1)
     tmn.update(j2)
 
-    assume(tmn.getModel() == Set(A,B,C))
+    assume(tmn.getModel() == Set(A, B, C))
 
     tmn.remove(j0)
 
     assert(tmn.getModel() == Set(A))
 
-    assume(tmn.J == Set(j1,j2))
+    assume(tmn.J == Set(j1, j2))
     assert(tmn.Supp(C) == Set(B))
     assert(tmn.Cons(A) == Set())
     assert(tmn.SJ(C) == None)
@@ -109,23 +110,23 @@ class Deletion extends FlatSpec {
     val j2 = Justification.in(B).node(C)
     val j3 = Justification.in(A).node(C)
 
-    val tmn = new TMN(Set(A,B,C))
+    val tmn = new TMN(Set(A, B, C))
 
     tmn.update(j0)
     tmn.update(j1)
     tmn.update(j2)
     tmn.update(j3)
 
-    assume(tmn.getModel() == Set(A,B,C))
+    assume(tmn.getModel() == Set(A, B, C))
     assume(tmn.SJ(C) == Some(j2))
     assume(tmn.Supp(C) == Set(B))
-    assume(tmn.Cons(A) == Set(B,C))
+    assume(tmn.Cons(A) == Set(B, C))
     assume(tmn.Cons(B) == Set(C))
 
     tmn.remove(j0)
 
-    assert(tmn.getModel() == Set(A,C))
-    assert(tmn.J == Set(j1,j2, j3),"the SJ for C should change")
+    assert(tmn.getModel() == Set(A, C))
+    assert(tmn.J == Set(j1, j2, j3), "the SJ for C should change")
     info("the SJ for C should change")
     assert(tmn.SJ(C) == Some(j3))
     info("the Supp for C should change")
@@ -133,6 +134,16 @@ class Deletion extends FlatSpec {
     info("the Cons for A should change")
     assert(tmn.Cons(A) == Set(C))
     assert(tmn.Cons(B) == Set(C))
+  }
 
+  "Removing a node form a TMN where backtracking occurred" should "result in the original model"  ignore   {
+    var setup = new JMTS_21
+    val tmn = setup.JTMS_DDB
+
+    assume(tmn.getModel() == Set(setup.A, setup.C, setup.D, setup.F, setup.E))
+
+    tmn.remove(setup.j7)
+
+    assert(tmn.getModel() == Set(setup.E, setup.B, setup.D))
   }
 }
