@@ -56,7 +56,8 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   def findSJ(M: List[Node], idx: Int): Option[Justification] = {
     val n = M(idx)
     val MSub = M.take(idx).toSet
-    Jn(n).find(j => j.I.subsetOf(MSub) && j.O.intersect(M.toSet).isEmpty)
+    val justifications = Jn(n).filter(j => j.I.subsetOf(MSub) && j.O.intersect(M.toSet).isEmpty)
+    selectJustification(justifications)
   }
 
   def update(j: Justification): scala.collection.immutable.Set[Node] = {
@@ -129,11 +130,11 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
       throw new RuntimeException("We have an unsolveable contradiction for node " + n)
 
     // TODO: Ordering + Selection?
-    val n_a = assumptions.head
+    val n_a = selectJustification(assumptions).get
 
     // TODO: Ordering + Selection?
     // (we pick currently only the first O)
-    val n_star = n_a.O.head
+    val n_star = selectNode(n_a.O).get
 
     val j_cont = J_cont(assumptions.map(_.n))
 
@@ -205,18 +206,18 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def findSpoiler(j: Justification): Option[Node] = {
     if (math.random < 0.5) {
-      val opt = j.I.find(status(_) == out)
+      val opt = selectNode(j.I.filter(status(_) == out))
       if (opt.isDefined) {
         return opt
       } else {
-        return j.O.find(status(_) == in)
+        return selectNode(j.O.filter(status(_) == in))
       }
     } else {
-      val opt = j.O.find(status(_) == in)
+      val opt = selectNode(j.O.filter(status(_) == in))
       if (opt.isDefined) {
         return opt
       } else {
-        return j.I.find(status(_) == out)
+        return selectNode(j.I.filter(status(_) == out))
       }
     }
   }
@@ -238,7 +239,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   def setConsequences(n: Node): Unit = {
     if (status(n) == unknown) {
       val jn: Set[Justification] = Jn(n)
-      val j: Option[Justification] = jn.find(foundedValid)
+      val j: Option[Justification] = selectJustification(jn.filter(foundedValid))
       if (j.isDefined) {
         setIn(j.get)
         setConsequences(unknownCons(n))
@@ -258,7 +259,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   def chooseAssignments(n: Node): Unit = {
     if (status(n) == unknown) {
       val jn: Set[Justification] = Jn(n)
-      val j: Option[Justification] = jn.find(unfoundedValid)
+      val j: Option[Justification] = selectJustification(jn.filter(unfoundedValid))
       if (j.isDefined) {
         val aCons = ACons(n)
         if (aCons.isEmpty) {
@@ -276,7 +277,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
         //all jn are unfounded invalid. in particular, for every j in jn, some node in j.I is unknown
         status(n) = out
         for (h <- jn) {
-          val m = h.I.find(status(_) == unknown).get
+          val m = selectNode(h.I.filter(status(_) == unknown)).get
           status(m) = out
         }
         setOut(n)
@@ -287,7 +288,23 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def unknownCons(n: Node) = Cons(n).filter(status(_) == unknown)
 
-  //TODO what about the ordering?
+  def selectNode(nodes: scala.Predef.Set[Node]): Option[Node] = {
+    if (nodes.isEmpty)
+      return None
+
+    //TODO what about the ordering?
+    Some(nodes.head)
+  }
+
+  def selectJustification(justifications: Set[Justification]): Option[Justification] = {
+    if (justifications.isEmpty)
+      return None
+
+    //TODO what about the ordering?
+    Some(justifications.head)
+  }
+
+
   def foundedValid(j: Justification): Boolean = {
     j.I.forall(status(_) == in) && j.O.forall(status(_) == out)
   }
