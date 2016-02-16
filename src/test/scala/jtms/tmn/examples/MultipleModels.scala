@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{TMN, Justification, Node}
+import jtms.{UserDefinedNode, TMN, Justification, Node}
 import org.scalatest.FlatSpec
 
 /**
@@ -8,8 +8,8 @@ import org.scalatest.FlatSpec
   */
 class MultipleModels  extends  FlatSpec{
 
-  val A = new Node("A")
-  val B = new Node("B")
+  val A = Node("A")
+  val B = Node("B")
 
   val j1 = Justification.out(A).node(B)
   val j2 = Justification.out(B).node(A)

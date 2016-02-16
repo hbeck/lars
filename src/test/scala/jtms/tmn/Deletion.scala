@@ -1,7 +1,7 @@
 package jtms.tmn
 
 import jtms.tmn.examples.{Library, Tweety, JTMS_5, JMTS_21}
-import jtms.{TMN, Premise, Justification, Node}
+import jtms._
 import org.scalatest.FlatSpec
 
 /**
@@ -9,9 +9,9 @@ import org.scalatest.FlatSpec
   */
 class Deletion extends FlatSpec {
 
-  val A = new Node("A")
-  val B = new Node("B")
-  val C = new Node("C")
+  val A = Node("A")
+  val B = Node("B")
+  val C = Node("C")
 
   "A model with only one justification" should "have no Justifications and Nodes after deletion" in {
     val j0 = Premise(A)

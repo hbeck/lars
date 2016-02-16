@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{Premise, TMN, Justification, Node}
+import jtms._
 import org.scalatest.FlatSpec
 
 /**
@@ -8,11 +8,11 @@ import org.scalatest.FlatSpec
   */
 class Tweety extends FlatSpec {
 
-  val V = new Node("Vogel sein")
-  val P = new Node("Pinguin sein")
-  val F = new Node("Fliegen können")
-  val F_not = new Node("nicht fliegen können")
-  val N_cont = new Node("Widerspruch")
+  val V = Node("Vogel sein")
+  val P = Node("Pinguin sein")
+  val F = Node("Fliegen können")
+  val F_not = Node("nicht fliegen können")
+  val N_cont = Node("Widerspruch")
 
   val j0 = Justification.in(P).node(F_not)
   val j1 = Justification.in(P).node(V)

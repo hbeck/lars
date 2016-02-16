@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{Premise, TMN, Justification, Node}
+import jtms._
 import org.scalatest.FlatSpec
 
 /**
@@ -8,14 +8,14 @@ import org.scalatest.FlatSpec
   */
 class Car extends FlatSpec {
 
-  val S_not = new Node("car is not starting")
-  val G_not = new Node("not enough gas")
-  val G = new Node("enough gas")
-  val D = new Node("defect")
-  val I = new Node("ignition broken")
-  val C = new Node("carb broken")
+  val S_not = Node("car is not starting")
+  val G_not = Node("not enough gas")
+  val G = Node("enough gas")
+  val D = Node("defect")
+  val I = Node("ignition broken")
+  val C = Node("carb broken")
 
-  val N_cont = new Node("contradiction")
+  val N_cont = Node("contradiction")
 
   val j0 = Justification.in(S_not).out(D).node(G_not);
   val j1 = Justification.in(S_not, G).node(D)

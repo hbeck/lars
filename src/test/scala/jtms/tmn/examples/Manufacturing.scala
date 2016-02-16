@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{Premise, TMN, Justification, Node}
+import jtms._
 import org.scalatest.FlatSpec
 
 /**
@@ -8,11 +8,11 @@ import org.scalatest.FlatSpec
   */
 class Manufacturing extends FlatSpec {
 
-  val C = new Node("Product")
-  val B = new Node("troubles")
-  val A1 = new Node("Resource 1")
-  val A2 = new Node("Resource 2")
-  val L1 = new Node("supply problems A1")
+  val C = Node("Product")
+  val B = Node("troubles")
+  val A1 = Node("Resource 1")
+  val A2 = Node("Resource 2")
+  val L1 = Node("supply problems A1")
 
   val j0 = Justification.in(C).out(B).node(A1)
   val j1 = Justification.in(C, B).node(A2)

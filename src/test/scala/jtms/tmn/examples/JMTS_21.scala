@@ -1,12 +1,12 @@
 package jtms.tmn.examples
 
-import jtms.{Justification, Node}
+import jtms.{UserDefinedNode, Justification, Node}
 
 /**
   * Created by FM on 11.02.16.
   */
 class JMTS_21 extends JTMS {
-  val N_cont = new Node("N_cont")
+  val N_cont = Node("N_cont")
 
   val j7 = Justification.in(B).out(C).node(N_cont)
 

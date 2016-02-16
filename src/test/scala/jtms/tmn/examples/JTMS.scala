@@ -1,6 +1,6 @@
 package jtms.tmn.examples
 
-import jtms.{Premise, TMN, Node, Justification}
+import jtms._
 import org.scalatest.FlatSpec
 
 /**

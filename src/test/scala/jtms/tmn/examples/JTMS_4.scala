@@ -4,6 +4,8 @@ import jtms.tmn.NodeValidation
 import jtms.{in, out}
 import org.scalatest.GivenWhenThen
 
+import scala.xml.Node
+
 /**
   * Created by FM on 05.02.16.
   */
@@ -11,7 +13,7 @@ class JTMS_4 extends JTMS with NodeValidation {
 
   val tmn = {
     val tmn = JTMS
-    tmn.set(Set(E, B, D).to)
+    tmn.set(Set(E, B, D))
     tmn
   }
 

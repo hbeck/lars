@@ -9,16 +9,16 @@ import org.scalatest.{GivenWhenThen, FlatSpec}
   */
 class Library extends FlatSpec with NodeValidation {
 
-  val V = new Node("verfügbar")
-  val G = new Node("gestohlen")
-  val P = new Node("am angegebenen Platz vorhanden")
-  val F = new Node("falsch einsortiert")
-  val P_not = new Node("nicht am angegebenen Platz vorhanden")
-  val A = new Node("ausleihbar")
-  val N = new Node("Nachschlagewerk")
-  val A_not = new Node("nicht ausleihbar")
-  val H = new Node("im Handapperart einer Veranstaltung")
-  val N_cont = new Node("Widerspruch")
+  val V = Node("verfügbar")
+  val G = Node("gestohlen")
+  val P = Node("am angegebenen Platz vorhanden")
+  val F = Node("falsch einsortiert")
+  val P_not = Node("nicht am angegebenen Platz vorhanden")
+  val A = Node("ausleihbar")
+  val N = Node("Nachschlagewerk")
+  val A_not = Node("nicht ausleihbar")
+  val H = Node("im Handapperart einer Veranstaltung")
+  val N_cont = Node("Widerspruch")
 
   val j1 = Premise(V)
   val j2 = Justification.in(V).out(F, G).node(P)

@@ -13,7 +13,7 @@ class JTMS_5 extends JTMS {
   var diff: Set[Node] = Set();
   val tmn = {
     val tmn = JTMS
-    tmn.set(Set(E, B, D).to)
+    tmn.set(Set(E, B, D))
     diff = tmn.update(j0)
     tmn
   }

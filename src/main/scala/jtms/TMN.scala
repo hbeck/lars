@@ -33,9 +33,10 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   }
 
   /** @return true if M is admissible **/
-  def set(M: List[Node]): Boolean = {
+  def set(M: Predef.Set[Node]): Boolean = {
+    val m = M.toList
     for (i <- 0 to M.size - 1) {
-      val j: Option[Justification] = findSJ(M, i)
+      val j: Option[Justification] = findSJ(m, i)
       if (j.isEmpty) {
         return false
       }
