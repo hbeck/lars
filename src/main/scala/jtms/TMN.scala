@@ -96,13 +96,14 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
       return scala.collection.immutable.Set()
     }
 
-    val L = AConsTrans(n) + n
+    val L = AffectedNodes(n)
 
-    updateNode(L)
+    updateNodes(L)
   }
 
-  def updateNode(L: Set[Node]): Predef.Set[Node] = {
+  def updateNodes(L: Set[Node]): Predef.Set[Node] = {
 
+    def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
 
     val oldState = stateOfNodes(L)
 
@@ -123,39 +124,25 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def remove(j: Justification) = {
 
-
     val contradictionJustifications = J.filter(_.isInstanceOf[ContradictionJustification])
 
-    val L = AConsTrans(j.n) + j.n ++ contradictionJustifications.flatMap(x => AConsTrans(x.n) + x.n)
+    val L = AffectedNodes(j.n) ++ contradictionJustifications.flatMap(x => AffectedNodes(x.n))
+
+    def removeJustification(j: Justification) = {
+      for (m <- j.I union j.O) {
+        Cons(m) -= j.n
+      }
+
+      J.remove(j)
+    }
 
     removeJustification(j)
 
     contradictionJustifications.foreach(removeJustification)
 
-
-
-
-    this.updateNode(L)
-    //    status.remove(j.n)
-
-    //    val cons = Cons(j.n)
-    //    cons.foreach(status(_) == unknown)
+    this.updateNodes(L)
   }
 
-  private def removeJustification(j: Justification) = {
-//    val cons = Cons(j.n)
-//    cons.foreach(x => {
-//      status(x) = unknown
-//      //      Supp(x).remove(j.n)
-//    })
-
-
-    for (m <- j.I union j.O) {
-      Cons(m) -= j.n
-    }
-
-    J.remove(j)
-  }
 
   def doDDB() = {
     val model = getModel()
@@ -193,8 +180,6 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     SJ.filterKeys(nodes.contains(_)).values.map(_.get).toSet
   }
 
-  private def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
-
   def Jn(n: Node) = J.filter(_.n == n)
 
   //ACons(n) = {x ∈ Cons(n) | n ∈ Supp(x)}
@@ -212,9 +197,13 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def AntTrans(n: Node) = trans(Ant, n)
 
+  def AffectedNodes(n: Node) = AConsTrans(n) + n
+
 
   def MaxAssumptions(n: Node): Set[Justification] = {
     val assumptions = Set[Justification]()
+
+    def asAssumption(n: Node) = SJ(n).filterNot(_.O.isEmpty)
 
     if (Ncont.contains(n)) {
       val assumptionsOfN = AntTrans(n).map(asAssumption).filter(_.isDefined).map(_.get)
@@ -231,9 +220,6 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
     assumptions
   }
-
-  def asAssumption(n: Node) = SJ(n).filterNot(_.O.isEmpty)
-
 
   def setIn(j: Justification) = {
     status(j.n) = in
