@@ -6,7 +6,7 @@ class JustificationBuilder(I: Set[Node] = Set(), O: Set[Node] = Set()) {
 
   def out(nodes: Node*) = new JustificationBuilder(I, O ++ nodes)
 
-  def node(n: Node) = new Justification(I, O, n)
+  def node(n: Node) = new UserDefinedJustification(I, O, n)
 }
 
 object Premise {
@@ -18,10 +18,18 @@ object Justification {
 
   def out(nodes: Node*) = new JustificationBuilder(Set(), nodes.toSet)
 
-  def premise(n: Node) = new Justification(Set(), Set(), n)
+  def premise(n: Node) = new UserDefinedJustification(Set(), Set(), n)
+}
+
+sealed trait Justification {
+  val I: Set[Node];
+  val O: Set[Node];
+  val n: Node;
 }
 
 /**
   * Created by hb on 12/22/15.
   */
-case class Justification(I: Set[Node], O: Set[Node], n: Node)
+case class UserDefinedJustification(I: Set[Node], O: Set[Node], n: Node) extends Justification
+
+case class ContradictionJustification(I: Set[Node], O: Set[Node], n: Node) extends Justification

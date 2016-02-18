@@ -166,7 +166,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     val I_cont = j_cont.flatMap(_.I)
     val O_cont = j_cont.flatMap(_.O) - n_star;
 
-    val justification = new Justification(I_cont, O_cont, n_star)
+    val justification = new ContradictionJustification(I_cont, O_cont, n_star)
 
     update(justification)
   }
