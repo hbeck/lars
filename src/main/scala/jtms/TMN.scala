@@ -96,11 +96,13 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
       return scala.collection.immutable.Set()
     }
 
-    updateNode(n)
+    val L = AConsTrans(n) + n
+
+    updateNode(L)
   }
 
-  def updateNode(n: Node): Predef.Set[Node] = {
-    val L = AConsTrans(n) + n
+  def updateNode(L: Set[Node]): Predef.Set[Node] = {
+
 
     val oldState = stateOfNodes(L)
 
@@ -121,22 +123,38 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def remove(j: Justification) = {
 
+
+    val contradictionJustifications = J.filter(_.isInstanceOf[ContradictionJustification])
+
+    val L = AConsTrans(j.n) + j.n ++ contradictionJustifications.flatMap(x => AConsTrans(x.n) + x.n)
+
+    removeJustification(j)
+
+    contradictionJustifications.foreach(removeJustification)
+
+
+
+
+    this.updateNode(L)
+    //    status.remove(j.n)
+
+    //    val cons = Cons(j.n)
+    //    cons.foreach(status(_) == unknown)
+  }
+
+  private def removeJustification(j: Justification) = {
+//    val cons = Cons(j.n)
+//    cons.foreach(x => {
+//      status(x) = unknown
+//      //      Supp(x).remove(j.n)
+//    })
+
+
     for (m <- j.I union j.O) {
       Cons(m) -= j.n
     }
-//    val cons = j.I.flatMap(Cons)
-//    val cons = Cons(j.n)
-//    cons.foreach(status(_) == unknown)
 
     J.remove(j)
-
-
-
-    this.updateNode(j.n)
-//    status.remove(j.n)
-
-//    val cons = Cons(j.n)
-//    cons.foreach(status(_) == unknown)
   }
 
   def doDDB() = {

@@ -136,14 +136,16 @@ class Deletion extends FlatSpec {
     assert(tmn.Cons(B) == Set(C))
   }
 
-  "Removing a node form a TMN where backtracking occurred" should "result in the original model"  ignore   {
+  "Removing a node form a TMN where backtracking occurred" should "result in the original model" in   {
     var setup = new JMTS_21
     val tmn = setup.JTMS_DDB
+
 
     assume(tmn.getModel() == Set(setup.A, setup.C, setup.D, setup.F, setup.E))
 
     tmn.remove(setup.j7)
 
+    assert(tmn.getModel() ==  setup.JTMS.getModel())
     assert(tmn.getModel() == Set(setup.E, setup.B, setup.D))
   }
 }
