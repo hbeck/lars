@@ -30,6 +30,8 @@ class Library extends FlatSpec with NodeValidation {
   val j8 = Justification.in(H).node(A_not)
   val j9 = Justification.in(A, A_not).node(N_cont)
 
+  val jExclusionA =  Justification.in(A).node(N_cont)
+
   def TMN = {
     val tmn = new TMN(Set(V, G, P, F, P_not, A, N, A_not, H, N_cont))
 
@@ -193,15 +195,13 @@ class Library extends FlatSpec with NodeValidation {
   "With a contradiction node for A the model" should "be A_not,H,P, V" in {
     val tmn = TMN
 
-    val N_cont2 = new Node("Widerspruch2")
-    tmn.Ncont.add(N_cont2)
-
-    tmn.update(Justification.in(A).node(N_cont2))
+    tmn.update(jExclusionA)
 
     val model = tmn.getModel()
     info("H is currently chosen 'by random'")
     assert(model == Set(A_not, H, P, V))
   }
+
   it should "also return the same model when using just a single contradiction node" in {
     val tmn = TMN
 

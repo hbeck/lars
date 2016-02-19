@@ -1,6 +1,6 @@
 package jtms.tmn
 
-import jtms.tmn.examples.JMTS_21
+import jtms.tmn.examples.{Library, Tweety, JTMS_5, JMTS_21}
 import jtms.{TMN, Premise, Justification, Node}
 import org.scalatest.FlatSpec
 
@@ -31,7 +31,7 @@ class Deletion extends FlatSpec {
     assert(tmn.getModel() == Set())
   }
 
-  "A stable TMN with 2 Nodes and two justifications" should "have an empty model after deletion of a Premise" in {
+  "A stable TMN with 2 Nodes and two justifications" should "have an empty model after deletion of a supporting Premise" in {
     // arrange
     val j0 = Justification.in(A).node(B)
     val j1 = Premise(A)
@@ -136,16 +136,63 @@ class Deletion extends FlatSpec {
     assert(tmn.Cons(B) == Set(C))
   }
 
-  "Removing a node form a TMN where backtracking occurred" should "result in the original model" in   {
-    var setup = new JMTS_21
-    val tmn = setup.JTMS_DDB
+  "Removing an additional justification form the JTMS 5 sample" should "result in the original model" in {
+    // arrange
+    val setup = new JTMS_5
+    val tmn = setup.tmn
 
+    assume(tmn.getModel() == Set(setup.A, setup.C, setup.D, setup.E, setup.F))
+
+    // act
+    tmn.remove(setup.j0)
+
+    // assert
+    assert(tmn.getModel() == Set(setup.E, setup.B, setup.D))
+  }
+
+  "Removing the Penguin premise from the Tweety sample" should "result in the Model V, F" in {
+    // arrange
+    val setup = new Tweety
+    val tmn = setup.TMN
+
+    tmn.update(setup.j5)
+
+    assume(tmn.getModel() == Set(setup.F_not, setup.V, setup.P))
+
+    // act
+    tmn.remove(setup.j5)
+
+    // assert
+    assert(tmn.getModel() == Set(setup.V, setup.F))
+  }
+
+  "Removing a justification from a TMN where backtracking occurred" should "result in the original model" in {
+    // arrange
+    val setup = new JMTS_21
+    val tmn = setup.JTMS_DDB
 
     assume(tmn.getModel() == Set(setup.A, setup.C, setup.D, setup.F, setup.E))
 
+    // act
     tmn.remove(setup.j7)
 
-    assert(tmn.getModel() ==  setup.JTMS.getModel())
+    // assert
+    assert(tmn.getModel() == setup.JTMS.getModel())
     assert(tmn.getModel() == Set(setup.E, setup.B, setup.D))
+  }
+
+  "Removing a exclusion justification for A in the library sample" should "result in the initial model" in {
+    val setup = new Library
+    val tmn = setup.TMN
+
+    tmn.update(setup.jExclusionA)
+
+    assume(tmn.getModel() == Set(setup.A_not, setup.H, setup.P, setup.V))
+
+    // act
+    tmn.remove(setup.jExclusionA)
+
+    // assert
+    assert(tmn.getModel() == Set(setup.A, setup.P, setup.V))
   }
 }
