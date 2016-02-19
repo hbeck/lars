@@ -13,7 +13,7 @@ class JMTS_21 extends JTMS {
   def JTMS_DDB = {
     val tmn = JTMS
 
-    tmn.N = tmn.N + N_cont
+    tmn.N +=  N_cont
 
     tmn.update(j7)
 

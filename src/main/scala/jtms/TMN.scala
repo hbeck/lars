@@ -9,10 +9,10 @@ import scala.collection.mutable.{HashMap, HashSet, Map, Set}
   * truth maintenance network
   * Created by hb on 12/22/15.
   */
-class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set()) {
+class TMN(var N: collection.immutable.Set[Node], var J: Predef.Set[Justification] = Predef.Set()) {
 
-  val Cons: Map[Node, Set[Node]] = new HashMap[Node, Set[Node]]
-  val Supp: Map[Node, Set[Node]] = new HashMap[Node, Set[Node]]
+  val Cons: Map[Node, Predef.Set[Node]] = new HashMap[Node, Predef.Set[Node]]
+  val Supp: Map[Node, Predef.Set[Node]] = new HashMap[Node, Predef.Set[Node]]
   val SJ: Map[Node, Option[Justification]] = new HashMap[Node, Option[Justification]]
   val status: Map[Node, Status] = new HashMap[Node, Status]
 
@@ -27,8 +27,8 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def init(n: Node) = {
     if (!status.isDefinedAt(n)) status(n) = out
-    if (!Cons.isDefinedAt(n)) Cons(n) = new HashSet[Node]()
-    if (!Supp.isDefinedAt(n)) Supp(n) = new HashSet[Node]()
+    if (!Cons.isDefinedAt(n)) Cons(n) = Predef.Set[Node]()
+    if (!Supp.isDefinedAt(n)) Supp(n) = Predef.Set[Node]()
     if (!SJ.isDefinedAt(n)) SJ(n) = None
   }
 
@@ -102,9 +102,9 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     updateNodes(L)
   }
 
-  def updateNodes(L: Set[Node]): Predef.Set[Node] = {
+  def updateNodes(L: Predef.Set[Node]): Predef.Set[Node] = {
 
-    def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
+    def stateOfNodes(nodes: Predef.Set[Node]) = nodes.map(n => (n, status(n))).toList
 
     val oldState = stateOfNodes(L)
 
@@ -134,7 +134,7 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
         Cons(m) -= j.n
       }
 
-      J.remove(j)
+      J -= j
     }
 
     removeJustification(j)
@@ -177,23 +177,23 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     update(justification)
   }
 
-  def J_cont(nodes: Set[Node]) = {
+  def J_cont(nodes: Predef.Set[Node]) = {
     SJ.filterKeys(nodes.contains(_)).values.map(_.get).toSet
   }
 
   def Jn(n: Node) = J.filter(_.n == n)
 
   //ACons(n) = {x ∈ Cons(n) | n ∈ Supp(x)}
-  def ACons(n: Node): Set[Node] = Cons(n).filter(Supp(_).contains(n))
+  def ACons(n: Node): Predef.Set[Node] = Cons(n).filter(Supp(_).contains(n))
 
-  def AConsTrans(n: Node): Set[Node] = trans(ACons, n)
+  def AConsTrans(n: Node) = trans(ACons, n)
 
-  def SuppTrans(n: Node): Set[Node] = trans(Supp, n)
+  def SuppTrans(n: Node) = trans(Supp, n)
 
-  def Ant(n: Node): Set[Node] = {
+  def Ant(n: Node): Predef.Set[Node] = {
     if (status(n) == in)
       return Supp(n)
-    return Set()
+    return Predef.Set()
   }
 
   def AntTrans(n: Node) = trans(Ant, n)
@@ -201,7 +201,7 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
   def AffectedNodes(n: Node) = AConsTrans(n) + n
 
 
-  def MaxAssumptions(n: Node): Set[Justification] = {
+  def MaxAssumptions(n: Node): Predef.Set[Justification] = {
     val assumptions = Set[Justification]()
 
     def asAssumption(n: Node) = SJ(n).filterNot(_.O.isEmpty)
@@ -219,12 +219,12 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
       }
     }
 
-    assumptions
+    assumptions.toSet
   }
 
   def setIn(j: Justification) = {
     status(j.n) = in
-    Supp(j.n) = (j.I union j.O).to
+    Supp(j.n) = j.I union j.O
     SJ(j.n) = Option(j)
   }
 
@@ -254,13 +254,13 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def setUnknown(n: Node): Unit = {
     status(n) = unknown
-    Supp(n).clear()
+    Supp(n) = Predef.Set()
     SJ(n) = None
   }
 
-  def setUnknown(L: Set[Node]): Unit = L.foreach(setUnknown(_))
+  def setUnknown(L: Predef.Set[Node]): Unit = L.foreach(setUnknown(_))
 
-  def setConsequences(L: mutable.Set[Node]): Unit = {
+  def setConsequences(L: Predef.Set[Node]): Unit = {
     for (n <- L) {
       setConsequences(n)
     }
@@ -268,7 +268,7 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def setConsequences(n: Node): Unit = {
     if (status(n) == unknown) {
-      val jn: Set[Justification] = Jn(n)
+      val jn = Jn(n)
       val j: Option[Justification] = selectJustification(jn.filter(foundedValid))
       if (j.isDefined) {
         setIn(j.get)
@@ -280,7 +280,7 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     }
   }
 
-  def chooseAssignments(L: mutable.Set[Node]): Unit = {
+  def chooseAssignments(L: Predef.Set[Node]): Unit = {
     for (n <- L) {
       chooseAssignments(n)
     }
@@ -288,7 +288,7 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
 
   def chooseAssignments(n: Node): Unit = {
     if (status(n) == unknown) {
-      val jn: Set[Justification] = Jn(n)
+      val jn = Jn(n)
       val j: Option[Justification] = selectJustification(jn.filter(unfoundedValid))
       if (j.isDefined) {
         val aCons = ACons(n)
@@ -307,8 +307,10 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
         //all jn are unfounded invalid. in particular, for every j in jn, some node in j.I is unknown
         status(n) = out
         for (h <- jn) {
-          val m = selectNode(h.I.filter(status(_) == unknown)).get
-          status(m) = out
+          val m = selectNode(h.I.filter(status(_) == unknown))
+          // TODO: this might be needed because of the non existing ordering
+          // We usually can expect to always have a justification (if ordering is correct)
+          m.foreach(status(_) = out)
         }
         setOut(n)
         chooseAssignments(unknownCons(n))
@@ -327,7 +329,7 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     Some(nodes.head)
   }
 
-  def selectJustification(justifications: Set[Justification]): Option[Justification] = {
+  def selectJustification(justifications: Predef.Set[Justification]): Option[Justification] = {
     if (justifications.isEmpty)
       return None
 
@@ -348,13 +350,13 @@ class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     j.I.forall(status(_) == in) && !j.O.exists(status(_) == in) //&& j.O.exists(status(_)==unknown)
   }
 
-  def trans[T](f: T => Set[T], t: T): Set[T] = {
+  def trans[T](f: T => Predef.Set[T], t: T): Predef.Set[T] = {
     trans(f)(f(t))
   }
 
   @tailrec
-  final def trans[T](f: T => Set[T])(s: Set[T]): Set[T] = {
-    val next: Set[T] = s.flatMap(f)
+  final def trans[T](f: T => Predef.Set[T])(s: Predef.Set[T]): Predef.Set[T] = {
+    val next = s.flatMap(f)
     val nextSet = next ++ s
     if (s == nextSet || next.isEmpty) {
       return s
