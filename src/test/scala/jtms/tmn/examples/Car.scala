@@ -15,7 +15,7 @@ class Car extends FlatSpec {
   val I = Node("ignition broken")
   val C = Node("carb broken")
 
-  val N_cont = Node("contradiction")
+  val N_cont = ContradictionNode("contradiction")
 
   val j0 = Justification.in(S_not).out(D).node(G_not);
   val j1 = Justification.in(S_not, G).node(D)
@@ -30,7 +30,6 @@ class Car extends FlatSpec {
 
   def TMN = {
     val tmn = new TMN(Set(S_not, G, G_not, D, I, C, N_cont));
-    tmn.Ncont.add(N_cont)
 
     tmn.update(j0)
     tmn.update(j1)

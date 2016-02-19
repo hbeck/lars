@@ -9,7 +9,7 @@ import scala.collection.mutable.{HashMap, HashSet, Map, Set}
   * truth maintenance network
   * Created by hb on 12/22/15.
   */
-class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set(), val Ncont: Set[Node] = Set()) {
+class TMN(var N: collection.immutable.Set[Node], val J: Set[Justification] = Set()) {
 
   val Cons: Map[Node, Set[Node]] = new HashMap[Node, Set[Node]]
   val Supp: Map[Node, Set[Node]] = new HashMap[Node, Set[Node]]
@@ -316,6 +316,7 @@ class TMN(val N: collection.immutable.Set[Node], val J: Set[Justification] = Set
     }
   }
 
+  def Ncont = N.filter(_.isInstanceOf[ContradictionNode])
   def unknownCons(n: Node) = Cons(n).filter(status(_) == unknown)
 
   def selectNode(nodes: scala.Predef.Set[Node]): Option[Node] = {

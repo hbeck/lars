@@ -12,7 +12,7 @@ class Tweety extends FlatSpec {
   val P = Node("Pinguin sein")
   val F = Node("Fliegen können")
   val F_not = Node("nicht fliegen können")
-  val N_cont = Node("Widerspruch")
+  val N_cont = ContradictionNode("Widerspruch")
 
   val j0 = Justification.in(P).node(F_not)
   val j1 = Justification.in(P).node(V)
@@ -24,8 +24,6 @@ class Tweety extends FlatSpec {
 
   def TMN = {
     val tmn = new TMN(Set(V, P, F, F_not, N_cont))
-
-    tmn.Ncont.add(N_cont)
 
     tmn.update(j0)
     tmn.update(j1)

@@ -18,7 +18,7 @@ class Library extends FlatSpec with NodeValidation {
   val N = Node("Nachschlagewerk")
   val A_not = Node("nicht ausleihbar")
   val H = Node("im Handapperart einer Veranstaltung")
-  val N_cont = Node("Widerspruch")
+  val N_cont = ContradictionNode("Widerspruch")
 
   val j1 = Premise(V)
   val j2 = Justification.in(V).out(F, G).node(P)
@@ -34,8 +34,6 @@ class Library extends FlatSpec with NodeValidation {
 
   def TMN = {
     val tmn = new TMN(Set(V, G, P, F, P_not, A, N, A_not, H, N_cont))
-
-    tmn.Ncont.add(N_cont)
 
     tmn.update(j1)
     tmn.update(j2)
