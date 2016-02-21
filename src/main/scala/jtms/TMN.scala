@@ -74,7 +74,7 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
 
     //if conclusion was already drawn, we are done
     if (status(n) == in) {
-      doDDB()
+      checkForDDB()
       return scala.collection.immutable.Set()
     }
 
@@ -83,14 +83,14 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
     val spoiler: Option[Node] = findSpoiler(j)
     if (spoiler.isDefined) {
       Supp(n) += spoiler.get
-      doDDB
+      checkForDDB
       return scala.collection.immutable.Set()
     }
 
     if (ACons(n).isEmpty) {
       //then we can treat n independently
       setIn(j)
-      doDDB
+      checkForDDB
       // TODO (CF): Missing to add n to M (M = M + n)?
       return scala.collection.immutable.Set()
     }
@@ -102,9 +102,9 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
 
   def updateNodes(L: Set[Node]): Set[Node] = {
 
-    def stateOfNodes(nodes: Set[Node]) = nodes.map(n => (n, status(n))).toList
+    def stateOfNodes() = L.map(n => (n, status(n))).toList
 
-    val oldState = stateOfNodes(L)
+    val oldState = stateOfNodes
 
     setUnknown(L)
 
@@ -112,9 +112,9 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
 
     chooseAssignments(L)
 
-    doDDB
+    checkForDDB
 
-    val newState = stateOfNodes(L)
+    val newState = stateOfNodes
 
     val diffState = oldState.diff(newState)
 
@@ -143,7 +143,7 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
   }
 
 
-  def doDDB() = {
+  def checkForDDB() = {
     val model = getModel()
 
     for (n <- model) {
@@ -197,7 +197,6 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
   def AntTrans(n: Node) = trans(Ant, n)
 
   def AffectedNodes(n: Node) = AConsTrans(n) + n
-
 
   def MaxAssumptions(n: Node): Set[Justification] = {
 
@@ -296,7 +295,6 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
           j.get.O.filter(status(_) == unknown).foreach(status(_) = out)
           chooseAssignments(unknownCons(n))
         } else {
-          //          aCons += n
           for (m <- (aCons + n)) {
             status(m) = unknown
             chooseAssignments(m)
@@ -336,7 +334,6 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
     //TODO what about the ordering?
     Some(justifications.head)
   }
-
 
   def foundedValid(j: Justification): Boolean = {
     j.I.forall(status(_) == in) && j.O.forall(status(_) == out)

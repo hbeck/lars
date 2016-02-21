@@ -22,9 +22,9 @@ object Justification {
 }
 
 sealed trait Justification {
-  val I: Set[Node];
-  val O: Set[Node];
-  val n: Node;
+  val I: Set[Node]
+  val O: Set[Node]
+  val n: Node
 }
 
 /**
