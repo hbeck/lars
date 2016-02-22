@@ -60,7 +60,7 @@ class ClingoWrapper(val clingoProcess: ProcessBuilder, val clingoVersion: String
     //    output.toString()
   }
 
-  def parseResult(result: String): Option[Set[String]] = {
+  def parseResult(result: String): Option[Set[ClingoExpression]] = {
 
     if (result.endsWith("SATISFIABLE")) {
       val firstLine = result.linesWithSeparators
