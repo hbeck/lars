@@ -33,6 +33,38 @@ class ClingoWrapperSpecs extends FlatSpec {
     val clingo = ClingoWrapper()
 
     assert(clingo.run("a. b :- a.") == "a b\nSATISFIABLE")
- }
+  }
 
+  "The satisfiable result of clingo" should "be interpreted correctly and contain a, b" in {
+    val clingo = ClingoWrapper()
+
+    assert(clingo.parseResult("a b\nSATISFIABLE") == Some(Set("a", "b")))
+  }
+  it should "be interpreted correctly and only contain a" in {
+    val clingo = ClingoWrapper()
+
+    assert(clingo.parseResult("a\nSATISFIABLE") == Some(Set("a")))
+  }
+
+  "A not satisfiable result" should "return None" in {
+    val clingo = ClingoWrapper()
+
+    assert(clingo.parseResult("") == None)
+  }
+
+  "A satisfiable result with info/warnings" should "still be interpreted correctly and contain b,c" in {
+    val clingo = ClingoWrapper()
+
+    val result =
+      """-:1:5-6: info: atom does not occur in any rule head:
+  a
+
+-:1:11-12: info: atom does not occur in any rule head:
+  a
+
+b c
+SATISFIABLE"""
+
+    assert(clingo.parseResult(result) == Some(Set("b", "c")))
+  }
 }
