@@ -6,7 +6,7 @@ import org.scalatest.FlatSpec
 /**
   * Created by FM on 22.02.16.
   */
-class TmnTransformationSpecs extends  FlatSpec{
+class TmnTransformationSpecs extends FlatSpec{
 
   val A = Node("A")
   val B = Node("B")

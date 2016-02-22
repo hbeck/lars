@@ -12,7 +12,7 @@ class InitialEmptyTMN extends TMNSpec with BeforeAndAfter {
   val tmn = EmptyTMN
 
   before {
-    tmn.update(assumptionA)
+    tmn.add(assumptionA)
   }
 
   "An empty TMN" should "have no Justifications and no status values set" in {
@@ -39,12 +39,12 @@ class InitialEmptyTMN extends TMNSpec with BeforeAndAfter {
   }
 
   "An TMN with the same assumptions applied two times" should "still contain one status" in {
-    tmn.update(assumptionA)
+    tmn.add(assumptionA)
 
     assert(tmn.status.size == 1)
   }
   it should "also contain just one Justification" in {
-    tmn.update(assumptionA)
+    tmn.add(assumptionA)
 
     assert(tmn.J.size ==1)
   }

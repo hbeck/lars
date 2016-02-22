@@ -27,13 +27,13 @@ class JTMS extends FlatSpec {
     //    var tmn = new TMN(Set(A, B, C, D, E, F), Set(j1, j2, j3, j4a, j4b, j5, j6).to)
 
     val tmn = new TMN(Set(A, B, C, D, E, F))
-    tmn.update(j1)
-    tmn.update(j2)
-    tmn.update(j3)
-    tmn.update(j4a)
-    tmn.update(j4b)
-    tmn.update(j5)
-    tmn.update(j6)
+    tmn.add(j1)
+    tmn.add(j2)
+    tmn.add(j3)
+    tmn.add(j4a)
+    tmn.add(j4b)
+    tmn.add(j5)
+    tmn.add(j6)
 
     tmn
   }

@@ -17,7 +17,7 @@ class Deletion extends FlatSpec {
     val j0 = Premise(A)
 
     val tmn = new TMN(Set(A))
-    tmn.update(j0)
+    tmn.add(j0)
 
     assume(tmn.getModel() == Set(A))
 
@@ -38,9 +38,8 @@ class Deletion extends FlatSpec {
 
     val tmn = new TMN(Set(A, B))
 
-    tmn.update(j0)
-    tmn.update(j1)
-
+    tmn.add(j0)
+    tmn.add(j1)
 
     assume(tmn.getModel() == Set(A, B))
 
@@ -64,8 +63,8 @@ class Deletion extends FlatSpec {
 
     val tmn = new TMN(Set(A, B))
 
-    tmn.update(j0)
-    tmn.update(j1)
+    tmn.add(j0)
+    tmn.add(j1)
 
     assume(tmn.getModel() == Set(A, B))
 
@@ -88,9 +87,9 @@ class Deletion extends FlatSpec {
 
     val tmn = new TMN(Set(A, B, C))
 
-    tmn.update(j0)
-    tmn.update(j1)
-    tmn.update(j2)
+    tmn.add(j0)
+    tmn.add(j1)
+    tmn.add(j2)
 
     assume(tmn.getModel() == Set(A, B, C))
 
@@ -112,10 +111,10 @@ class Deletion extends FlatSpec {
 
     val tmn = new TMN(Set(A, B, C))
 
-    tmn.update(j0)
-    tmn.update(j1)
-    tmn.update(j2)
-    tmn.update(j3)
+    tmn.add(j0)
+    tmn.add(j1)
+    tmn.add(j2)
+    tmn.add(j3)
 
     assume(tmn.getModel() == Set(A, B, C))
     assume(tmn.SJ(C) == Some(j2))
@@ -155,7 +154,7 @@ class Deletion extends FlatSpec {
     val setup = new Tweety
     val tmn = setup.TMN
 
-    tmn.update(setup.j5)
+    tmn.add(setup.j5)
 
     assume(tmn.getModel() == Set(setup.F_not, setup.V, setup.P))
 
@@ -185,7 +184,7 @@ class Deletion extends FlatSpec {
     val setup = new Library
     val tmn = setup.TMN
 
-    tmn.update(setup.jExclusionA)
+    tmn.add(setup.jExclusionA)
 
     assume(tmn.getModel() == Set(setup.A_not, setup.H, setup.P, setup.V))
 

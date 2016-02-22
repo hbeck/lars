@@ -32,4 +32,4 @@ sealed trait Justification {
   */
 case class UserDefinedJustification(I: Set[Node], O: Set[Node], n: Node) extends Justification
 
-case class ContradictionJustification(I: Set[Node], O: Set[Node], n: Node) extends Justification
+case class JustificationFromBacktracking(I: Set[Node], O: Set[Node], n: Node) extends Justification

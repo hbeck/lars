@@ -22,10 +22,10 @@ class Manufacturing extends FlatSpec {
   def TMN = {
     val tmn = new TMN(Set(C, B, A1, A2, L1))
 
-    tmn.update(j0)
-    tmn.update(j1)
-    tmn.update(j2)
-    tmn.update(j3)
+    tmn.add(j0)
+    tmn.add(j1)
+    tmn.add(j2)
+    tmn.add(j3)
 
     tmn
   }
@@ -39,7 +39,7 @@ class Manufacturing extends FlatSpec {
   "When there are supply problems with A1" should "mark as troubles and use resource A2" in {
     val tmn = TMN;
 
-    tmn.update(Premise(L1))
+    tmn.add(Premise(L1))
 
     assert(tmn.getModel() == Set(C, L1, B, A2))
   }

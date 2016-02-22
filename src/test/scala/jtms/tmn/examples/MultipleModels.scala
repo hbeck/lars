@@ -19,8 +19,8 @@ class MultipleModels  extends  FlatSpec{
   "When adding j1 before j2 the valid model" should "be B" in{
     val tmn = TMN
 
-    tmn.update(j1)
-    tmn.update(j2)
+    tmn.add(j1)
+    tmn.add(j2)
 
     assert(tmn.getModel() == Set(B))
     pending
@@ -29,8 +29,8 @@ class MultipleModels  extends  FlatSpec{
   "When adding j2 before j1 the valid model" should "be A" in{
     val tmn = TMN
 
-    tmn.update(j2)
-    tmn.update(j1)
+    tmn.add(j2)
+    tmn.add(j1)
 
     assert(tmn.getModel() == Set(A))
     pending

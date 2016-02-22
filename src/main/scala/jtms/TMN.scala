@@ -60,7 +60,8 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
     selectJustification(justifications)
   }
 
-  def update(j: Justification): Set[Node] = {
+  //TMS update algorithm
+  def add(j: Justification): Set[Node] = {
 
     val n = j.n //alias
 
@@ -74,7 +75,6 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
 
     //if conclusion was already drawn, we are done
     if (status(n) == in) {
-      checkForDDB()
       return scala.collection.immutable.Set()
     }
 
@@ -83,7 +83,6 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
     val spoiler: Option[Node] = findSpoiler(j)
     if (spoiler.isDefined) {
       Supp(n) += spoiler.get
-      checkForDDB
       return scala.collection.immutable.Set()
     }
 
@@ -123,9 +122,9 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
 
   def remove(j: Justification) = {
 
-    val contradictionJustifications = J.filter(_.isInstanceOf[ContradictionJustification])
+    val justificationsFromBacktracking = J.filter(_.isInstanceOf[JustificationFromBacktracking])
 
-    val L = AffectedNodes(j.n) ++ contradictionJustifications.flatMap(x => AffectedNodes(x.n))
+    val L = AffectedNodes(j.n) ++ justificationsFromBacktracking.flatMap(x => AffectedNodes(x.n))
 
     def removeJustification(j: Justification) = {
       for (m <- j.I union j.O) {
@@ -137,11 +136,10 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
 
     removeJustification(j)
 
-    contradictionJustifications.foreach(removeJustification)
+    justificationsFromBacktracking.foreach(removeJustification)
 
     this.updateNodes(L)
   }
-
 
   def checkForDDB() = {
     val model = getModel()
@@ -156,7 +154,7 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
     val assumptions = MaxAssumptions(n)
 
     if (assumptions.isEmpty)
-      throw new RuntimeException("We have an unsolveable contradiction for node " + n)
+      throw new RuntimeException("We have an unsolvable contradiction for node " + n)
 
     // TODO: Ordering + Selection?
     val n_a = selectJustification(assumptions).get
@@ -165,17 +163,17 @@ class TMN(var N: collection.immutable.Set[Node], var J: Set[Justification] = Set
     // (we pick currently only the first O)
     val n_star = selectNode(n_a.O).get
 
-    val j_cont = J_cont(assumptions.map(_.n))
+    val j_cont = Jn(assumptions.map(_.n))
 
     val I_cont = j_cont.flatMap(_.I)
     val O_cont = j_cont.flatMap(_.O) - n_star;
 
-    val justification = new ContradictionJustification(I_cont, O_cont, n_star)
+    val justification = new JustificationFromBacktracking(I_cont, O_cont, n_star)
 
-    update(justification)
+    add(justification)
   }
 
-  def J_cont(nodes: Set[Node]) = {
+  def Jn(nodes: Set[Node]) = {
     SJ.filterKeys(nodes.contains(_)).values.map(_.get).toSet
   }
 

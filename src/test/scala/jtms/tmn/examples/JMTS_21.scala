@@ -15,7 +15,7 @@ class JMTS_21 extends JTMS {
 
     tmn.N +=  N_cont
 
-    tmn.update(j7)
+    tmn.add(j7)
 
     tmn
   }

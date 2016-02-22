@@ -24,13 +24,11 @@ object ClingoWrapper {
 
     val clingoVersion = parseVersion(versionOutput)
 
-
     new ClingoWrapper(Process("clingo --verbose=0"), clingoVersion)
   }
 }
 
 class ClingoWrapper(val clingoProcess: ProcessBuilder, val clingoVersion: String) {
-
 
   def run(program: String) = {
 

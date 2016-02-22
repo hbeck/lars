@@ -25,11 +25,11 @@ class Tweety extends FlatSpec {
   def TMN = {
     val tmn = new TMN(Set(V, P, F, F_not, N_cont))
 
-    tmn.update(j0)
-    tmn.update(j1)
-    tmn.update(j2)
-    tmn.update(j3)
-    tmn.update(j4)
+    tmn.add(j0)
+    tmn.add(j1)
+    tmn.add(j2)
+    tmn.add(j3)
+    tmn.add(j4)
 
     tmn
   }
@@ -41,7 +41,7 @@ class Tweety extends FlatSpec {
   "Adding a new Premise P" should "result in a new Model containing V, P and F_not" in {
     val tmn = TMN
 
-    tmn.update(j5)
+    tmn.add(j5)
 
     assert(tmn.getModel() == Set(V, P, F_not))
   }

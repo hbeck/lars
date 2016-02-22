@@ -2,7 +2,7 @@ package jtms.tmn.examples
 
 import jtms._
 import jtms.tmn.NodeValidation
-import org.scalatest.{GivenWhenThen, FlatSpec}
+import org.scalatest.FlatSpec
 
 /**
   * Created by FM on 11.02.16.
@@ -35,15 +35,15 @@ class Library extends FlatSpec with NodeValidation {
   def TMN = {
     val tmn = new TMN(Set(V, G, P, F, P_not, A, N, A_not, H, N_cont))
 
-    tmn.update(j1)
-    tmn.update(j2)
-    tmn.update(j3)
-    tmn.update(j4)
-    tmn.update(j5)
-    tmn.update(j6)
-    tmn.update(j7)
-    tmn.update(j8)
-    tmn.update(j9)
+    tmn.add(j1)
+    tmn.add(j2)
+    tmn.add(j3)
+    tmn.add(j4)
+    tmn.add(j5)
+    tmn.add(j6)
+    tmn.add(j7)
+    tmn.add(j8)
+    tmn.add(j9)
 
     tmn
   }
@@ -183,7 +183,7 @@ class Library extends FlatSpec with NodeValidation {
 
   "With the premise H the model" should "be V,H,P,A_not" in {
     val tmn = TMN
-    tmn.update(Premise(H))
+    tmn.add(Premise(H))
 
     val model = tmn.getModel()
 
@@ -193,7 +193,7 @@ class Library extends FlatSpec with NodeValidation {
   "With a contradiction node for A the model" should "be A_not,H,P, V" in {
     val tmn = TMN
 
-    tmn.update(jExclusionA)
+    tmn.add(jExclusionA)
 
     val model = tmn.getModel()
     info("H is currently chosen 'by random'")
@@ -203,7 +203,7 @@ class Library extends FlatSpec with NodeValidation {
   it should "also return the same model when using just a single contradiction node" in {
     val tmn = TMN
 
-    tmn.update(Justification.in(A).node(N_cont))
+    tmn.add(Justification.in(A).node(N_cont))
 
     val model = tmn.getModel()
     info("H is currently chosen 'by random'")
@@ -213,7 +213,7 @@ class Library extends FlatSpec with NodeValidation {
   "With a contradiction node for P the model" should "be P_not,F,V" in {
     val tmn = TMN
 
-    tmn.update(Justification.in(P).node(N_cont))
+    tmn.add(Justification.in(P).node(N_cont))
 
     val model = tmn.getModel()
     info("F is currently chosen 'by random'")

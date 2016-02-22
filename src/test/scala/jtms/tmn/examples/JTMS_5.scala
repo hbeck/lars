@@ -14,7 +14,7 @@ class JTMS_5 extends JTMS {
   val tmn = {
     val tmn = JTMS
     tmn.set(Set(E, B, D))
-    diff = tmn.update(j0)
+    diff = tmn.add(j0)
     tmn
   }
 

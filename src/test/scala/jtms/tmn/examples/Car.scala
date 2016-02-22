@@ -31,11 +31,11 @@ class Car extends FlatSpec {
   def TMN = {
     val tmn = new TMN(Set(S_not, G, G_not, D, I, C, N_cont));
 
-    tmn.update(j0)
-    tmn.update(j1)
-    tmn.update(j2)
-    tmn.update(j3)
-    tmn.update(j4)
+    tmn.add(j0)
+    tmn.add(j1)
+    tmn.add(j2)
+    tmn.add(j3)
+    tmn.add(j4)
 
     tmn
   }
@@ -43,8 +43,8 @@ class Car extends FlatSpec {
   "When the car is not starting and there is not enough gas" should "not result in a defect" in {
     val tmn = TMN
 
-    tmn.update(notStarting)
-    tmn.update(notEnoughGas)
+    tmn.add(notStarting)
+    tmn.add(notEnoughGas)
 
     val model = tmn.getModel()
 
@@ -54,8 +54,8 @@ class Car extends FlatSpec {
   "When the car is not starting and there is enough gas" should "result in a defect" in {
     val tmn = TMN
 
-    tmn.update(notStarting)
-    tmn.update(enoughGas)
+    tmn.add(notStarting)
+    tmn.add(enoughGas)
 
     val model = tmn.getModel()
 
@@ -65,7 +65,7 @@ class Car extends FlatSpec {
   "When the car is not starting and there is no gas information" should "result in not enough gas" in {
     val tmn = TMN
 
-    tmn.update(notStarting)
+    tmn.add(notStarting)
 
     val model = tmn.getModel()
 
@@ -75,8 +75,8 @@ class Car extends FlatSpec {
   "When the car is not starting and there is a broken ignition" should "result in a defect" in {
     val tmn = TMN
 
-    tmn.update(notStarting)
-    tmn.update(brokenIgnition)
+    tmn.add(notStarting)
+    tmn.add(brokenIgnition)
 
     val model = tmn.getModel()
 
@@ -86,9 +86,9 @@ class Car extends FlatSpec {
   "When the car is not starting and there is a broken ignition and enogh gas" should "result in a defect" in {
     val tmn = TMN
 
-    tmn.update(notStarting)
-    tmn.update(enoughGas)
-    tmn.update(brokenIgnition)
+    tmn.add(notStarting)
+    tmn.add(enoughGas)
+    tmn.add(brokenIgnition)
 
     val model = tmn.getModel()
 
