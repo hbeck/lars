@@ -342,6 +342,7 @@ case class TMS(P: StdProgram) {
   }
 
   def SetUnknown(l: Int, t: Int, L:Labels): Unit = {
+    println("set unknown acons: "+ACons(stratum(l),L,A,t))
     val k = ACons(stratum(l),L,A,t)
     k.foreach(f =>
      if (!L.intervals(f).exists(_.contains(t)))
@@ -354,6 +355,7 @@ case class TMS(P: StdProgram) {
   }
 
   def SetRule(l: Int, t: Int, L:Labels): Result = {
+    println("set rule acons: "+ACons(stratum(l),L,A,t))
     ACons(stratum(l),L,A,t).foreach(f =>
       if (L.status(f) == unknown) {
         if(SetHead(f,f,l,t,L) == fail) return fail
@@ -363,13 +365,16 @@ case class TMS(P: StdProgram) {
   }
 
   def SetHead(prev: ExtendedAtom, alpha: ExtendedAtom, l: Int, t: Int, L:Labels): Result = {
+//    println("stratum("+l+"): "+stratum(l))
     val ph = PH(stratum(l),alpha)
     val timeSet = minTime(ph,t,L)
 
+    if(t>0) ph.foreach(r => println("fval check - "+ r +": "+fVal(L,r)))
     if (ph.exists(r => fVal(L,r))) {
+      if(t>0) println("fVal - alpha: "+alpha)
       if(timeSet.nonEmpty) {
         val tStar = timeSet.max
-
+        if(t>0) println("fVal - alpha: "+alpha+", time: "+t+", tStar: "+tStar)
 //        tStar = minTime(ph,t,L).max
         L.update(alpha,Label(in,(t,tStar)))
         UpdateOrdAtom(alpha,in,L)
@@ -387,7 +392,7 @@ case class TMS(P: StdProgram) {
 
       if(timeSet.nonEmpty) {
         val tStar = timeSet.min
-        println("alpha: "+alpha+", time: "+t+", tStar: "+tStar)
+        if(t>0) println("fInval - alpha: "+alpha+", time: "+t+", tStar: "+tStar)
         L.update(alpha,Label(out,(t,tStar)))
         UpdateOrdAtom(alpha,out,L)
       }

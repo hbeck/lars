@@ -276,14 +276,15 @@ class TestTMS  extends FunSuite {
   }
 
   test("Exp17"){
-    tms = TMS(P)
+//    tms = TMS(P)
     val t = m(37.2)
     A = v(t) //{busG}
 
+    println("Test 17")
     L = Labels(mutable.Map(
       AtAtom(m(39.1)+m(5),expTrM) -> Label(out,(0,0)),
                 request -> Label(out,(0,0)),
-                busG -> Label(out,(0,0)),
+                busG -> Label(in,(t,t)), //is it ok to set it here?
                 expBusM -> Label(out,(0,0)),
                 WDiam(wopP5,expBusM) -> Label(out),
                 WDiam(wopP5,expTrM) -> Label(out),
@@ -309,17 +310,24 @@ class TestTMS  extends FunSuite {
     assert(L.status(WAt(wop3,t,busG)) == in)
     assert(L.intervals(WAt(wop3,t,busG)) == Set(new ClosedIntInterval(t,m(40.2))))
 
+    println("--- unknown pre-condition ---")
+    println("stratum(1): "+stratum(1))
+    println("stratum(2): "+stratum(2))
+    println("Labels: "+L)
+    println("A: "+A)
+    println("t: "+t)
+    println("-----------------------------")
 //    println("A tms: "+tms.A)
     tms.SetUnknown(1,t,L)
+    println("Acons: "+ACons(P,L,A,t))
+    println("Cons*: "+ConsStar(P,A.head))
 
-    println("cons bus: "+Cons(P,busG))
+/*    println("cons bus: "+Cons(P,busG))
     println("supp bus: "+Supp(P,L,Cons(P,busG).head))
 
     println(ACons(P,L,A,t))
-    println(ACons(stratum(1),L,A,t))
-    println(ACons(stratum(2),L,A,t))
 
-/*    println("cons bus"+Cons(P,AtAtom(m(37.2),busG)))
+    println("cons bus"+Cons(P,AtAtom(m(37.2),busG)))
     println("supp bus"+SuppN(P,L,AtAtom(m(37.2),busG)))*/
 
     assert(L.status(on) == out)
@@ -327,8 +335,8 @@ class TestTMS  extends FunSuite {
 
     assert(fInval(L,r1g))
 
-    println("t: "+t)
-    println("L.status(AtAtom(m(37.2)+m(3),expBusM)): "+L.status(AtAtom(m(37.2)+m(3),expBusM)))
+//    println("t: "+t)
+//    println("L.status(AtAtom(m(37.2)+m(3),expBusM)): "+L.status(AtAtom(m(37.2)+m(3),expBusM)))
     tms.SetRule(1,t,L)
 
 
@@ -382,10 +390,16 @@ class TestTMS  extends FunSuite {
     assert(L.status(WDiam(wop1,request)) == in)
     assert(L.intervals(WDiam(wop1,request)) == Set(new ClosedIntInterval(t,m(40.7))))
 
+    println("--- unknown pre-condition ---")
+    println("stratum(1): "+stratum(1))
+    println("Labels: "+L)
+    println("A: "+A)
+    println("t: "+t)
+    println("-----------------------------")
     tms.SetUnknown(1,t,L)
+    println("Acons: "+ACons(stratum(1),L,A,t))
 
     /*replace with assertion*/
-    println(ACons(P,L,A,t))
 
     assert(fVal(L,r3))
     tms.SetRule(1,t,L)
