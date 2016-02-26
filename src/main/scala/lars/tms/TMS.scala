@@ -201,12 +201,11 @@ case class TMS(P: StdProgram) {
           case ata:AtAtom =>
             val wa:WindowAtom = wf(ata, l).getOrElse(wf(ata.atom, l).orNull)
             if (wa != null) {
-              val intervals = L.intervals(ata)
-              for (interval <- intervals) {
-                if (waOperators(wa.wop.wfn.getClass).aR(ata.atom, wa, interval.lower, interval.upper).contains(ata.t)) {
+             tm(ata,L).foreach(iv =>
+               if (waOperators(wa.wop.wfn.getClass).aR(ata.atom, wa, iv).contains(ata.t)) {
                   result += ((wa, ata.t))
-                }
-              }
+               }
+             )
             }
         })
       }

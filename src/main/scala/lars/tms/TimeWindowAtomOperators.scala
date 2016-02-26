@@ -47,8 +47,11 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
     res
   }
 
-  override def aR(atom: ExtendedAtom, wa: WindowAtom, lower: Int, upper: Int): ClosedIntInterval = wa.wop.wfn match {
+  override def aR(atom: ExtendedAtom, wa: WindowAtom, interval: ClosedIntInterval): ClosedIntInterval = wa.wop.wfn match {
     case wfn: TimeWindowFixedParams =>
+
+      val lower = interval.lower
+      val upper = interval.upper
 
       wfn.x.u match {
         case 0 => new ClosedIntInterval(lower, upper)
