@@ -92,6 +92,7 @@ class TestTMS  extends FunSuite {
     assert(acons == Set(expTrmAt))
 
   }
+/*
 
   test("Exp15") {
 
@@ -99,6 +100,7 @@ class TestTMS  extends FunSuite {
     val trmBAt = AtAtom(m(39.1), tramB)
     val trmBW:ExtendedAtom = WAt(wop5, m(39.1), tramB)
     val onAtom = on
+    val t = m(39.7)
 
     val v = Evaluation(Map(m(44.1) -> Set(expTrM), m(39.1) -> Set(tramB,on)))
     val D = S(T,v)
@@ -108,47 +110,24 @@ class TestTMS  extends FunSuite {
 //    val Pp2 = StdProgram(StdRule(Set(WDiam(wopP5,expTrM))))
 
     val ltram = Label(in, (m(39.1), m(44.1)))
-    val lOn = Label(in, (m(39.7), m(40.7)))
+    val lOn = Label(in, (t, m(40.7)))
     val L = Labels(collection.mutable.Map(trmBW -> ltram, onAtom -> lOn))
 
-    val t = m(39.7)
+    assert(fVal(L,r2p))
 
+
+    println("L before: "+L)
     val tms = TMS(Pp1)
+    println("L after: "+L)
+
     tms.init()
     tms.updateL(L)
+    println("L init: "+L)
 
-/*    println(tms.stratum)
-    tms.answerUpdate(t,D,m(37))
-    println(tms.L)*/
-
-/*    tms.updateL(L)
-
-    val l = 1
-    val tp = m(37)
-    var C = Set[WindowAtom]()
-    tms.setStratKey(l)
-
-    for ((alpha,omega,t1) <- tms.Fired(D,l,tp,t)) {
-      tms.FireInput(alpha,omega,t1,l,D)
-      C = C + omega
-      println("alph: "+alpha)
-      tms.addToUpdated(alpha,l)
-    }
-    println("woop: "+tms.L)*/
-
-
-//    val tms = TMS.apply(P)
-
-
-
-//    tmsInit.L = L
-//    val strat = Map[Int,StdProgram] = Map(1 -> Pp1, 2 -> Pp2)
-
-      val answerupdate = tms.answerUpdate(m(0),m(45), D)
-      println(answerupdate)
-
-
+    tms.answerUpdate(m(0),m(45), D)
   }
+
+*/
 
   var tms = TMS(P)
   var L = Labels()
@@ -217,11 +196,6 @@ class TestTMS  extends FunSuite {
     println("acons: "+ACons(P,L,A,0))
     assert(ACons(P,L,A,0) == A.flatMap(a => ConsStar(P,a)))
 
-/*    println("this is acons: "+ACons(stratum(1),L,A,0))
-
-    println("stratum(0): "+stratum(0))
-    println("stratum(1): "+stratum(1))*/
-
     var expired = tms.Expired(D,l,0,0,L)
     assert(expired == Set())
 
@@ -277,8 +251,10 @@ class TestTMS  extends FunSuite {
 
   test("Exp17"){
 //    tms = TMS(P)
+//    val v = this.v ++ Evaluation(Map(m(37.2) -> Set(request)))
     val t = m(37.2)
     A = v(t) //{busG}
+    println("A: "+A)
 
     println("Test 17")
     L = Labels(mutable.Map(
@@ -303,7 +279,7 @@ class TestTMS  extends FunSuite {
 
     println("A: "+A)
 
-    val fired = tms.Fired(D,1,t,m(37.2))
+    val fired = tms.Fired(D,1,t,t)
     tms.FireInput(fired.head._1,fired.head._2,1,D,L)
     println("L: "+L)
 

@@ -9,7 +9,10 @@ import lars.core.semantics.programs.standard.StdProgram
  */
 object ConsW {
 
-  def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = x match {
+  def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = P.rules.flatMap(_.B).filter(_.nested.contains(x))
+
+
+  /*x match {
       case a:Atom => P.rules.flatMap(_.B).filter({
         case wa:WDiam => wa.a == a
         case wa:WBox => wa.a == a
@@ -23,6 +26,6 @@ object ConsW {
         case wa:WBox => wa.a == a
         case wa:WAt => wa.a == a
         case _ => false})
-      case a => /*println("a: "+a);*/Set()
-    }
+      case _ => Set()
+    }*/
 }

@@ -9,8 +9,5 @@ import lars.core.semantics.programs.standard.{StdRule, StdProgram}
  */
 object ConsH {
 
-  def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = x match {
-//    case at:AtAtom => P.rules.filter(_.B.exists(_.nested.contains(at))).map(_.h)
-    case _ => P.rules.filter(_.B.contains(x)).map(_.h)
-  }
+  def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = P.rules.filter(_.B.exists(_.nested.contains(x))).map(_.h)
 }

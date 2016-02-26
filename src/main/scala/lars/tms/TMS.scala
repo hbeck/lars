@@ -161,10 +161,8 @@ case class TMS(P: StdProgram) {
     val Dp = S(tlp, D.v | tlp)
 
     for(t1 <- tp to t) {
-      println("t1: "+t1)
       result ++= Fired(l,t1,Dp)
     }
-
     result
   }
 
@@ -174,19 +172,15 @@ case class TMS(P: StdProgram) {
       case 0 => return result
       case 1 =>
         val dAtoms = D(t1)
-//        if(dAtoms.nonEmpty) println("dAtoms: "+dAtoms)
         if(dAtoms.nonEmpty) {
           dAtoms.foreach(a => {
-            for (rule <- stratum(1).rules) {
-              var atomSet = rule.B.filter(p => p.atom == a)
-              if(rule.h.atom == a) atomSet += rule.h
-              atomSet.foreach({
-                case wat:WAt =>
-                  if(wat.a == a) result += ((wat,t1))
-                case _ => result
+            val consw = ConsW(stratum(l),a)
+            stratum(1).rules.foreach(r => {
+              val tmp = (r.B ++ Set(r.h)).filter(p => consw.contains(p) || p.nested.contains(AtAtom(t1,a)))
+              tmp.foreach({
+                case wa:WindowAtom => result += ((wa,t1))
               })
-            }
-            ConsW(stratum(1),a).foreach({ case wa:WindowAtom => result += ((wa,t1))})
+            })
           })
         }
       case _ =>
@@ -279,15 +273,7 @@ case class TMS(P: StdProgram) {
     }
   }
 
-  def tm(b: ExtendedAtom, L:Labels): Set[ClosedIntInterval] = b match {
-    case wa:WindowAtom =>
-      var r = Set[ClosedIntInterval]()
-      wa.nested.foreach({
-        case w:WindowAtom => r
-        case a => r ++= L.intervals(a)})
-        r
-    case _ => L.intervals(b)
-  }
+  def tm(b: ExtendedAtom, L:Labels): Set[ClosedIntInterval] = L.intervals(b)
 
   /*if ∀b ∈ B (r) : t ∈ tm(b)
       MinEnd (r, t) = min{t 2 | b ∈ B (r) ∧ tm(b) = [t 1 , t 2 ]};
@@ -342,7 +328,7 @@ case class TMS(P: StdProgram) {
   }
 
   def SetUnknown(l: Int, t: Int, L:Labels): Unit = {
-    println("set unknown acons: "+ACons(stratum(l),L,A,t))
+//    println("set unknown acons: "+ACons(stratum(l),L,A,t))
     val k = ACons(stratum(l),L,A,t)
     k.foreach(f =>
      if (!L.intervals(f).exists(_.contains(t)))
@@ -355,7 +341,7 @@ case class TMS(P: StdProgram) {
   }
 
   def SetRule(l: Int, t: Int, L:Labels): Result = {
-    println("set rule acons: "+ACons(stratum(l),L,A,t))
+//    println("set rule acons: "+ACons(stratum(l),L,A,t))
     ACons(stratum(l),L,A,t).foreach(f =>
       if (L.status(f) == unknown) {
         if(SetHead(f,f,l,t,L) == fail) return fail

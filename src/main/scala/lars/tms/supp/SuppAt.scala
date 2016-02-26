@@ -18,7 +18,6 @@ object SuppAt {
       if (L.status(a) == out) {
         return Set()
       }
-//      val a = a.asInstanceOf[Atom]
       Set[ExtendedAtom]() ++ AtAtoms(P).filter(y => y.atom == a && L.status(y) == in)
     case _ => Set()
 
