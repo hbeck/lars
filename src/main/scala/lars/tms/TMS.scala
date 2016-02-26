@@ -175,7 +175,7 @@ case class TMS(P: StdProgram) {
         if(dAtoms.nonEmpty) {
           dAtoms.foreach(a => {
             val consw = ConsW(stratum(l),a)
-            stratum(1).rules.foreach(r => {
+            stratum(l).rules.foreach(r => {
               val tmp = (r.B ++ Set(r.h)).filter(p => consw.contains(p) || p.nested.contains(AtAtom(t1,a)))
               tmp.foreach({
                 case wa:WindowAtom => result += ((wa,t1))
@@ -199,13 +199,12 @@ case class TMS(P: StdProgram) {
       if (updated.contains(i)) {
         updated(i).foreach({
           case ata:AtAtom =>
-            var wa = wf(ata, l)
-            if (wa.isEmpty) wa = wf(ata.atom, l)
-            if (wa.isDefined) {
+            val wa:WindowAtom = wf(ata, l).getOrElse(wf(ata.atom, l).orNull)
+            if (wa != null) {
               val intervals = L.intervals(ata)
               for (interval <- intervals) {
-                if (waOperators(wa.get.wop.wfn.getClass).aR(ata.atom, wa.get, interval.lower, interval.upper).contains(ata.t)) {
-                  result += ((wa.get, ata.t))
+                if (waOperators(wa.wop.wfn.getClass).aR(ata.atom, wa, interval.lower, interval.upper).contains(ata.t)) {
+                  result += ((wa, ata.t))
                 }
               }
             }
@@ -219,10 +218,10 @@ case class TMS(P: StdProgram) {
   def PushNow(l: Int): Set[WindowAtom] = {
     /*(atom,wf(atom, l).get)*/
     var result = Set[WindowAtom]()
-    for (i <- 1 to l-1) {
+    for (i <- 1 until l-1) {
       if (updated.contains(i)) {
         updated(i).foreach(ea =>
-          if (wf(ea.atom,l).isDefined) result += wf(ea.atom,l).get
+          if (wf(ea.atom,l).isDefined) result += ea.asInstanceOf[WindowAtom]
         )
       }
     }
