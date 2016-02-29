@@ -13,9 +13,11 @@ import lars.tms.status.rule.fVal
 object SuppP {
 
   def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] = {
+    println("status("+x+"): "+L.status(x))
     if (L.status(x) != in) {
       return Set()
     }
+    PH(P,x).foreach(c => println("fval("+c+": "+fVal(L,c)))
     PH(P,x).filter(fVal(L,_)).flatMap(_.B)
   }
 

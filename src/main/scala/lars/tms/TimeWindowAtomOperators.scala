@@ -15,7 +15,7 @@ import scala.collection.parallel.mutable
  */
 object TimeWindowAtomOperators extends WindowAtomOperators{
 
-  override def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(WindowAtom, Int)]): Option[ExtendedAtom] = omega.wop.wfn match {
+  override def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(WindowAtom, Int)]): Boolean = omega.wop.wfn match {
     case wfn:TimeWindowFixedParams =>
 
     val atp = q(omega, L)
@@ -28,19 +28,18 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
     }
   }
 
-  def mapInAtoms(omega: WindowAtom, fired: Set[(WindowAtom, Int)], t: Int, atp: Set[Int]): Option[ExtendedAtom] = {
+  def mapInAtoms(omega: WindowAtom, fired: Set[(WindowAtom, Int)], t: Int, atp: Set[Int]): Boolean = {
       if (!fired.contains((omega, t))) {
-        atp.foreach(t1 => if(t1 < t) return Option(omega.atom))
+        if(atp.exists(t1 => t1 < t)) true //Option(omega.atom)
       }
-    None
+    false
   }
 
   override def q(omega: WindowAtom, L:Labels): Set[Int] = {
     var res = Set[Int]()
-    val c = omega.atom
 
-    if(L.status(c) == in){
-      for(i <- L.intervals(c)) {
+    if(L.status(omega) == in){
+      for(i <- L.intervals(omega)) {
         res = res ++ i.toSeq.toSet
       }
     }
