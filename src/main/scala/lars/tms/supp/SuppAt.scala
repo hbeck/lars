@@ -4,7 +4,7 @@ import lars.core.semantics.formulas.{Atom, ExtendedAtom}
 import lars.core.semantics.programs.standard.StdProgram
 import lars.core.semantics.programs.standard.inspect.AtAtoms
 import lars.tms.status.Labels
-import lars.tms.status.Status.{in, out}
+import lars.tms.status.Status.{unknown, in, out}
 
 /**
  * Created by hb on 7/15/15.
@@ -18,7 +18,7 @@ object SuppAt {
       if (L.status(a) == out) {
         return Set()
       }
-      Set[ExtendedAtom]() ++ AtAtoms(P).filter(y => y.atom == a && L.status(y) == in)
+      Set[ExtendedAtom]() ++ AtAtoms(P).filter(y => y.atom == a && (L.status(a) == in || L.status(a) == unknown))
     case _ => Set()
 
 

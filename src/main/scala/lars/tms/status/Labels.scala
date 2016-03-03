@@ -21,6 +21,8 @@ case class Labels(private val labelOf: collection.mutable.Map[ExtendedAtom,Label
 
   def addInterval(x: ExtendedAtom, interval: ClosedIntInterval): Unit = update(x, new Label(status(x),intervals(x)++Set(interval)))
 
+  def labels = labelOf
+
   def copy: Labels = {
     var r = collection.mutable.Map[ExtendedAtom,Label]()
     for((k,v) <- labelOf) {

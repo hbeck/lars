@@ -10,13 +10,12 @@ import lars.core.semantics.programs.standard.StdProgram
 object ConsAt {
 
   def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] = x match{
-      case y:AtAtom => {
-//        if (P.rules.flatMap(r => r.B + r.h).exists(p => p.nested.contains(y))) {
-        if (P.rules.flatMap(r => r.B + r.h).contains(y)) {
-          Set(y.a)
-        } else {
-          Set()
+      case at:AtAtom => {
+        if (P.rules.flatMap(r => r.B + r.h).exists(p => p.nested.contains(at))) {
+//        if (P.rules.flatMap(r => r.B + r.h).contains(y)) {
+          return Set(at.atom)
         }
+        Set()
       }
       case _ => Set()
   }
