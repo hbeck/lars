@@ -189,7 +189,6 @@ case class TMS(P: StdProgram) {
   def Push(l: Int, t:Int, L:Labels): Set[(WindowAtom,Int)] = {
     var result = Set[(WindowAtom,Int)]()
     for (i <- 1 until l-1) {
-      if (updated.contains(i)) {
         updated(i).foreach({
           case ata:AtAtom =>
             val wa:WindowAtom = wf(ata, l).getOrElse(wf(ata.atom, l).orNull)
@@ -201,7 +200,6 @@ case class TMS(P: StdProgram) {
              )
             }
         })
-      }
     }
     push.foreach(r => result += ((r,t)))
     result
@@ -279,7 +277,6 @@ case class TMS(P: StdProgram) {
     t
   }
 
-  //Labels provided globally
   def UpdateTimestamps(C: Set[WindowAtom], L:Labels, Lp:Labels, l: Int, t: Int): Unit = {
     var ki, ko, i2o, o2i = Set[ExtendedAtom]()
 
@@ -322,13 +319,6 @@ case class TMS(P: StdProgram) {
     val k = ACons(stratum(l),L,A,t)
     k.foreach(f =>
      if (!L.intervals(f).exists(_.contains(t)))
-       /*this if should not be necessary, because atoms from A are not supposed to be in ACons*/
-/*       if(A.contains(f.atom)) {
-         println("f.atom: "+f.atom)
-         L.update(f, Label(L.status(f.atom),L.intervals(f.atom)))
-       } else {
-         L.update(f, Label(unknown, L.intervals(f)))
-       }*/
          L.update(f, Label(unknown, L.intervals(f)))
     )
   }
@@ -339,12 +329,6 @@ case class TMS(P: StdProgram) {
         if(SetHead(f,f,l,t,L) == fail) return fail
       }
     )
-/*      ACons(stratum(l),L,A,t)
-    for((a,la) <- L.labels) {
-      if(la.status == unknown) {
-        if(SetHead(a,a,l,t,L) == fail) return fail
-      }
-    }*/
     success
   }
 
