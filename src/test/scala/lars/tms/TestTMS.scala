@@ -483,11 +483,11 @@ class TestTMS  extends FunSuite {
 
     /*expBusM*/
     assert(L.status(r1g.h) == in)
-    assert(L.intervals(r1g.h).contains(new ClosedIntInterval(t,t)))
+    assert(L.intervals(r1g.h) == Set(new ClosedIntInterval(t,t)))
 
     /*expTrM*/
-    assert(L.status(r1g.h) == in)
-    assert(L.intervals(r1g.h) == Set(new ClosedIntInterval(t,m(40.7))))
+    assert(L.status(r2g.h) == in)
+    assert(L.intervals(r2g.h) == Set(new ClosedIntInterval(t,m(40.7))))
 
     tms.SetOpenOrdAtomsOut(1,t,L)
     assert(L.status(expBusM) == in)
@@ -496,8 +496,11 @@ class TestTMS  extends FunSuite {
     assert(L.status(expTrM) == in)
     assert(L.intervals(expTrM) == Set(new ClosedIntInterval(m(44.1),m(44.1))))
 
-    assert(tms.Push(2,t,L) == Set((AtAtom(m(37.2)+m(3),expBusM),m(35.2)),(WDiam(wopP5,expBusM),m(35.2)),
-                                  (AtAtom(m(39.1)+m(5),expTrM),m(39.1)),(WDiam(wopP5,expTrM),m(39.1))))
+    assert(tms.getUpdated.get(1).get == Set(on,r1g.h,r2g.h))
+
+    tms.PushUp(1,t,L)
+/*    assert(tms.Push(2,t,L) == Set((AtAtom(m(37.2)+m(3),expBusM),m(35.2)),(WDiam(wopP5,expBusM),m(35.2)),
+                                  (AtAtom(m(39.1)+m(5),expTrM),m(39.1)),(WDiam(wopP5,expTrM),m(39.1))))*/
 
     val fired2 = tms.Fired(D,2,t,t,L)
     assert(fired2 == Set((AtAtom(m(37.2)+m(3),expBusM),m(35.2)),(WDiam(wopP5,expBusM),m(35.2)),

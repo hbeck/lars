@@ -211,11 +211,7 @@ case class TMS(P: StdProgram) {
     /*(atom,wf(atom, l).get)*/
     var result = Set[WindowAtom]()
     for (i <- 1 until l-1) {
-      if (updated.contains(i)) {
-        updated(i).foreach(ea =>
-          if (wf(ea.atom,l).isDefined) result += ea.asInstanceOf[WindowAtom]
-        )
-      }
+        updated(i).foreach(ea => result += wf(ea.atom,l).orNull)
     }
     result ++ pushNow
   }
@@ -408,18 +404,19 @@ case class TMS(P: StdProgram) {
 
   def UpdateOrdAtom(alpha: ExtendedAtom, s: Status, L:Labels): Unit = alpha match {
     case ata:AtAtom =>
+      val a = ata.atom
       if (s == in) {
-        if (L.status(ata.atom) == in) {
-          L.update(ata, Label(in, tm(ata.atom,L) + new ClosedIntInterval(ata.t, ata.t)))
+        if (L.status(a) == in) {
+          L.update(a, Label(in, tm(a,L) + new ClosedIntInterval(ata.t, ata.t)))
         } else {
-          L.update(ata,Label(in,(ata.t,ata.t)))
-          println("L updateOrdAtom: "+L.intervals(ata))
+          L.update(a,Label(in,(ata.t,ata.t)))
+          println("L updateOrdAtom("+ata+"): "+L.intervals(ata))
         }
       } else if (s == out) {
-        if (L.status(ata.atom) == in) {
-          L.update(ata,Label(out,tm(ata.atom,L) - new ClosedIntInterval(ata.t,ata.t)))
+        if (L.status(a) == in) {
+          L.update(a,Label(out,tm(a,L) - new ClosedIntInterval(ata.t,ata.t)))
         } else {
-          L.update(ata.atom,Label(unknown,(0,0)))
+          L.update(a,Label(unknown,(0,0)))
         }
       }
     case _ => None
@@ -478,7 +475,7 @@ case class TMS(P: StdProgram) {
   }
 
   /*--- Methods only used for testing purposes ---*/
-
+    def getUpdated = updated
   /*--- end ---*/
 }
 
