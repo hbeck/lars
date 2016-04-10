@@ -12,8 +12,8 @@ import lars.tms.status.Labels
 trait WindowAtomOperators {
 
   def exp(omega: WindowAtom, L:Labels, t: Int, fired: Set[(WindowAtom, Int)]): Boolean
-  def aR(atom: ExtendedAtom, wa: WindowAtom, interval: ClosedIntInterval): ClosedIntInterval
+  def aR(wa: WindowAtom, interval: ClosedIntInterval, tp: Int): ClosedIntInterval
   def q(omega: WindowAtom, L:Labels): Set[Int]
-  def SIn(wa: WindowAtom, t: Int, l: Int, D: S, tm: Set[ClosedIntInterval]): Option[ClosedIntInterval]
+  def SIn(wa: WindowAtom, tStar: Int, l: Int, D: S, L: Labels): Option[ClosedIntInterval]
   def SOut(wfn: WindowAtom, t: Int): ClosedIntInterval
 }

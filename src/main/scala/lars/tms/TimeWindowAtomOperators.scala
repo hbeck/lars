@@ -46,23 +46,34 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
     res
   }
 
-  override def aR(atom: ExtendedAtom, wa: WindowAtom, interval: ClosedIntInterval): ClosedIntInterval = wa.wop.wfn match {
+  override def aR(wa: WindowAtom, interval: ClosedIntInterval, tp: Int): ClosedIntInterval = wa.wop.wfn match {
     case wfn: TimeWindowFixedParams =>
 
-      val lower = interval.lower
-      val upper = interval.upper
-
       wfn.x.u match {
-        case 0 => new ClosedIntInterval(lower, upper)
-        case n: Int => new ClosedIntInterval(lower - n, upper - n)
+        case 0 => new ClosedIntInterval(interval.lower, interval.upper)
+        case n: Int => new ClosedIntInterval(tp - n, tp)
       }
   }
 
-   override def SIn(wa: WindowAtom, t: Int, l: Int, D: S, tm: Set[ClosedIntInterval]): Option[ClosedIntInterval] = wa.wop.wfn match {
+   override def SIn(wa: WindowAtom, tStar: Int, l: Int, D: S, L: Labels): Option[ClosedIntInterval] = wa.wop.wfn match {
      case wfn: TimeWindowFixedParams =>
+
+       var result:Option[ClosedIntInterval] = None
 
        val Nl = wfn.x.l
        val Nu = wfn.x.u
+
+       var t = tStar
+
+       var at:Option[AtAtom] = None
+
+       wa.nested.find({
+         case a:AtAtom => {
+           t = a.t
+           at = Option(a)
+         }; true
+         case _ => false
+       })
 
        wa match {
          case wb:WBox =>
@@ -71,14 +82,27 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
                for (t1 <- math.max(0, t - Nl) to t+Nu) {
                  if (!D.v(t1).contains(wa.atom)) return None
                }
-             return Option(new ClosedIntInterval(t,t))
+             result = Option(new ClosedIntInterval(t,t))
              case _ =>
-               if (tm.contains(new ClosedIntInterval(math.max(0,t-Nl),t+Nu)))
-               return Option(new ClosedIntInterval(t,t))
+               if (L.intervals(wa).contains(new ClosedIntInterval(math.max(0,t-Nl),t+Nu)))
+               result = Option(new ClosedIntInterval(t,t))
            }
-         case _ => return Option(new ClosedIntInterval(t-Nu, t+Nl))
+         case _ => result = Option(new ClosedIntInterval(t-Nu, t+Nl))
        }
-       None
+
+       if(at.isDefined) {
+
+        val tmp = L.intervals(at.get).filter(e => e.lower <= result.get.upper || e.upper >= result.get.lower)
+        /*if i am wrong, tmp may contain more than one element and this doesn't work right*/
+        if (tmp.nonEmpty) {
+          val min = math.max(tmp.head.lower, result.get.lower)
+          val max = math.min(tmp.head.upper, result.get.upper)
+
+          result = Option(new ClosedIntInterval(min, max))
+        }
+       }
+
+      result
   }
 
   override def SOut(wa: WindowAtom, t: Int): ClosedIntInterval = wa.wop.wfn match {

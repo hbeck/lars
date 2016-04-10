@@ -187,29 +187,41 @@ case class TMS(P: StdProgram) {
   }
 
   def Push(l: Int, t:Int, L:Labels): Set[(WindowAtom,Int)] = {
+    println("l: "+l)
     var result = Set[(WindowAtom,Int)]()
-    for (i <- 1 until l-1) {
+    for (i <- 1 to l-1) {
         updated(i).foreach({
           case ata:AtAtom =>
             val wa:WindowAtom = wf(ata, l).getOrElse(wf(ata.atom, l).orNull)
             if (wa != null) {
-             tm(ata,L).foreach(iv =>
-               if (waOperators(wa.wop.wfn.getClass).aR(ata.atom, wa, iv).contains(ata.t)) {
-                  result += ((wa, ata.t))
+             tm(ata,L).foreach(iv => {
+               val new_iv = waOperators(wa.wop.wfn.getClass).aR(wa, iv, ata.t)
+               if(new_iv == iv) {
+                 result += ((wa, ata.t))
+               } else {
+                 result += ((wa,new_iv.lower))
                }
-             )
+             })
             }
+          case _ => result
         })
     }
-    push.foreach(r => result += ((r,t)))
+//    push.foreach(r => result += ((r,t)))
     result
   }
 
   def PushNow(l: Int): Set[WindowAtom] = {
     /*(atom,wf(atom, l).get)*/
     var result = Set[WindowAtom]()
-    for (i <- 1 until l-1) {
-        updated(i).foreach(ea => result += wf(ea.atom,l).orNull)
+    for (i <- 1 to l-1) {
+        updated(i).foreach({
+          case ea:Atom =>
+            val wa = wf(ea,l)
+            if(wa.isDefined){
+              result += wa.get
+            }
+          case _ =>
+        })
     }
     result ++ pushNow
   }
@@ -231,32 +243,22 @@ case class TMS(P: StdProgram) {
   }
 
   def FireInput(omega: WindowAtom, t: Int, l:Int, D:S, L:Labels): Unit = {
+
+    println("omega, t: "+omega+", "+t)
     val ata = new AtAtom(t,omega.atom)
 
     //NOTE checks for @atoms within window atoms
     if (P.rules.exists(r => r.B.exists(ea => ea.nested.contains(ata)) || r.h.nested.contains(ata))) {
       L.update(ata,Label(in,(t,t)))
     }
-
     //NOTE checks for @atoms directly in the program
-/*        if (P.rules.exists(r => r.B.contains(ata) || r.h == ata)) {
+    /*  if (P.rules.exists(r => r.B.contains(ata) || r.h == ata)) {
           L.update(ata,Label(in,(t,t)))
         }*/
 
-    var s_in = waOperators(omega.wop.wfn.getClass).SIn(omega,t,l,D,tm(omega,L))
-    if(s_in.isDefined) {
-      omega.nested.foreach({
-        case ata:AtAtom =>
-          val tmp = L.intervals(ata).filter(e => e.lower <= s_in.get.upper || e.upper >= s_in.get.lower)
-          /*if i am wrong, tmp may contain more than one element and this doesn't work right*/
-          if (tmp.nonEmpty) {
-            val min = math.min(tmp.head.lower,s_in.get.lower)
-            val max = math.max(tmp.head.upper,s_in.get.upper)
+    val s_in:Option[ClosedIntInterval] = waOperators(omega.wop.wfn.getClass).SIn(omega, t, l, D, L)
 
-            s_in = Option(new ClosedIntInterval(min,max))
-          }
-        case _ => s_in
-      })
+    if(s_in.isDefined) {
       L.update(omega, Label(in, (s_in.get.lower, s_in.get.upper)))
     }
   }
@@ -454,7 +456,8 @@ case class TMS(P: StdProgram) {
     push = Set()
     for (i <- l+1 to n) {
       pushNow ++= PushNow(i)
-      Push(i,t,L).foreach(r => push += r._1)
+      val p = Push(i,t,L)
+      p.foreach(r => push += r._1)
     }
   }
 
