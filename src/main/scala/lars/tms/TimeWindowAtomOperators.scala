@@ -59,11 +59,10 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
      case wfn: TimeWindowFixedParams =>
 
        var result:Option[ClosedIntInterval] = None
+       var t = tStar
 
        val Nl = wfn.x.l
        val Nu = wfn.x.u
-
-       var t = tStar
 
        var at:Option[AtAtom] = None
 
@@ -91,12 +90,11 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
        }
 
        if(at.isDefined) {
-
         val tmp = L.intervals(at.get).filter(e => e.lower <= result.get.upper || e.upper >= result.get.lower)
         /*if i am wrong, tmp may contain more than one element and this doesn't work right*/
         if (tmp.nonEmpty) {
-          val min = math.max(tmp.head.lower, result.get.lower)
-          val max = math.min(tmp.head.upper, result.get.upper)
+          val min = math.min(tmp.head.lower, result.get.lower)
+          val max = math.max(tmp.head.upper, result.get.upper)
 
           result = Option(new ClosedIntInterval(min, max))
         }

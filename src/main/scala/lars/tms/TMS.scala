@@ -41,6 +41,8 @@ case class TMS(P: StdProgram) {
     waOperators ++= wAOp
     val Lp = L.copy
 
+    //NOTE set intervals of all atoms at D(t) to current time?
+
     for (l <- 1 to n) {
       var C = Set[WindowAtom]()
       for (omega <- Expired(D,l,tp,t,L)) {
@@ -167,7 +169,10 @@ case class TMS(P: StdProgram) {
         val dAtoms = D(t1)
         if(dAtoms.nonEmpty) {
           dAtoms.foreach(a => {
+//            println("stratum(2): "+stratum(2))
+//            print("stratum("+l+"): "+stratum(l))
             val consw = ConsW(stratum(l),a)
+//            println("consw: "+consw)    println("label of jam: "+L.label(WDiam(wop3,jam)))
             stratum(l).rules.foreach(r => {
               val tmp = (r.B ++ Set(r.h)).filter(p => consw.contains(p) || p.nested.contains(AtAtom(t1,a)))
               tmp.foreach({
@@ -187,7 +192,6 @@ case class TMS(P: StdProgram) {
   }
 
   def Push(l: Int, t:Int, L:Labels): Set[(WindowAtom,Int)] = {
-    println("l: "+l)
     var result = Set[(WindowAtom,Int)]()
     for (i <- 1 to l-1) {
         updated(i).foreach({
@@ -195,18 +199,21 @@ case class TMS(P: StdProgram) {
             val wa:WindowAtom = wf(ata, l).getOrElse(wf(ata.atom, l).orNull)
             if (wa != null) {
              tm(ata,L).foreach(iv => {
-               val new_iv = waOperators(wa.wop.wfn.getClass).aR(wa, iv, ata.t)
+               if(waOperators(wa.wop.wfn.getClass).aR(wa, iv, ata.t).contains(t)){
+                 result += ((wa,ata.t))
+               }
+/*             val new_iv = waOperators(wa.wop.wfn.getClass).aR(wa, iv, ata.t)
                if(new_iv == iv) {
                  result += ((wa, ata.t))
                } else {
                  result += ((wa,new_iv.lower))
-               }
+               }*/
              })
             }
           case _ => result
         })
     }
-//    push.foreach(r => result += ((r,t)))
+    push.foreach(r => result += ((r,t)))
     result
   }
 
@@ -243,10 +250,8 @@ case class TMS(P: StdProgram) {
   }
 
   def FireInput(omega: WindowAtom, t: Int, l:Int, D:S, L:Labels): Unit = {
-
     println("omega, t: "+omega+", "+t)
     val ata = new AtAtom(t,omega.atom)
-
     //NOTE checks for @atoms within window atoms
     if (P.rules.exists(r => r.B.exists(ea => ea.nested.contains(ata)) || r.h.nested.contains(ata))) {
       L.update(ata,Label(in,(t,t)))
@@ -259,6 +264,7 @@ case class TMS(P: StdProgram) {
     val s_in:Option[ClosedIntInterval] = waOperators(omega.wop.wfn.getClass).SIn(omega, t, l, D, L)
 
     if(s_in.isDefined) {
+      println(omega+" interval: ("+s_in.get.lower+", "+s_in.get.upper+")")
       L.update(omega, Label(in, (s_in.get.lower, s_in.get.upper)))
     }
   }
@@ -317,7 +323,7 @@ case class TMS(P: StdProgram) {
   }
 
   def SetUnknown(l: Int, t: Int, L:Labels, A: Set[Atom]): Unit = {
-    println("set unknown acons: "+ACons(stratum(l),L,A,t))
+//    println("set unknown acons: "+ACons(stratum(l),L,A,t))
     val k = ACons(stratum(l),L,A,t)
     k.foreach(f =>
      if (!L.intervals(f).exists(_.contains(t)))
@@ -341,13 +347,13 @@ case class TMS(P: StdProgram) {
 
 //    if(t>0) ph.foreach(r => println("fval check - "+ r +": "+fVal(L,r)))
     if (ph.exists(r => fVal(L,r))) {
-      if(t>0) println("fVal - alpha: "+alpha)
+//      if(t>0) println("fVal - alpha: "+alpha)
       if(timeSet.nonEmpty) {
         val tStar = timeSet.max
-        if(t>0) println("fVal - alpha: "+alpha+", time: "+t+", tStar: "+tStar)
+//        if(t>0) println("fVal - alpha: "+alpha+", time: "+t+", tStar: "+tStar)
 //        tStar = minTime(ph,t,L).max
         L.update(alpha,Label(in,(t,tStar)))
-        println("L.status("+alpha+"): "+L.label(alpha))
+//        println("L.status("+alpha+"): "+L.label(alpha))
         UpdateOrdAtom(alpha,in,L)
         alpha match {
           case wa:WindowAtom => /*do nothing*/
@@ -360,10 +366,9 @@ case class TMS(P: StdProgram) {
         updated += l -> (updated(l) ++ Set(alpha))
       }
     } else if (ph.nonEmpty && ph.forall(r => fInval(L,r))) {
-
       if(timeSet.nonEmpty) {
+//        if(t>0) println("fInval - alpha: "+alpha+", time: "+t/*+", tStar: "+tStar*/)
         val tStar = timeSet.min
-//        if(t>0) println("fInval - alpha: "+alpha+", time: "+t+", tStar: "+tStar)
         L.update(alpha,Label(out,(t,tStar)))
         UpdateOrdAtom(alpha,out,L)
       }

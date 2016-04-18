@@ -11,7 +11,7 @@ object ConsW {
 
   def apply(P: StdProgram, x: ExtendedAtom): Set[ExtendedAtom] =
     (P.rules.flatMap(_.B) ++ P.rules.flatMap(_.head.atoms())).filter({
-      case a:WindowAtom => a.nested.contains(x.atom)
+      case a: WindowAtom => a.nested.contains(x.atom)
       case _ => false
     })
 

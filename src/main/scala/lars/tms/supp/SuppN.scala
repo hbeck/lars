@@ -20,16 +20,17 @@ object SuppN {
     if (xRules.exists(fVal(L,_))) {
       return Set()
     }
-    xRules.map(pick(L,_))
+
+    xRules.map(pick(L,_).get)
   }
 
-  private def pick(L: Labels, r: StdRule): ExtendedAtom = {
+  private def pick(L: Labels, r: StdRule): Option[ExtendedAtom] = {
     //TODO revisit influence of order/choice
     val optP = r.Bp.find(L.status(_) == out)
     if (optP.isDefined) {
-      return optP.get
+      return optP
     }
-    r.Bn.find(L.status(_) == in).get
+    r.Bn.find(L.status(_) == in)
   }
 
 }
