@@ -22,7 +22,7 @@ class DiGraph[V](val adjList:Map[V,Set[V]]) extends AdjList[V] with Outgoing[V] 
   //nodes that do not have an incoming edge
   def startNodes() : Set[V] = nodes -- adjList.values.flatten.toSet
 
-  def isRooted() = startNodes().size == 1
+  def isRooted = startNodes().size == 1
 
   //@return root if it exists (and it is unique)
   def root(): Option[V] = {
@@ -35,7 +35,7 @@ class DiGraph[V](val adjList:Map[V,Set[V]]) extends AdjList[V] with Outgoing[V] 
 
   def subgraph(vertices: Set[V]): DiGraph[V] = {
     val keysOk: Map[V, Set[V]] = adjList.filterKeys( k => vertices.contains(k) )
-    val valuesOk: Map[V, Set[V]] = keysOk.map( e => (e._1,e._2.filter( v => vertices.contains(v) )) )
+    val valuesOk: Map[V, Set[V]] = keysOk.map( e => (e._1,e._2 intersect vertices) )
     new DiGraph(valuesOk)
   }
 

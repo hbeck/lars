@@ -79,7 +79,7 @@ object Stratification {
         }
       }
     }
-    return `geq` //`eq` not possible, these are already within a block
+    `geq` //`eq` not possible, these are already within a block
   }
 
   def hasCycleWithGrt(depGraph: DepGraph[ExtendedAtom], condensation: QuotientGraph[ExtendedAtom]): Boolean = {
@@ -95,7 +95,7 @@ object Stratification {
   def createStratumMapping(subgraphNr:Map[Block[ExtendedAtom],Int]): Map[Int, Set[ExtendedAtom]] = {
     var m = Map[Int,Set[ExtendedAtom]]()
     for ((nodes,nr) <- subgraphNr) {
-      if (!nodes.isEmpty) { // may occur only for artificial root node (used for recursive top down numbering)
+      if (nodes.nonEmpty) { // may occur only for artificial root node (used for recursive top down numbering)
         if (m.contains(nr)) {
           val set = m(nr) ++ nodes
           m = m.updated(nr, set)
@@ -116,6 +116,6 @@ object Stratification {
         case `eql` => if (strat(from) != strat(to)) return false
       }
     }
-    return true
+    true
   }
 }

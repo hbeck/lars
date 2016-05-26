@@ -198,11 +198,11 @@ class TestStratification extends FunSuite {
 
     val condensation: QuotientGraph[ExtendedAtom] = Condensation(depGraph3)
     val condensationDepGraph: DepGraph[Block[ExtendedAtom]] = Stratification.createCondensationDepGraph(depGraph3,condensation)
-    assert(!condensationDepGraph.isRooted())
+    assert(!condensationDepGraph.isRooted)
 
     val rootedDAG = Stratification.ensureRooted(condensationDepGraph)
     assert(condensationDepGraph != rootedDAG)
-    assert(rootedDAG.isRooted())
+    assert(rootedDAG.isRooted)
 
     val blockNumbering: Map[Block[ExtendedAtom], Int] = TopDownNumbering(rootedDAG)
     val idxToAtoms: Map[Int, Set[ExtendedAtom]] = Stratification.createStratumMapping(blockNumbering)
