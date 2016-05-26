@@ -5,19 +5,20 @@ import lars.core.semantics.formulas._
 import lars.core.semantics.programs.extatoms._
 import lars.core.semantics.programs.general.inspect.ExtensionalAtoms
 import lars.core.semantics.programs.standard.inspect.PH
-import lars.core.semantics.programs.standard.{StdRule, StdProgram}
-import lars.core.semantics.streams.{Timeline, S}
+import lars.core.semantics.programs.standard.{StdProgram, StdRule}
+import lars.core.semantics.streams.{S, Timeline}
 import lars.core.windowfn.WindowFunctionFixedParams
 import lars.core.windowfn.time.TimeWindowFixedParams
 import lars.strat.Strata
 import lars.tms.acons.ACons
-import lars.tms.cons.{Cons, ConsW, ConsStar}
+import lars.tms.cons.{Cons, ConsStar, ConsW}
 import lars.tms.incr.Result
 import lars.tms.incr.Result.{fail, success}
-import lars.tms.status.rule.{ufVal, fInval, fVal}
-import lars.tms.status.{Status, Label, Labels}
-import lars.tms.status.Status.{in, unknown, out}
-import lars.tms.supp.{SuppN, SuppAt}
+import lars.tms.status.Status.{in, out, unknown}
+import lars.tms.status.rule.{fInval, fVal, ufVal}
+import lars.tms.status.{Label, Labels, Status}
+import lars.tms.supp.SuppAt
+
 import scala.collection.immutable
 
 /**
@@ -51,13 +52,13 @@ case class TMS(P: StdProgram) {
       var C = Set[WindowAtom]()
       for (omega <- Expired(D,l,tp,t,L)) {
         ExpireInput(omega,t,L)
-        C = C + omega
+        C += omega
         A += omega.atom
         addToUpdated(omega.nested,l)
       }
       for ((omega,t1) <- Fired(D,l,tp,t,L)) {
         FireInput(omega,t1,l,D,L)
-        C = C + omega
+        C += omega
         A += omega.atom
         addToUpdated(omega.nested,l)
       }
@@ -257,7 +258,7 @@ case class TMS(P: StdProgram) {
     println("omega, t: "+omega+", "+t)
     val ata = new AtAtom(t,omega.atom)
     //NOTE checks for @atoms within window atoms
-    if (P.rules.exists(r => r.B.exists(ea => ea.nested.contains(ata)) || r.h.nested.contains(ata))) {
+    if (P.rules exists (r => r.B.exists(_.nested.contains(ata)) || r.h.nested.contains(ata))) {
       L.update(ata,Label(in,(t,t)))
     }
     //NOTE checks for @atoms directly in the program
@@ -282,8 +283,8 @@ case class TMS(P: StdProgram) {
   def MinEnd(r:StdRule, t:Int, L:Labels): Int = {
     var t2Set = Set[Int]()
 
-    if(r.B.forall(b => tm(b,L).exists(i => i.contains(t)))){
-      r.B.foreach(b =>  tm(b,L).foreach(i => t2Set += i.upper))
+    if (r.B forall (tm(_,L) exists (_.contains(t)))) {
+        r.B foreach (tm(_,L) foreach (t2Set += _.upper))
       return t2Set.min
     }
     t
@@ -296,7 +297,7 @@ case class TMS(P: StdProgram) {
       val newStatus = L.status(wa)
 
       if (newStatus == Lp.status(wa)) {
-       if (newStatus == in) ki += wa
+        if (newStatus == in) ki += wa
         else ko += wa
       } else {
         if (newStatus == in) o2i += wa
@@ -304,14 +305,14 @@ case class TMS(P: StdProgram) {
       }
     }
 
-     for (rule <- stratum(l).rules) {
-       val u1 = (rule.Bp intersect i2o).isEmpty && (rule.Bn intersect o2i).isEmpty
-       val u2 = (rule.Bp intersect ki).nonEmpty || (rule.Bn intersect ko).nonEmpty
-       val u3 = (rule.Bp intersect ko).nonEmpty || (rule.Bn intersect ki).nonEmpty
+    for (rule <- stratum(l).rules) {
+      val u1 = (rule.Bp intersect i2o).isEmpty && (rule.Bn intersect o2i).isEmpty
+      val u2 = (rule.Bp intersect ki).nonEmpty || (rule.Bn intersect ko).nonEmpty
+      val u3 = (rule.Bp intersect ko).nonEmpty || (rule.Bn intersect ki).nonEmpty
 
-       if (u1 && u2) UpdateTimestamp(rule,in,t,L)
-       else if (u1 && u3) UpdateTimestamp(rule,out,t,L)
-     }
+      if (u1 && u2) UpdateTimestamp(rule,in,t,L)
+      else if (u1 && u3) UpdateTimestamp(rule,out,t,L)
+    }
   }
 
   def UpdateTimestamp(r:StdRule, s:Status, t:Int, L:Labels) = {
@@ -322,25 +323,24 @@ case class TMS(P: StdProgram) {
         if (interval.contains(t)) newIntervals ++= Set(new ClosedIntInterval(interval.lower,MinEnd(r,t,L)))
         newIntervals += interval
       }
-      L.update(r.h,new Label(s,newIntervals))
+      L.update(r.h,Label(s,newIntervals))
     }
   }
 
   def SetUnknown(l: Int, t: Int, L:Labels, A: Set[Atom]): Unit = {
 //    println("set unknown acons: "+ACons(stratum(l),L,A,t))
-    val k = ACons(stratum(l),L,A,t)
-    k.foreach(f =>
-     if (!L.intervals(f).exists(_.contains(t)))
-         L.update(f, Label(unknown, L.intervals(f)))
-    )
+    for (a <- ACons(stratum(l),L,A,t)) {
+      if (!(L.intervals(a) exists (_.contains(t))))
+        L.update(a, Label(unknown, L.intervals(a)))
+    }
   }
 
   def SetRule(l: Int, t: Int, L:Labels, A: Set[Atom]): Result = {
-    ACons(stratum(l),L,A,t).foreach(f =>
-      if (L.status(f) == unknown) {
-        if(SetHead(f,f,l,t,L) == fail) return fail
+    for (a <- ACons(stratum(l),L,A,t)) {
+      if (L.status(a) == unknown) {
+        if (SetHead(a,a,l,t,L) == fail) return fail //TODO
       }
-    )
+    }
     success
   }
 
@@ -363,9 +363,9 @@ case class TMS(P: StdProgram) {
           case wa:WindowAtom => /*do nothing*/
           case _ =>
             val suppAt = SuppAt(stratum(l),L,alpha)
-            suppAt.foreach({case ata:AtAtom =>
+            suppAt.foreach {case ata:AtAtom =>
                             L.addInterval(ata,new ClosedIntInterval(ata.t,ata.t))
-                          })
+                           }
         }
         updated += l -> (updated(l) ++ Set(alpha))
       }
@@ -384,7 +384,7 @@ case class TMS(P: StdProgram) {
     println("Cons("+alpha+"): "+Cons(stratum(l),alpha))*/
     Cons(stratum(l),alpha).foreach(beta =>
       if (prev != beta && beta != alpha && L.status(beta) == unknown) {
-        if(SetHead(alpha, beta,l,t,L) == fail){
+        if (SetHead(alpha, beta,l,t,L) == fail) {
           return fail
         }
       })
