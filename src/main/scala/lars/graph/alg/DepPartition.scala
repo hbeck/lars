@@ -158,23 +158,15 @@ case class DepPartition(g: DepGraph) extends ((DiGraph[Set[ExtendedAtom]]) => Ma
 
   def hasGrtEdges(dg: DiGraph[Set[ExtendedAtom]], from: Set[Set[ExtendedAtom]], to: Set[Set[ExtendedAtom]]): Boolean = {
     for ((f,t) <- grtEdges) {
-      if (from.contains(f)) {
-        if (to.contains(t)) return true
-      }
+      if(from.contains(f) && to.contains(t)) true
     }
     false
   }
 
   /* checks if a node has already been added to block */
-  def blockRegistered(node: Set[ExtendedAtom]) : Boolean = {
-      if (blockIdx.contains(node)) return true
-    false
-  }
+  def blockRegistered(node: Set[ExtendedAtom]) : Boolean = blockIdx.contains(node)
 
-  def isGrt(from: Set[ExtendedAtom], to: Set[ExtendedAtom]): Boolean = {
-    if (grtEdges.contains(from,to)) return true
-    false
-  }
+  def isGrt(from: Set[ExtendedAtom], to: Set[ExtendedAtom]): Boolean = grtEdges.contains(from,to)
 
   /* @return true if there is a path with a `grt` edge along the way, false otherwise */
   def hasSomePathWithGrt(dg: DiGraph[Set[ExtendedAtom]], from: Set[Set[ExtendedAtom]], to: Set[Set[ExtendedAtom]]): Boolean = {
