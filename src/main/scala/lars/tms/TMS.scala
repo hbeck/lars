@@ -37,7 +37,11 @@ case class TMS(P: StdProgram) {
 
   init()
 
-  def answerUpdate(L: Labels,tp: Int, t: Int, D: S, wAOp:immutable.HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap()): Result = {
+  def answerUpdate(L: Labels,tp: Int, t: Int, D: S, 
+	wAOp:immutable.HashMap[
+	Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap())
+	: Result = {
+
     waOperators ++= wAOp
     val Lp = L.copy
 
@@ -169,10 +173,10 @@ case class TMS(P: StdProgram) {
         val dAtoms = D(t1)
         if(dAtoms.nonEmpty) {
           dAtoms.foreach(a => {
-//            println("stratum(2): "+stratum(2))
+            println("stratum(2): "+stratum(2))
 //            print("stratum("+l+"): "+stratum(l))
             val consw = ConsW(stratum(l),a)
-//            println("consw: "+consw)    println("label of jam: "+L.label(WDiam(wop3,jam)))
+//            println("consw: "+consw)
             stratum(l).rules.foreach(r => {
               val tmp = (r.B ++ Set(r.h)).filter(p => consw.contains(p) || p.nested.contains(AtAtom(t1,a)))
               tmp.foreach({

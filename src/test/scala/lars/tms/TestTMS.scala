@@ -561,6 +561,7 @@ class TestTMS  extends FunSuite {
     A = v(t) //{jam}
 
 //    assert(ACons(P,L,A,t) == Set(takeTrM, takeBusM, WDiam(wop3,jam)))
+    println("Acons: "+ACons(P,L,A,t))
     assert(ACons(P,L,A,t) == Set(takeBusM, WDiam(wop3,jam)))
     assert(ACons(stratum(1),L,A,t) == Set())
 
