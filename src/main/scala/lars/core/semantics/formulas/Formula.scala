@@ -33,6 +33,7 @@ abstract class Binary(val fm1: Formula, val fm2: Formula) extends Formula {
 trait ExtendedAtom extends Formula {
   def atom:Atom
   def nested:Set[ExtendedAtom] = Set[ExtendedAtom](this,atom)
+  def contains(atom:ExtendedAtom):Boolean = this.nested.contains(atom)
   override def atoms():Set[Atom] = Set[Atom](atom)
 }
 

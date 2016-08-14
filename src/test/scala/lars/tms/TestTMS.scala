@@ -86,7 +86,7 @@ class TestTMS  extends FunSuite {
     L.update(expTrmAt, Label(in, (m(39.7), m(40.7))))
 
     val supp = SuppP(Pp, L, expTrmAt)
-    val acons = ACons(Pp, L, trmBW)
+    val acons = ACons(Pp, L, trmBW) - trmBW
 
     assert(supp == Set(trmBW, onAtom))
     assert(acons == Set(expTrmAt))

@@ -19,9 +19,10 @@ import lars.tms.status.rule.{fInval, fVal, ufVal}
 import lars.tms.status.{Label, Labels, Status}
 import lars.tms.supp.SuppAt
 
-import scala.collection.immutable
+//import scala.collection.immutable._
+import scala.collection.immutable.HashMap
 
-/**
+/**jkjk
  * Created by hb on 6/25/15.
  */
 case class TMS(P: StdProgram) {
@@ -31,7 +32,8 @@ case class TMS(P: StdProgram) {
   private val n = stratum.keySet.reduce(math.max)
 //  private var L = Labels()
   private var updated = Map[Int,Set[ExtendedAtom]]()
-  private var waOperators:immutable.HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap(classOf[TimeWindowFixedParams] -> TimeWindowAtomOperators)
+  private var waOperators:HashMap[Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] =
+    HashMap(classOf[TimeWindowFixedParams] -> TimeWindowAtomOperators)
   private var pushNow = Set[WindowAtom]()
   private var push = Set[WindowAtom]()
   private var A = Set[Atom]()
@@ -39,8 +41,8 @@ case class TMS(P: StdProgram) {
   init()
 
   def answerUpdate(L: Labels,tp: Int, t: Int, D: S, 
-	wAOp:immutable.HashMap[
-	Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = immutable.HashMap())
+	wAOp:HashMap[
+	Class[_ <:WindowFunctionFixedParams], WindowAtomOperators] = HashMap())
 	: Result = {
 
     waOperators ++= wAOp
@@ -54,13 +56,13 @@ case class TMS(P: StdProgram) {
         ExpireInput(omega,t,L)
         C += omega
         A += omega.atom
-        addToUpdated(omega.nested,l)
+        addToUpdated(omega,l)
       }
       for ((omega,t1) <- Fired(D,l,tp,t,L)) {
         FireInput(omega,t1,l,D,L)
         C += omega
         A += omega.atom
-        addToUpdated(omega.nested,l)
+        addToUpdated(omega,l)
       }
       UpdateTimestamps(C,L,Lp,l,t)
       SetUnknown(l,t,L,A)
@@ -79,11 +81,10 @@ case class TMS(P: StdProgram) {
     success
   }
 
-  def addToUpdated(atoms: Set[ExtendedAtom], l: Int) = {
-    stratum(l).rules.foreach(a =>
-      if(atoms.contains(a.h)) {
+  def addToUpdated(atom: WindowAtom, l: Int) = {
+    for(a <- stratum(l).rules.filter(p => atom.contains(p.h))){
       updated += l -> (updated(l) ++ Set(a.h))
-    })
+    }
   }
 
   def init() = {
@@ -173,18 +174,16 @@ case class TMS(P: StdProgram) {
         var result = Set[(WindowAtom,Int)]()
         val dAtoms = D(t1)
         if(dAtoms.nonEmpty) {
-          dAtoms.foreach(a => {
-            println("stratum(2): "+stratum(2))
+          for(a <- dAtoms){
+//            println("stratum(2): "+stratum(2))
 //            print("stratum("+l+"): "+stratum(l))
             val consw = ConsW(stratum(l),a)
 //            println("consw: "+consw)
-            stratum(l).rules.foreach(r => {
-              val tmp = (r.B ++ Set(r.h)).filter(p => consw.contains(p) || p.nested.contains(AtAtom(t1,a)))
-              tmp.foreach({
-                case wa:WindowAtom => result += ((wa,t1))
-              })
-            })
-          })
+            for(r <- stratum(l).rules){
+              val tmp = (r.B ++ Set(r.h)).filter(p => consw.contains(p) || p.contains(AtAtom(t1,a)))
+              tmp.foreach({ case wa:WindowAtom => result += ((wa,t1))})
+            }
+          }
         }
         result
       case _ =>
@@ -203,17 +202,11 @@ case class TMS(P: StdProgram) {
           case ata:AtAtom =>
             val wa:WindowAtom = wf(ata, l).getOrElse(wf(ata.atom, l).orNull)
             if (wa != null) {
-             tm(ata,L).foreach(iv => {
+              for(iv <- tm(ata,L)){
                if(waOperators(wa.wop.wfn.getClass).aR(wa, iv, ata.t).contains(t)){
                  result += ((wa,ata.t))
                }
-/*             val new_iv = waOperators(wa.wop.wfn.getClass).aR(wa, iv, ata.t)
-               if(new_iv == iv) {
-                 result += ((wa, ata.t))
-               } else {
-                 result += ((wa,new_iv.lower))
-               }*/
-             })
+              }
             }
           case _ => result
         })
@@ -240,25 +233,26 @@ case class TMS(P: StdProgram) {
 
   /*modified wf function (see wf(a,w,l) in ijcai15-extended p.9)*/
   def wf(atom: ExtendedAtom, l: Int): Option[WindowAtom] = {
-    ConsW(stratum(l),atom).foreach({
-      case wa:WindowAtom => return Option(wa)
-    })
+    ConsW(stratum(l),atom).foreach({ case wa:WindowAtom => return Option(wa)})
     None
   }
 
   def ExpireInput(omega: WindowAtom, t: Int, L: Labels): Unit = {
-    var s_out = new ClosedIntInterval(0,0)
+//    var s_out = new ClosedIntInterval(0,0)
 
-    val tInOmega = tm(omega,L).filter(e => e.upper > t)
-    if (tInOmega.isEmpty) s_out = waOperators(omega.wop.wfn.getClass).SOut(omega,t)
-    L.update(omega.atom, Label(out,(s_out.lower,s_out.upper)))
+//    val tInOmega = tm(omega,L).filter(e => e.upper > t)
+//    if (tInOmega.isEmpty) {
+      if(!tm(omega,L).exists(e => e.upper > t)){
+        val s_out = waOperators(omega.wop.wfn.getClass).SOut(omega,t)
+        L.update(omega.atom, Label(out,(s_out.lower,s_out.upper)))
+    }
   }
 
   def FireInput(omega: WindowAtom, t: Int, l:Int, D:S, L:Labels): Unit = {
     println("omega, t: "+omega+", "+t)
     val ata = new AtAtom(t,omega.atom)
     //NOTE checks for @atoms within window atoms
-    if (P.rules exists (r => r.B.exists(_.nested.contains(ata)) || r.h.nested.contains(ata))) {
+    if (P.rules exists (r => r.B.exists(_.contains(ata)) || r.h.contains(ata))) {
       L.update(ata,Label(in,(t,t)))
     }
     //NOTE checks for @atoms directly in the program
