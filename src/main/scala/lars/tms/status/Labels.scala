@@ -31,7 +31,14 @@ case class Labels(private val labelOf: collection.mutable.Map[ExtendedAtom,Label
     Labels(r)
   }
 
-
+  override def toString: String = {
+    var str = " "
+    for((a,l) <- labelOf){
+      str += a+" -> "+l+"\n"
+      str += "\t"
+    }
+    str
+  }
 
   //add convenience method like updateStatus etc whatever needed
 

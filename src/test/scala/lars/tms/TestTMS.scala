@@ -36,7 +36,8 @@ class TestTMS  extends FunSuite {
   def m(i:Double) = (i*10*60).toInt
 
   val T = Timeline(0,m(50))
-  val v = Evaluation(Map(m(37.2) -> Set(busG), m(39.1) -> Set(tramB), m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM)))
+  val v = Evaluation(Map(m(37.2) -> Set(busG,request), m(38) -> Set(request), m(39.1) -> Set(tramB), m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM)))
+//  val v = Evaluation(Map(m(37.2) -> Set(busG), m(39.1) -> Set(tramB), m(40.2) -> Set(expBusM), m(44.1) -> Set(expTrM)))
   val D = S(T,v)
   //
   def w = TimeWindow
@@ -48,7 +49,8 @@ class TestTMS  extends FunSuite {
 
   val r1g = StdRule(AtAtom(m(37.2)+m(3),expBusM), Set(WAt(wop3,m(37.2),busG),on))
   val r2g = StdRule(AtAtom(m(39.1)+m(5),expTrM), WAt(wop5,m(39.1),tramB), on) //convenience variant
-  val r3 = StdRule(on, WDiam(wop1,request))
+//  val r3 = StdRule(on, WDiam(wop1,request))
+  val r3 = StdRule(on, WAt(wop1,m(37.2),request))
   val r4 = StdRule(takeBusM, WDiam(wopP5,expBusM), Not(takeTrM), Not(WDiam(wop3,jam)))
   val r5 = StdRule(takeTrM, WDiam(wopP5,expTrM), Not(takeBusM))
 
@@ -56,6 +58,32 @@ class TestTMS  extends FunSuite {
   val P = StdProgram(Set(r1g,r2g,r3,r4,r5))
 
   val stratum = Strata(P)
+
+  var tms = TMS(P)
+
+  var L = tms.init()
+  var l = 1
+
+
+  var A: Set[Atom] = ExtensionalAtoms(P)
+  /*for (a <- A) {
+    L.update(a,Label(out, (0,0)))
+  }
+
+  val transCons: Set[ExtendedAtom] = A.flatMap(ConsStar(P,_))
+  /*  val outs = transCons.filter(!_.isInstanceOf[WindowAtom])
+    for (x <- outs) {
+      L.update(x,Label(out))
+    }*/
+
+  for(x <- transCons){
+    if(x.isInstanceOf[WindowAtom]) {
+      L.update(x,Label(out,(0,0)))
+    } else {
+      L.update(x,Label(unknown))
+    }
+  }*/
+  var support = tms.getSupport
 
   test("Exp10") {
 
@@ -86,14 +114,14 @@ class TestTMS  extends FunSuite {
     L.update(expTrmAt, Label(in, (m(39.7), m(40.7))))
 
     val supp = SuppP(Pp, L, expTrmAt)
-    val acons = ACons(Pp, L, trmBW) - trmBW
+    val acons = ACons(Pp, L, support, trmBW) - trmBW
 
     assert(supp == Set(trmBW, onAtom))
     assert(acons == Set(expTrmAt))
 
   }
-/*
 
+/*
   test("Exp15") {
 
     val expTrmAt = AtAtom(m(44.1), expTrM)
@@ -115,50 +143,27 @@ class TestTMS  extends FunSuite {
 
     assert(fVal(L,r2p))
 
-
+/*
     println("L before: "+L)
     val tms = TMS(Pp1)
     println("L after: "+L)
-
-    tms.init()
-    tms.updateL(L)
-    println("L init: "+L)
-
-    tms.answerUpdate(m(0),m(45), D)
-  }
-
 */
 
-  var tms = TMS(P)
-  var L = Labels()
-  var l = 1
+    tms.init()
+    //tms.updateL(L)
+    println("L init: "+L)
 
-
-  var A: Set[Atom] = ExtensionalAtoms(P)
-  for (a <- A) {
-    L.update(a,Label(out, (0,0)))
+    //tms.answerUpdate(m(0),m(45), D)
   }
+*/
 
-  val transCons: Set[ExtendedAtom] = A.flatMap(ConsStar(P,_))
-/*  val outs = transCons.filter(!_.isInstanceOf[WindowAtom])
-  for (x <- outs) {
-    L.update(x,Label(out))
-  }*/
 
-  for(x <- transCons){
-    if(x.isInstanceOf[WindowAtom]) {
-      L.update(x,Label(out,(0,0)))
-    } else {
-      L.update(x,Label(unknown))
-    }
-  }
 
 //  tms.answerUpdate(L,0,0,S(Timeline(0,0))) //t'?
 
   test("Exp16"){
 
   l = 1
-
 
 //    println("tramB: "+ConsStar(P,tramB))
     assert(ConsStar(P,tramB) == Set(WAt(wop5,m(39.1),tramB),
@@ -196,8 +201,10 @@ class TestTMS  extends FunSuite {
                                       takeTrM,
                                       takeBusM))
 
-    println("acons: "+ACons(P,L,A,0))
-    assert(ACons(P,L,A,0) == A.flatMap(a => ConsStar(P,a)))
+    println("acons: "+ACons(P,L,A,support,0))
+    assert(ACons(P,L,A,support,0) == A.flatMap(a => ConsStar(P,a)))
+    println("acons(1): "+ACons(stratum(1),L,A,support,0))
+    println("acons(2): "+ACons(stratum(2),L,A,support,0))
 
     var expired = tms.Expired(D,l,0,0,L)
     assert(expired == Set())
@@ -207,19 +214,18 @@ class TestTMS  extends FunSuite {
 
     var unknowns = tms.SetUnknown(l,0,L,A)
 
-    var setrule = tms.SetRule(l,0,L,A)
+    var setrule = tms.SetRule(l,0,L,unknowns)
 
     assert(SuppN(stratum(l),L,on) == r3.B)
     assert(SuppN(stratum(l),L,AtAtom(m(37.2)+m(3),expBusM)) == Set(WAt(wop3,m(37.2),busG)))
     assert(SuppN(stratum(l),L,AtAtom(m(39.1)+m(5),expTrM)) == Set(WAt(wop5,m(39.1),tramB)))
 
-    tms.MakeAssignment(l,0,L)
+    tms.MakeAssignment(l,0,L,unknowns)
 
     println("stratum("+l+"): "+stratum(l))
     tms.SetOpenOrdAtomsOut(l,0,L)
     tms.PushUp(l,0,L)
 
-    /*revisit if this is actually the case*/
     assert(L.status(expTrM) == out)
     assert(L.status(expBusM) == out)
 
@@ -244,9 +250,9 @@ class TestTMS  extends FunSuite {
 
     unknowns = tms.SetUnknown(l,0,L,A)
 
-    setrule = tms.SetRule(l,0,L,A)
+    setrule = tms.SetRule(l,0,L,unknowns)
 
-    tms.MakeAssignment(l,0,L)
+    tms.MakeAssignment(l,0,L,unknowns)
 
     tms.SetOpenOrdAtomsOut(l,0,L)
     tms.PushUp(l,0,L)
@@ -258,104 +264,206 @@ class TestTMS  extends FunSuite {
   }
 
   test("Exp17"){
-//    val v = this.v ++ Evaluation(Map(m(37.2) -> Set(request)))
+    println("Test 17")
+//    val v = this.v ++ Evaluation(Map(t37 -> Set(request)))
       var C = Set[WindowAtom]()
       val t = m(37.2)
+      val tp = m(36)
+      val t37 = m(37.2)
       l = 1
-//    A = v(t) //{busG}
-      A = Set()
-    println("Test 17")
+//    A = v(t)
 
-    L = Labels(mutable.Map(
+/*    L = Labels(mutable.Map(
       AtAtom(m(39.1)+m(5),expTrM) -> Label(out,(0,0)),
-      request -> Label(out,(0,0)),
+      request -> Label(in,(m(36.2),m(37.5))),
       busG -> Label(out,(0,0)),
       expBusM -> Label(out,(0,0)),
-      WDiam(wopP5,expBusM) -> Label(out),
-      WDiam(wopP5,expTrM) -> Label(out),
-      WDiam(wop3,jam) -> Label(out),
+      WDiam(wopP5,expBusM) -> Label(out,(0,0)),
+      WDiam(wopP5,expTrM) -> Label(out,(0,0)),
+      WDiam(wop3,jam) -> Label(out,(0,0)),
       jam -> Label(out,(0,0)),
       WDiam(wop1,request) -> Label(out,(0,0)),
       WAt(wop5,m(39.1),tramB) -> Label(out,(0,0)),
-      WAt(wop3,m(37.2),busG) -> Label(out,(0,0)),
+      WAt(wop3,t37,busG) -> Label(in,(m(35.2),t37)),
       takeBusM -> Label(out,(0,0)),
       tramB -> Label(out,(0,0)),
-      AtAtom(m(37.2)+m(3),expBusM) -> Label(out,(0,0)),
-      on -> Label(out,(0,0)),
+      AtAtom(t37+m(3),expBusM) -> Label(in,(m(37.2),m(37.2))),
+      on -> Label(in,(m(36.5),m(37.5))),
       takeTrM -> Label(out,(0,0)),
-      expTrM -> Label(out,(0,0))))
+      expTrM -> Label(out,(0,0))))*/
 
 
     val Lp2 = L.copy
 
 
-    val expired = tms.Expired(D,l,t,t,L)
+    val expired = tms.Expired(D,l,tp,t,L)
+    println("expire: "+expired)
     expired.foreach(a => {
       C += a
       A += a.atom
       tms.ExpireInput(a,t,L)
     })
 
-    val fired = tms.Fired(D,l,t,t,L)
-    A += busG
-    C += fired.head._1
-    tms.FireInput(fired.head._1,fired.head._2,l,D,L)
+    val fired = tms.Fired(D,l,tp,t,L)
+    println("fired: "+fired)
+    for((omega,t1) <- fired) {
+      A += omega.atom
+      C += omega
+      tms.FireInput(omega,t1, l, D, L)
+    }
+    println("C: "+C)
+
 
     tms.UpdateTimestamps(C,L,Lp2,l,t)
 
-    assert(L.status(WAt(wop3,t,busG)) == in)
-    assert(L.intervals(WAt(wop3,t,busG)) == Set(new ClosedIntInterval(t,m(40.2))))
+    assert(L.status(WAt(wop3,t37,busG)) == in)
+    assert(L.intervals(WAt(wop3,t37,busG)) == Set(new ClosedIntInterval(t37,m(40.2))))
 
-    tms.SetUnknown(1,t,L,A)
+    val unknowns = tms.SetUnknown(1,t37,L,A)
 
-    assert(L.status(on) == out)
-    assert(L.intervals(on) == Set(new ClosedIntInterval(0,0)))
+    println("unknowns: "+unknowns)
 
-    assert(fInval(L,r1g))
+/*    assert(L.status(on) == out)
+    assert(L.intervals(on) == Set(new ClosedIntInterval(0,0)))*/
 
-
-    tms.SetRule(1,t,L,A)
-
-    assert(L.status(AtAtom(m(37.2)+m(3),expBusM)) == out)
-    assert(L.intervals(AtAtom(m(37.2)+m(3),expBusM)) == Set(new ClosedIntInterval(t,t)))
-
-    assert(SuppN(stratum(l),L,AtAtom(m(37.2)+m(3),expBusM)) == Set(on))
-
-    tms.SetOpenOrdAtomsOut(1,t,L)
+//    assert(L.status(on) == in)
+//    assert(fInval(L,r1g))
 
 
+    tms.SetRule(1,t,L,unknowns)
 
-//    println("ACons: "+ACons(P,L,A,t))
+    println("L: "+L)
+//    assert(L.status(AtAtom(t37+m(3),expBusM)) == out)
+    assert(L.status(AtAtom(t37+m(3),expBusM)) == in)
+    println("label expbusm: "+L.label(AtAtom(t37+m(3),expBusM)))
+//    assert(L.intervals(AtAtom(t37+m(3),expBusM)) == Set(new ClosedIntInterval(t37,t37)))
 
-    //alternate version
-    /*
-    assert(L.status(on) == out)
-    assert(L.intervals(on) == Set(new ClosedIntInterval(0,0)))
-
-    assert(fInval(L,r1g))
-
-//    println("t: "+t)
-//    println("L.status(AtAtom(m(37.2)+m(3),expBusM)): "+L.status(AtAtom(m(37.2)+m(3),expBusM)))
-    tms.SetRule(1,t,L)
-
-
-    assert(fInval(L,r1g))
-
-    assert(L.status(AtAtom(m(37.2)+m(3),expBusM)) == out)
-    assert(L.intervals(AtAtom(m(37.2)+m(3),expBusM)) == Set(new ClosedIntInterval(t,t)))
+//    assert(SuppN(stratum(l),L,AtAtom(t37+m(3),expBusM)) == Set(on))
 
     tms.SetOpenOrdAtomsOut(1,t,L)
+    tms.PushUp(l,t,L)
 
-    //assert(L.status(expBusM) == unknown)
-    */
+
+
     /** Stratum 2 **/
+    A=Set()
+    println("###################################")
+    println("")
+    println("Exp17, Stratum 2")
+    println("")
+    println("###################################")
+
+    println("strum(1): "+stratum(1))
+    println("strum(2): "+stratum(2))
+
+    println("A: "+A)
+    val Lp22 = L.copy
+    l=2
+
+
+    val expired2 = tms.Expired(D,l,tp,t,L)
+    println("expire2: "+expired2)
+    expired2.foreach(a => {
+      C += a
+      A += a.atom
+      tms.ExpireInput(a,t,L)
+    })
+
+    val fired2 = tms.Fired(D,l,tp,t,L)
+    println("fired2: "+fired2)
+    for((omega,t1) <- fired2) {
+      A += omega.atom
+      C += omega
+      tms.FireInput(omega,t1, l, D, L)
+    }
+    println("L: "+L)
+
+
+    tms.UpdateTimestamps(C,L,Lp22,l,t)
+
+    assert(L.status(WAt(wop3,t37,busG)) == in)
+    assert(L.intervals(WAt(wop3,t37,busG)) == Set(new ClosedIntInterval(t37,m(40.2))))
+
+    val unknowns2 = tms.SetUnknown(1,t37,L,A)
+
+    println("unknowns2: "+unknowns2)
+
+    /*    assert(L.status(on) == out)
+        assert(L.intervals(on) == Set(new ClosedIntInterval(0,0)))*/
+
+    //    assert(L.status(on) == in)
+    //    assert(fInval(L,r1g))
+
+
+    tms.SetRule(1,t,L,unknowns2)
+
+    //    assert(L.status(AtAtom(t37+m(3),expBusM)) == out)
+    assert(L.status(AtAtom(t37+m(3),expBusM)) == in)
+    println("label expbusm: "+L.label(AtAtom(t37+m(3),expBusM)))
+    //    assert(L.intervals(AtAtom(t37+m(3),expBusM)) == Set(new ClosedIntInterval(t37,t37)))
+
+    //    assert(SuppN(stratum(l),L,AtAtom(t37+m(3),expBusM)) == Set(on))
+
+    tms.SetOpenOrdAtomsOut(1,t,L)
+    tms.PushUp(l,t,L)
+
     println("L: "+L)
     assert(L.status(WDiam(wopP5,expTrM)) == out)
-    assert(L.status(WDiam(wopP5,expBusM)) == out)
+    assert(L.status(WDiam(wopP5,expBusM)) == in)
 
-    assert(fInval(L,r4))
+    assert(fVal(L,r4))
     assert(fInval(L,r5))
 
+    /************* 2nd run **************/
+
+    val tp2 = m(36)
+    val t2 = m(38)
+    A= v(t2)
+    l = 1
+
+    val expired3 = tms.Expired(D,l,tp2,t2,L)
+    println("expired3: "+expired3)
+    expired3.foreach(a => {
+      C += a
+      A += a.atom
+      tms.ExpireInput(a,t2,L)
+    })
+
+    val fired3 = tms.Fired(D,l,tp2,t2,L)
+    println("fired3: "+fired3)
+    for((omega,t1) <- fired3) {
+      A += omega.atom
+      C += omega
+      tms.FireInput(omega,t1, l, D, L)
+    }
+
+
+    tms.UpdateTimestamps(C,L,Lp22,l,t2)
+
+//    assert(L.status(WAt(wop3,t2,busG)) == in)
+//    assert(L.intervals(WAt(wop3,t2,busG)) == Set(new ClosedIntInterval(t2,m(40.2))))
+
+    val unknowns3 = tms.SetUnknown(1,t2,L,A)
+
+    println("unknowns3: "+unknowns3)
+
+    /*    assert(L.status(on) == out)
+        assert(L.intervals(on) == Set(new ClosedIntInterval(0,0)))*/
+
+    //    assert(L.status(on) == in)
+    //    assert(fInval(L,r1g))
+
+
+    tms.SetRule(1,t,L,unknowns3)
+
+    //    assert(L.status(AtAtom(t37+m(3),expBusM)) == out)
+//    assert(L.status(AtAtom(t37+m(3),expBusM)) == in)
+    //    assert(L.intervals(AtAtom(t37+m(3),expBusM)) == Set(new ClosedIntInterval(t37,t37)))
+
+    //    assert(SuppN(stratum(l),L,AtAtom(t37+m(3),expBusM)) == Set(on))
+
+    tms.SetOpenOrdAtomsOut(1,t2,L)
+    tms.PushUp(l,t2,L)
   }
 
   test("Exp18"){
@@ -446,11 +554,11 @@ class TestTMS  extends FunSuite {
     assert(L.status(WDiam(wop1,request)) == in)
     assert(L.intervals(WDiam(wop1,request)) == Set(new ClosedIntInterval(t,m(40.7))))
 
-    tms.SetUnknown(1,t,L,A)
+    val unknowns = tms.SetUnknown(1,t,L,A)
 
 
     assert(fVal(L,r3))
-    tms.SetRule(1,t,L,A)
+    tms.SetRule(1,t,L,unknowns)
 
     assert(L.status(on) == in)
     assert(L.intervals(on) == Set(new ClosedIntInterval(t,m(40.7))))
@@ -516,16 +624,16 @@ class TestTMS  extends FunSuite {
     assert(L.status(WDiam(wopP5,expTrM)) == in)
     assert(L.intervals(WDiam(wopP5,expTrM)) == Set(new ClosedIntInterval(m(34.7),t)))
 
-    tms.SetUnknown(2,t,L,A)
+    val unknowns2 = tms.SetUnknown(2,t,L,A)
     assert(L.status(takeTrM) == unknown)
     assert(L.status(takeBusM) == unknown)
 
-    tms.SetRule(2,t,L,A)
+    tms.SetRule(2,t,L,unknowns2)
 
     assert(ufVal(L,r4))
     assert(ufVal(L,r5))
 
-    tms.MakeAssignment(2,t,L)
+    tms.MakeAssignment(2,t,L,unknowns2)
     assert(L.label(takeBusM) == new Label(in,Set(new ClosedIntInterval(t,t))) ||
             L.label(takeTrM) == new Label(in,Set(new ClosedIntInterval(t,t))))
   }
@@ -561,16 +669,16 @@ class TestTMS  extends FunSuite {
     A = v(t) //{jam}
 
 //    assert(ACons(P,L,A,t) == Set(takeTrM, takeBusM, WDiam(wop3,jam)))
-    println("Acons: "+ACons(P,L,A,t))
-    assert(ACons(P,L,A,t) == Set(takeBusM, WDiam(wop3,jam)))
-    assert(ACons(stratum(1),L,A,t) == Set())
+    println("Acons: "+ACons(P,L,A,support,t))
+    assert(ACons(P,L,A,support,t) == Set(takeBusM, WDiam(wop3,jam)))
+    assert(ACons(stratum(1),L,A,support,t) == Set())
 
     val fired = tms.Fired(D,1,t,t,L)
     assert(fired == Set())
 
 //    assert(L.label(WDiam(wop3,jam)) == new Label(in, Set(new ClosedIntInterval(t,m(43)))))
-    tms.SetUnknown(1,t,L,A)
-    tms.SetRule(1,t,L,A)
+    val unknowns1 = tms.SetUnknown(1,t,L,A)
+    tms.SetRule(1,t,L,unknowns1)
     tms.SetOpenOrdAtomsOut(1,t,L)
     tms.PushUp(1,t,L)
     val expired2 = tms.Expired(D,2,t,t,L)
@@ -581,8 +689,8 @@ class TestTMS  extends FunSuite {
     println("fired2: "+fired2)
     fired2.foreach(f => {A+= f._1.atom; tms.FireInput(f._1,f._2,2,D,L)})
     println("label of jam: "+L.label(WDiam(wop3,jam)))
-    tms.SetUnknown(2,t,L,A)
-    tms.SetRule(2,t,L,A)
-    tms.MakeAssignment(2,t,L)
+    val unknowns2 = tms.SetUnknown(2,t,L,A)
+    tms.SetRule(2,t,L,unknowns2)
+    tms.MakeAssignment(2,t,L,unknowns2)
   }
 }

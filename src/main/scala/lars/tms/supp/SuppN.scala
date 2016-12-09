@@ -21,16 +21,16 @@ object SuppN {
       return Set()
     }
 
-    xRules.map(pick(L,_).get)
+    xRules.map(pick(L,_))
   }
 
-  private def pick(L: Labels, r: StdRule): Option[ExtendedAtom] = {
+  private def pick(L: Labels, r: StdRule): ExtendedAtom = {
     //TODO revisit influence of order/choice
     val optP = r.Bp.find(L.status(_) == out)
     if (optP.isDefined) {
-      return optP
+      return optP.get
     }
-    r.Bn.find(L.status(_) == in)
+    r.Bn.find(L.status(_) == in).get
   }
 
 }

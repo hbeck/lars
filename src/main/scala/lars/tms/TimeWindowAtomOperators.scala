@@ -30,7 +30,7 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
 
   def mapInAtoms(omega: WindowAtom, fired: Set[(WindowAtom, Int)], t: Int, atp: Set[Int]): Boolean = {
       if (!fired.contains((omega, t))) {
-        if(atp.exists(t1 => t1 < t)) true //Option(omega.atom)
+        if(atp.exists(t1 => t1 < t)) return true //Option(omega.atom)
       }
     false
   }
@@ -107,12 +107,12 @@ object TimeWindowAtomOperators extends WindowAtomOperators{
     case wfn: TimeWindowFixedParams =>
 
     wa match {
-      case wd:WDiam => new ClosedIntInterval(t,t)
       case wb:WBox =>
         val Nl = wfn.x.l
         val Nu = wfn.x.u
 
         new ClosedIntInterval(t-Nu,t+Nl)
+      case _ => new ClosedIntInterval(t,t)
     }
   }
 }

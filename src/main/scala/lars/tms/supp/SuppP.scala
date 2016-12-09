@@ -16,7 +16,9 @@ object SuppP {
     if (L.status(x) != in) {
       return Set()
     }
-    PH(P,x).filter(fVal(L,_)).flatMap(_.B)
+    PH(P,x).find(fVal(L,_)) match {
+      case Some(rule) => rule.B
+      case None => Set()
+    }
   }
-
 }

@@ -3,6 +3,7 @@ package lars.tms.acons
 import lars.core.semantics.formulas.ExtendedAtom
 import lars.core.semantics.programs.standard.StdProgram
 import lars.tms.status.Labels
+import lars.tms.supp.Support
 
 import scala.annotation.tailrec
 
@@ -11,16 +12,16 @@ import scala.annotation.tailrec
  */
 object AConsStar {
 
-  def apply(P: StdProgram, L: Labels, x: ExtendedAtom): Set[ExtendedAtom] = {
-    _apply(P, L, x, x) - x
+  def apply(P: StdProgram, L: Labels, supp: Support, x: ExtendedAtom): Set[ExtendedAtom] = {
+    _apply(P, L, supp, x, x) - x
   }
 
-  def _apply(P: StdProgram, L: Labels, xs: ExtendedAtom, xp: ExtendedAtom): Set[ExtendedAtom] = {
-    val next: Set[ExtendedAtom] = exclude(ACons(P, L, xs), xs)
+  def _apply(P: StdProgram, L: Labels, supp: Support, xs: ExtendedAtom, xp: ExtendedAtom): Set[ExtendedAtom] = {
+    val next: Set[ExtendedAtom] = exclude(ACons(P, L, supp, xs), xs)
 
     val clean = exclude(next, xp)
     if (clean.nonEmpty) {
-      return clean.flatMap(x => _apply(P, L, x, xs)) + xs
+      return clean.flatMap(x => _apply(P, L, supp, x, xs)) + xs
     }
     Set(xs)
 
